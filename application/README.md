@@ -12,10 +12,23 @@
 
 ##How to Use
 
-  Run Arrebol POST -j [jdf file path] optionals: -f [friendly name] -s [relative path to files]
+  To create a Jdf job run: 
+  ```
+  bash arrebol.sh POST -j [jdf file path] optionals: -f [friendly name] -s [relative path to files] 
+  ```
   
-  Run Arrebol GET for information on all running jobs
+  For information on all running jobs run
+  ```
+  bash arrebol.sh GET 
+  ```
+  For information on a specific running job run
+  ```
+  bash arrebol.sh GET [job id or friendly name]
+  ```
+  To stop an specific job run
+  ```
+  bash arrebol.sh STOP [job id or friendly name] 
+  ```
   
-  Run Arrebol GET [job id or friendly name] for information on a specific running job
+  The gui is a browser application for visualy monitoring the state of the jdf jobs
   
-  Run Arrebol STOP [job id or friendly name] to stop an specific job
