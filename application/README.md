@@ -1,5 +1,6 @@
 # Arrebol
-
+  
+  Arrebol is an Interface for execution and monitoring of JDF-formated jobs
 
 ##How to Use
 
