@@ -1,5 +1,5 @@
 #!/bin/bash
-. Arrebol.properties
+. arrebol.properties
 
 define_parameters() {
 	while [ ! -z $1 ]; do

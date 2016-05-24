@@ -25,12 +25,9 @@ import org.mapdb.DBMaker;
  * and creates a JDL file as the output.
  * @author Ricardo Araujo Santos - ricardo@lsd.ufcg.edu.br
  */
-public class JDFMain {
+public class ArrebolMain {
 
-
-	
-
-	public static final Logger LOGGER = Logger.getLogger(JDFMain.class);
+	public static final Logger LOGGER = Logger.getLogger(ArrebolMain.class);
 
 	private static boolean blockWhileInitializing;
 	private static boolean isElastic;
@@ -69,10 +66,10 @@ public class JDFMain {
 		for (String key : jobMapDB.keySet()) {
 			legacyJobs.add((JDFJob) jobMapDB.get(key));
 		}
+		LOGGER.debug("Propertie: " +properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
 			
 		Scheduler scheduler = new Scheduler(infraManager, legacyJobs.toArray(new JDFJob[legacyJobs.size()]));
 
-		LOGGER.debug("Propertie: " +properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
 		
 		LOGGER.debug("Application to be started on port: " +properties.getProperty(AppPropertiesConstants.REST_SERVER_PORT));
 		ExecutionMonitorWithDB executionMonitor = new ExecutionMonitorWithDB(scheduler, pendingImageDownloadDB);
