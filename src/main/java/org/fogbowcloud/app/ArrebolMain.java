@@ -47,7 +47,8 @@ public class ArrebolMain {
 		properties = new Properties();
 		FileInputStream input = new FileInputStream(args[0]);
 		properties.load(input);
-
+		FileInputStream schedconfiguration = new FileInputStream(properties.getProperty("scheduler_conf_path"));
+		properties.load(schedconfiguration);
 		loadConfigFromProperties();
 
 		// Initialize a MapDB database

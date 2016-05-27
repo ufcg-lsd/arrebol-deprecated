@@ -27,6 +27,8 @@ public class JobResource extends ServerResource {
 
 	private static final String JOB_ID = "id";
 
+	private static final String JOB_FRIENDLY = "name";
+	
 	private static final String STATE = "state";
 
 	private static final String TASK_ID = "taskid";
@@ -79,11 +81,15 @@ public class JobResource extends ServerResource {
 
 		JDFJob job = application.getJobById(jobId);
 		if (job == null) {
-			
 			job = application.getJobByName(jobId);
 			if (job == null) {
-			throw new ResourceException(404);
+				throw new ResourceException(404);
 			}
+			jsonJob.put(JOB_FRIENDLY, jobId);
+			jsonJob.put(JOB_ID, job.getId());
+		} else {
+			jsonJob.put(JOB_ID, jobId);
+			jsonJob.put(JOB_FRIENDLY, job.getName());
 		}
 		LOGGER.debug("JobID " + jobId + " is of job " + job);
 
@@ -114,7 +120,6 @@ public class JobResource extends ServerResource {
 			jobTasks.put(jTask);
 		};
 
-		jsonJob.put(JOB_ID, jobId);
 		jsonJob.put(JOB_TASKS, jobTasks);
 		return new StringRepresentation(jsonJob.toString(), MediaType.TEXT_PLAIN);
 	}
