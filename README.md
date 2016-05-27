@@ -1,14 +1,17 @@
 ![alt tag](https://github.com/fogbow/arrebol/blob/pre-create/assets/ARREBOL-22.png)
 
 # Arrebol
+## What is Arrebol?
+  Arrebol is a tool for monitoring and executing JDF-formated jobs in a multi-cloud environment federated by the [fogbow middleware](http://www.fogbowcloud.org). Arrebols allows the user to harness cloud resources without bothering about the details fo the cloud infrastructure.
   
-  Arrebol is an Interface for execution and monitoring of JDF-formated jobs
+  Arrebol has three main components:
+  * **Submission service**: The submission service is the deamon responsible for receiving job submission and monitoring requests and interacting with the **fogbow middleware** to execute the jobs in the federated cloud resources. The submission services runs a **REST** interface acessed by two clients: **Arrebol CLI** and **Arrebol Dashboard**.
+  * **Arrebol CLI**: CLI is a bash script to easy interaction with the **submission service** in UNIX enviroments. It allows to submit jobs, retrieve status information about running jobs, and cancel them.
+  * **Arrebol Dashboard**: Dashboard is a web application that shows status information about the jobs controlled by a **submission service**.
   
-  It consists of three parts: the Application, the cli, and the gui
+  This document provides a short guide to use the **Arrebol CLI** to interact with the **Submission Service**. It also describes how to install and configure the **Submission Service** and the **Arrebol Dashboard**.
   
-  The application is a layer created above the fogbow-scheduler that facilitates the retrieval of information on jobs or tasks in a readable way, while also persisting job information between diferent executions of the scheduler, and the rescalonation of jobs in case of failure
-  
-##How to Use
+##How to use it?
 
   To start the application layer run:
   
