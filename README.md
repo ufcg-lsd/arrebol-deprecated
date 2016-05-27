@@ -2,7 +2,7 @@
 
 # Arrebol
 ## What is Arrebol?
-  Arrebol is a tool for monitoring and executing JDF-formated jobs in a multi-cloud environment federated by the [fogbow middleware](http://www.fogbowcloud.org). Arrebols allows the user to harness cloud resources without bothering about the details fo the cloud infrastructure.
+  Arrebol is a tool for monitoring and executing JDF-formated jobs in a multi-cloud environment federated by the [fogbow middleware](http://www.fogbowcloud.org). Arrebol allows the user to harness cloud resources without bothering about the details fo the cloud infrastructure.
   
   Arrebol has three main components:
   * **Submission service**: The submission service is the deamon responsible for receiving job submission and monitoring requests and interacting with the **fogbow middleware** to execute the jobs in the federated cloud resources. The submission services runs a **REST** interface acessed by two clients: **Arrebol CLI** and **Arrebol Dashboard**.
@@ -12,7 +12,34 @@
   This document provides a short guide to use the **Arrebol CLI** to interact with the **Submission Service**. It also describes how to install and configure the **Submission Service** and the **Arrebol Dashboard**.
   
 ##How to use it?
+### Arrebol CLI
+After unpacking a **Arrebol** release package (find the [here](https://github.com/fogbow/arrebol/releases)), the **Arrebol CLI** script can be found in ```bin/```directory.
 
+To create a Jdf-formatted job: 
+```
+bash bin/arrebol.sh POST jdf_file_path optionals: -f [friendly name] -s [relative path to files] 
+```
+To retrieve status information about all running jobs:
+```
+bash bin/arrebol.sh GET 
+```
+To retrieve information about a specific running job:
+```
+bash bin/arrebol.sh GET [job id or friendly name]
+```
+To stop a specific job:
+```
+bash arrebol.sh STOP [job id or friendly name] 
+```
+
+TODO: explain JDF syntax
+
+TODO: explain how to configure CLI
+
+TODO: explain how to configure submission service
+
+TODO: explain how to configure dashboard
+  
   To start the application layer run:
   
 ```
@@ -64,22 +91,6 @@ this is the Initial Spec file:
 
 ##How to Use
 
-  To create a Jdf job run: 
-  ```
-  bash arrebol.sh POST -j [jdf file path] optionals: -f [friendly name] -s [relative path to files] 
-  ```
-  
-  For information on all running jobs, run:
-  ```
-  bash arrebol.sh GET 
-  ```
-  For information on a specific running job, run:
-  ```
-  bash arrebol.sh GET [job id or friendly name]
-  ```
-  To stop an specific job, run:
-  ```
-  bash arrebol.sh STOP [job id or friendly name] 
   ```
   
   The gui is a browser application for visualy monitoring the state of the jdf jobs
