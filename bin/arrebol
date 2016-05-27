@@ -83,28 +83,28 @@ do_getui() {
 if [ $# -gt 0 ]
 then
 	op=$1
-     	case "$op" in
-		GET)
-			shift
-			do_get $@
-                ;;
-            	POST)
-                	shift
-			do_post $@
-                ;;
-            	STOP)
-                	shift
-			do_stop $@
-                ;;
-            	GETUI)
-                	shift
-			do_getui
-                ;;
-            	*)
-			print_menu
-			exit 1
-                ;;
-	esac
+    case "$op" in
+        GET)
+            shift
+            do_get $@
+            ;;
+        POST)
+            shift
+            do_post $@
+            ;;
+        STOP)
+            shift
+            do_stop $@
+            ;;
+        GETUI)
+            shift
+            do_getui
+            ;;
+        *)
+            print_menu
+            exit 1
+            ;;
+    esac
 else
 	print_menu
 	exit 1
