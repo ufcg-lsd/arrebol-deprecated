@@ -1,15 +1,12 @@
 package org.fogbowcloud.app.resource;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.fogbowcloud.scheduler.core.model.JDFJob;
+import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.scheduler.core.model.Task;
-import org.fogbowcloud.scheduler.restlet.JDFSchedulerApplication;
-import org.fogbowcloud.scheduler.restlet.JDFSchedulerApplicationWithPersistence;
+import org.fogbowcloud.app.restlet.JDFSchedulerApplicationWithPersistence;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;

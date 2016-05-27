@@ -8,16 +8,16 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
-import org.fogbowcloud.scheduler.core.ExecutionMonitorWithDB;
+import org.fogbowcloud.app.restlet.JDFSchedulerApplicationWithPersistence;
+import org.fogbowcloud.app.ExecutionMonitorWithDB;
 import org.fogbowcloud.scheduler.core.ManagerTimer;
 import org.fogbowcloud.scheduler.core.Scheduler;
-import org.fogbowcloud.scheduler.core.model.JDFJob;
-import org.fogbowcloud.scheduler.core.model.Job;
+import org.fogbowcloud.app.model.JDFJob;
+import org.fogbowcloud.scheduler.core.model.Job.TaskState;
+import org.fogbowcloud.scheduler.core.model.Task;
 import org.fogbowcloud.scheduler.core.util.AppPropertiesConstants;
 import org.fogbowcloud.scheduler.infrastructure.InfrastructureManager;
 import org.fogbowcloud.scheduler.infrastructure.InfrastructureProvider;
-import org.fogbowcloud.scheduler.restlet.JDFSchedulerApplication;
-import org.fogbowcloud.scheduler.restlet.JDFSchedulerApplicationWithPersistence;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 /**
@@ -64,6 +64,10 @@ public class ArrebolMain {
 		ArrayList<JDFJob> legacyJobs = new ArrayList<JDFJob>();
 		
 		for (String key : jobMapDB.keySet()) {
+			JDFJob recoveredJob = (JDFJob) jobMapDB.get(key);
+			for (Task task : recoveredJob.getByState(TaskState.RUNNING)) {
+				recoveredJob.restart(task);
+			}
 			legacyJobs.add((JDFJob) jobMapDB.get(key));
 		}
 		LOGGER.debug("Propertie: " +properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
