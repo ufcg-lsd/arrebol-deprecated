@@ -51,13 +51,15 @@ do_post() {
 		base_curl_cmd="curl -X POST --data jdffilepath=${jdffilepath}"
                 if [[ $schedpath ]]
 		then
-			$base_curl_cmd="${base_curl_cmd} --data schedpath=${schedpath}"
+			base_curl_cmd="${base_curl_cmd} --data schedpath=${schedpath}"
 		fi
                 if [[ $friendly ]]
 		then
-			$base_curl_cmd="${base_curl_cmd} --data friendly=${friendly}"
+			base_curl_cmd="${base_curl_cmd} --data friendly=${friendly}"
 		fi
-		$base_curl_cmd="${base_curl_cmd} $host/sebal-scheduler/job)"
+		base_curl_cmd="${base_curl_cmd} $host/sebal-scheduler/job"
+        	response=$($base_curl_cmd)
+                echo $response
 	else
         	echo "Error: jdffilepath<$jdffilepath> not found."
                 exit 1
