@@ -128,4 +128,3 @@ this is the Initial Spec file:
   ```
 
   The gui is a browser application for visualy monitoring the state of the jdf jobs
-

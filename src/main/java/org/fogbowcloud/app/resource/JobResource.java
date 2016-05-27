@@ -60,7 +60,7 @@ public class JobResource extends ServerResource {
 			for (JDFJob job : application.getAllJobs()){
 				JSONObject jJob = new JSONObject();
 				if (job.getName() != null) {
-					jJob.put("id: ", job.getId());
+					jJob.put("id", job.getId());
 					jJob.put("name", job.getName());
 					jJob.put("readytasks", job.getByState(TaskState.READY).size());
 				} else {

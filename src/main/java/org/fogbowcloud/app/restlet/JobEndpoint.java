@@ -51,7 +51,7 @@ public class JobEndpoint extends ServerResource {
 			JSONObject taskInfo = new JSONObject();
 			taskInfo.put("id", task.getId());
 			taskInfo.put("text", String.valueOf(taskNumber));
-			taskInfo.put("taskState", "READY");
+			taskInfo.put("state", "READY");
 			jArray.put(taskInfo);
 			taskNumber++;
 		}
@@ -59,7 +59,7 @@ public class JobEndpoint extends ServerResource {
 			JSONObject taskInfo = new JSONObject();
 			taskInfo.put("id", task.getId());
 			taskInfo.put("text", String.valueOf(taskNumber));
-			taskInfo.put("taskState", "READY");
+			taskInfo.put("state", "READY");
 			jArray.put(taskInfo);
 			taskNumber++;
 		}
@@ -67,7 +67,7 @@ public class JobEndpoint extends ServerResource {
 			JSONObject taskInfo = new JSONObject();
 			taskInfo.put("id", task.getId());
 			taskInfo.put("text", String.valueOf(taskNumber));
-			taskInfo.put("taskState", "READY");
+			taskInfo.put("state", "READY");
 			jArray.put(taskInfo);
 			taskNumber++;
 		}
@@ -75,7 +75,7 @@ public class JobEndpoint extends ServerResource {
 			JSONObject taskInfo = new JSONObject();
 			taskInfo.put("id", task.getId());
 			taskInfo.put("text", String.valueOf(taskNumber));
-			taskInfo.put("taskState", "READY");
+			taskInfo.put("state", "READY");
 			jArray.put(taskInfo);
 			taskNumber++;
 		}
