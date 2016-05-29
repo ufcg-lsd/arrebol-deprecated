@@ -12,9 +12,8 @@
   This document provides a short guide to use the **Arrebol CLI** to interact with the **Submission Service**. It also describes how to install and configure the **Submission Service** and the **Arrebol Dashboard**.
 
 ##How to use it?
-### Arrebol CLI
 
-#### Writing a job
+### Writing a job
 
 A job description file, or jdf for short, is a plain text file that contains a job description. Each job description file describes a single job. You can edit a jdf in the text editor of your choice. By convention, we use the .jdf extension to name all job description files.
 
@@ -29,20 +28,23 @@ init: | Input data. The files that will be staged into the Worker.
 remote: | Code for execution, which is a command line on the target resource.
 final: | Output data. The files that will be staged out from the Worker.
 
+#### The Job clause
 
 A job clause contains a (possibly empty) list of sub-clauses. For instance, the requirements sub-clause encompasses the list of requirements that need to be fulfilled by a worker node, so that it can be selected to run tasks of the job, while the label sub-clause associates a name to the job. This sub-clause is useful for tracking the execution of the job and also to associate the name of the output files to the job that has generated it.
 
-Below we present an example of a jdf, which defines a very simple job named myjob1. It requires worker nodes that have the os attribute set to "linux" and the mem attribute set to a number greater or equal to 100.
+Below we present an example of a jdf, which defines a very simple job named myjob1. It requires worker nodes to run in the cloud of the federation member named **memberOne**. Also, the worker nodes must have the mem attribute set to a number greater or equal to 1024 and .
 
     job:
     label:myjob1
-    requirements : ( os == linux and mem >= 100)
+    requirements : Glue2RAM >= 1024 AND Glue2CloudComputeManagerID==memberOne
     task:
     remote: mytask
 
 As we mentioned before, all sub-clauses of a job clause are optional. If the label sub-clause does not exist in the jdf, an internal job id is used to identify it. If there is no requirements sub-clause, the Broker assumes that all worker nodes in your grid are able to run the tasks of your job.
 
 Besides label and requirements sub-clauses, you may define default descriptions for all tasks of a job. This is further explained below.
+
+### Arrebol CLI
 
 #### Running a job
 After unpacking a **Arrebol** release package (find the [here](https://github.com/fogbow/arrebol/releases)), the **Arrebol CLI** script can be found in ```bin/```directory.
