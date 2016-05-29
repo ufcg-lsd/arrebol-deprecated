@@ -78,7 +78,8 @@ bash arrebol.sh STOP [job id or friendly name]
 ```
 
 ##How to configure the **Arrebol CLI**?
-To configure the **Arrebol CLI**, simply assign the address of the **Submission Service** to the **host** property in the  **bin/arrebol.properties** configuration file.
+
+To configure the **Arrebol CLI**, simply assign the address of the **Submission Service** to the **host** property in the  **bin/arrebol.properties** configuration file:
 
 ```
 host=http://ip:port
@@ -86,48 +87,15 @@ host=http://ip:port
 
 ##How to configure the **Submission Service**?
 
-TODO: explain how to configure dashboard
-
-  To start the application layer run:
-
-  Following is the example of a configuration file:
+To configure the **Submission Service** one should edit two configuration files. In the first file, **arrebol.conf**, it is mandatory to assign the port which the **Submission Service** daemon will wait for HTTP requests after it has been started:
 
 ```
-infra_is_elastic=true
-infra_provider_class_name=org.fogbowcloud.scheduler.infrastructure.fogbow.FogbowInfrastructureProvider
-infra_order_service_time=100000
-infra_resource_service_time=100000
-infra_resource_connection_timeout=300000
-infra_resource_idle_lifetime=30000
-
-infra_initial_specs_file_path=/home/username/Dev/sebalScheduleEnv/initialSpec
-infra_initial_specs_block_creating=true
-
-infra_fogbow_manager_base_url=http://188.188.15.81:8182
-infra_fogbow_token_public_key_filepath=/home/username/Dev/keys/cert
-
-accounting_datastore_url=jdbc:h2:/home/username/Dev/sebalScheduleEnv/h2db/orders
-execution_monitor_period=60000
-local.output = /home/username/Dev/sebalScheduleEnv/result
-local_command_interpreter=/bin/bash
-
-fogbow.voms.certificate.password=password
-fogbow.voms.server=vomsserver
-
-rest_server_port=44444
+ rest_server_port=port
 ```
 
-this is the Initial Spec file:
+In the second file, **sched.conf**, it is possible to tune the behaviour of the **Submission Service**. We cover this  configuration in the [full tutorial]().
 
+To start the **Submission Service**, run the script:
 ```
-[
-{"image":"fogbow-ubuntu",
- "username":"fogbow",
- "publicKey":"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDG2U8rz4I31LIyDBPpe01WJdGt0JBowZ0Zq7Nxq7mol3G4cW5OJt9v3aQLRU8zanceXXSagNg8O4v2ppFzROYlIOgg2KN3Zu6Tj7Evmfp++J160dwshnP3aQCSLIDSBnMsZyPRprIbaL2LifVmrKcOfG3QcRQHZx2HRWJp+lty0IqP+FBaobB7nXzF58ibOJ84Fk9QpQmS5JK3AXdwCISmN8bgfcjoUJB2FMB5OU8ilkIyG4HDZmI82z+6hUS2sVd/ss8biIN6qGfRVxEDhVlDw3o+XqL+HQ7udd2Q61oHs8iBa711SWG64Eie6HAm8SIOsL7dvPx1rBfBsp3DqbcvjsnfNKsgkj5wnf7E8q9S6rTiDQndCGWvAnSU01BePD51ZnMEckluYTOhNLgCMtNTXZJgYSHPVsLWXa5xdGSffL73a4gIupE36tnZlNyiAQGDJUrWh+ygEc2ALdQfpOVWo+CMkTBswvrHYSJdFC7r1U8ACrOlsLE02/uqqBbp7fTUuuMk77J8t0ocxuz48tVKOlog0ajS5nphPLfPGnP2PVTh7GXNTLOnqGVwMrjFIAHj7ukd+l36wUAIHR7Y4YWKVaIBvTZS/fQNn0cOGon2DnNL3wNAUc6pthhXlNY33aU2ky55mZR4drAdbRGRdEZQF0YHEFnzP0x2GucHwg6ZtMJ2Aw== username@machine",
- "privateKeyFilePath":"/home/username/.ssh/id_rsa",
- "requirements":{
-	"FogbowRequirements":"Glue2RAM >= 1024 ",
-	"RequestType":"one-time"}
-	}
-]
+bash bin/start-arrebol-service
 ```
