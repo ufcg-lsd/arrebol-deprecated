@@ -1,14 +1,9 @@
 package org.fogbowcloud.app.restlet;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.fogbowcloud.scheduler.core.model.JDFJob;
+import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.scheduler.core.model.Task;
 import org.json.JSONException;
@@ -28,7 +23,7 @@ public class JobEndpoint extends ServerResource {
 	@Get
 	public Representation stopJob() throws IOException {
 
-		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
+		JDFSchedulerApplicationWithPersistence application = (JDFSchedulerApplicationWithPersistence) getApplication();
 
 		JSONArray jArray = new JSONArray();
 
@@ -56,7 +51,7 @@ public class JobEndpoint extends ServerResource {
 			JSONObject taskInfo = new JSONObject();
 			taskInfo.put("id", task.getId());
 			taskInfo.put("text", String.valueOf(taskNumber));
-			taskInfo.put("taskState", "READY");
+			taskInfo.put("state", "READY");
 			jArray.put(taskInfo);
 			taskNumber++;
 		}
@@ -64,7 +59,7 @@ public class JobEndpoint extends ServerResource {
 			JSONObject taskInfo = new JSONObject();
 			taskInfo.put("id", task.getId());
 			taskInfo.put("text", String.valueOf(taskNumber));
-			taskInfo.put("taskState", "READY");
+			taskInfo.put("state", "READY");
 			jArray.put(taskInfo);
 			taskNumber++;
 		}
@@ -72,7 +67,7 @@ public class JobEndpoint extends ServerResource {
 			JSONObject taskInfo = new JSONObject();
 			taskInfo.put("id", task.getId());
 			taskInfo.put("text", String.valueOf(taskNumber));
-			taskInfo.put("taskState", "READY");
+			taskInfo.put("state", "READY");
 			jArray.put(taskInfo);
 			taskNumber++;
 		}
@@ -80,7 +75,7 @@ public class JobEndpoint extends ServerResource {
 			JSONObject taskInfo = new JSONObject();
 			taskInfo.put("id", task.getId());
 			taskInfo.put("text", String.valueOf(taskNumber));
-			taskInfo.put("taskState", "READY");
+			taskInfo.put("state", "READY");
 			jArray.put(taskInfo);
 			taskNumber++;
 		}

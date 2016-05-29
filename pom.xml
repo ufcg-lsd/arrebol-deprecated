@@ -162,6 +162,22 @@
 			<version>1.0.9</version>
 		</dependency>
 		
+		<dependency>
+	        <groupId>org.ourgrid</groupId>
+	        <artifactId>ourgrid</artifactId>
+	        <version>4.4.2</version>
+	        <scope>system</scope>
+	        <systemPath>/path/to/ourgrid/jar/ourgrid-4.4.2.jar</systemPath>
+      	</dependency>
+      	
+		<dependency>
+	        <groupId>sebal-scheduler</groupId>
+	        <artifactId>sebal-scheduler</artifactId>
+	        <version>0.0.1-SNAPSHOT</version>
+	        <scope>system</scope>
+	        <systemPath>/path/to/jar/sebal-scheduler-0.0.1-SNAPSHOT.jar</systemPath>
+      	</dependency>
+		
 		
 	</dependencies>
 </project>
