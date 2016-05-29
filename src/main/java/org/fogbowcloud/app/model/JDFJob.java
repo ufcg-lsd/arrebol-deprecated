@@ -48,6 +48,11 @@ public class JDFJob extends Job{
 		
 	}
 
+	public void restart(Task task) {
+		tasksRunning.remove(task);
+		tasksReady.add(task);
+	}
+	
 	@Override
 	public void finish(Task task) {
 		tasksRunning.remove(task);
