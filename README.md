@@ -52,17 +52,16 @@ There is one task clause to describe each task of a job. The number of tasks in 
 - **Remote sub-clause**: is used to specify which command line will be invoked in the worker node.
 - **Final sub-clause**: defines which files will be transferred from the worker node to the user's mchine, after the execution of the task.
 
-### Arrebol CLI
+### Running a job via the Arrebol CLI
 
-#### Running a job
-After unpacking a **Arrebol** release package (find the [here](https://github.com/fogbow/arrebol/releases)), the **Arrebol CLI** script can be found in ```bin/```directory.
+After unpacking a **Arrebol** release package (listed [here](https://github.com/fogbow/arrebol/releases)), the **Arrebol CLI** script can be found in ```bin/```directory.
 
-The **Arrebol** jobs are described in the JDF format. In this format, the user can
-
-To create a Jdf-formatted job:
+To submit a JDF-formatted job, run the arrebol script with the command **POST**:
 ```
-bash bin/arrebol.sh POST jdf_file_path optionals: -f [friendly name] -s [relative path to files]
+job_id=`bin/arrebol.sh POST jdf_file_path optionals: -f [friendly name] -s [schedule path]`
 ```
+It is mandatory to specify the path of the JDF-formatted file which describes the job. There are also two optional arguments: the job friendly name (specified with the **-f** flag) and the schedule path (specified with the **-s** flag). The friendly name gives a human-readable name. The scheduler path indicates to the **Submission service** a file system path where it can find the data processed by a submitted job. On sucessful execution, the **bin/arrebol.sh** script outputs a unique identifier to the submitted job.
+
 To retrieve status information about all running jobs:
 ```
 bash bin/arrebol.sh GET
