@@ -56,26 +56,26 @@ There is one task clause to describe each task of a job. The number of tasks in 
 
 After unpacking a **Arrebol** release package (listed [here](https://github.com/fogbow/arrebol/releases)), the **Arrebol CLI** script can be found in ```bin/```directory.
 
-To submit a JDF-formatted job, run the arrebol script with the command **POST**:
+To submit a JDF-formatted job, run the arrebol script with the **POST** command:
 ```
 job_id=`bin/arrebol.sh POST jdf_file_path optionals: -f [friendly name] -s [schedule path]`
 ```
 It is mandatory to specify the path of the JDF-formatted file which describes the job. There are also two optional arguments: the job friendly name (specified with the **-f** flag) and the schedule path (specified with the **-s** flag). The friendly name gives a human-readable name. The scheduler path indicates to the **Submission service** a file system path where it can find the data processed by a submitted job. On sucessful execution, the **bin/arrebol.sh** script outputs a unique identifier to the submitted job.
 
-To retrieve status information about all running jobs:
+To retrieve status information about all running jobs, run the arrebol script with the **GET** command:
 ```
 bash bin/arrebol.sh GET
 ```
-To retrieve information about a specific running job:
+
+To retrieve information about a specific running job, run the arrebol script witht **GET** and specify the **job id** or the the **job friendly name**.
 ```
 bash bin/arrebol.sh GET [job id or friendly name]
 ```
-To stop a specific job:
+
+To stop a running job, run the arrebol script with the **STOP** command with the associated **job id** or **friendly name**.
 ```
 bash arrebol.sh STOP [job id or friendly name]
 ```
-
-TODO: explain JDF syntax
 
 TODO: explain how to configure CLI
 
@@ -85,9 +85,6 @@ TODO: explain how to configure dashboard
 
   To start the application layer run:
 
-```
-java ArrebolMain [path to configuration file]
-```
   Following is the example of a configuration file:
 
 ```
@@ -129,11 +126,3 @@ this is the Initial Spec file:
 	}
 ]
 ```
-
-  The cli is an bash script that makes curl calls to the application endpoints, as follows
-
-##How to Use
-
-  ```
-
-  The gui is a browser application for visualy monitoring the state of the jdf jobs
