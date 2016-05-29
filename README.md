@@ -2,7 +2,7 @@
 
 # Arrebol
 ## What is Arrebol?
-  Arrebol is a tool for monitoring and executing jobs in a multi-cloud environment federated by the [fogbow middleware](http://www.fogbowcloud.org). Arrebol allows the user to harness cloud resources without bothering about the details fo the cloud infrastructure.
+  Arrebol is a tool for monitoring and executing jobs in a multi-cloud environment federated by the [fogbow middleware](http://www.fogbowcloud.org). Arrebol allows the user to harness cloud resources without bothering about the details of the cloud infrastructure.
 
   Arrebol has three main components:
   - **Submission service**: The submission service is the deamon responsible for receiving job submission and monitoring requests and interacting with the **fogbow middleware** to execute the jobs in the federated cloud resources. The submission services runs a **REST** interface acessed by two clients: **Arrebol CLI** and **Arrebol Dashboard**.
@@ -43,6 +43,14 @@ Below we present an example of a jdf, which defines a very simple job named myjo
 As we mentioned before, all sub-clauses of a job clause are optional. If the label sub-clause does not exist in the jdf, an internal job id is used to identify it. If there is no requirements sub-clause, the Broker assumes that all worker nodes in your grid are able to run the tasks of your job.
 
 Besides label and requirements sub-clauses, you may define default descriptions for all tasks of a job. This is further explained below.
+
+#### The Task clause
+
+There is one task clause to describe each task of a job. The number of tasks in a job is determined by the number of task clauses in the jdf. The task clause is used to describe all the phases of a task. A task is divided in initial, remote and final phases which are described by means of init, remote and final sub-clauses, respectively.
+
+- **Init sub-clause**: is used to define which files will be transferred from the user's machine to the worker node before the execution of the task.
+- **Remote sub-clause**: is used to specify which command line will be invoked in the worker node.
+- **Final sub-clause**: defines which files will be transferred from the worker node to the user's mchine, after the execution of the task.
 
 ### Arrebol CLI
 
