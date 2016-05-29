@@ -77,9 +77,14 @@ To stop a running job, run the arrebol script with the **STOP** command with the
 bash arrebol.sh STOP [job id or friendly name]
 ```
 
-TODO: explain how to configure CLI
+##How to configure the **Arrebol CLI**?
+To configure the **Arrebol CLI**, simply assign the address of the **Submission Service** to the **host** property in the  **bin/arrebol.properties** configuration file.
 
-TODO: explain how to configure submission service
+```
+host=http://ip:port
+```
+
+##How to configure the **Submission Service**?
 
 TODO: explain how to configure dashboard
 
