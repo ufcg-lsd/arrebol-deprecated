@@ -14,11 +14,11 @@ print_menu() {
 do_get() {
 	if [ $# -eq 0 ]
 	then
-		response=$(curl -G "$host/sebal-scheduler/job")
+		response=$(curl -G "$host/arrebol/job")
 		echo $response
 	elif [ $# -eq 1 ]
 	then
-        	response=$(curl -G "$host/sebal-scheduler/job/$1")
+        	response=$(curl -G "$host/arrebol/job/$1")
         	echo $response
 	else
 		print_menu
@@ -51,13 +51,15 @@ do_post() {
 		base_curl_cmd="curl -X POST --data jdffilepath=${jdffilepath}"
                 if [[ $schedpath ]]
 		then
-			$base_curl_cmd="${base_curl_cmd} --data schedpath=${schedpath}"
+			base_curl_cmd="${base_curl_cmd} --data schedpath=${schedpath}"
 		fi
                 if [[ $friendly ]]
 		then
-			$base_curl_cmd="${base_curl_cmd} --data friendly=${friendly}"
+			base_curl_cmd="${base_curl_cmd} --data friendly=${friendly}"
 		fi
-		$base_curl_cmd="${base_curl_cmd} $host/sebal-scheduler/job)"
+		base_curl_cmd="${base_curl_cmd} $host/arrebol/job"
+        	response=$($base_curl_cmd)
+                echo $response
 	else
         	echo "Error: jdffilepath<$jdffilepath> not found."
                 exit 1
@@ -67,7 +69,7 @@ do_post() {
 do_stop() {
 	if [ $# -eq 1 ]
 	then
-        	response=$(curl -X DELETE "$host/sebal-scheduler/job/$1")
+        	response=$(curl -X DELETE "$host/arrebol/job/$1")
                 echo $response
         else
 		print_menu
@@ -76,35 +78,35 @@ do_stop() {
 }
 
 do_getui() {
-	response=$(curl -G "$host/sebal-scheduler/job/ui")
+	response=$(curl -G "$host/arrebol/job/ui")
 	echo $response
 }
 
 if [ $# -gt 0 ]
 then
 	op=$1
-     	case "$op" in
-		GET)
-			shift
-			do_get $@
-                ;;
-            	POST)
-                	shift
-			do_post $@
-                ;;
-            	STOP)
-                	shift
-			do_stop $@
-                ;;
-            	GETUI)
-                	shift
-			do_getui
-                ;;
-            	*)
-			print_menu
-			exit 1
-                ;;
-	esac
+    case "$op" in
+        GET)
+            shift
+            do_get $@
+            ;;
+        POST)
+            shift
+            do_post $@
+            ;;
+        STOP)
+            shift
+            do_stop $@
+            ;;
+        GETUI)
+            shift
+            do_getui
+            ;;
+        *)
+            print_menu
+            exit 1
+            ;;
+    esac
 else
 	print_menu
 	exit 1

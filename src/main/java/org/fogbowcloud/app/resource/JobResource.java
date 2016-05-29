@@ -1,15 +1,12 @@
 package org.fogbowcloud.app.resource;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.fogbowcloud.scheduler.core.model.JDFJob;
+import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.scheduler.core.model.Task;
-import org.fogbowcloud.scheduler.restlet.JDFSchedulerApplication;
-import org.fogbowcloud.scheduler.restlet.JDFSchedulerApplicationWithPersistence;
+import org.fogbowcloud.app.restlet.JDFSchedulerApplicationWithPersistence;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;
@@ -30,6 +27,8 @@ public class JobResource extends ServerResource {
 
 	private static final String JOB_ID = "id";
 
+	private static final String JOB_FRIENDLY = "name";
+	
 	private static final String STATE = "state";
 
 	private static final String TASK_ID = "taskid";
@@ -61,7 +60,7 @@ public class JobResource extends ServerResource {
 			for (JDFJob job : application.getAllJobs()){
 				JSONObject jJob = new JSONObject();
 				if (job.getName() != null) {
-					jJob.put("id: ", job.getId());
+					jJob.put("id", job.getId());
 					jJob.put("name", job.getName());
 					jJob.put("readytasks", job.getByState(TaskState.READY).size());
 				} else {
@@ -82,11 +81,15 @@ public class JobResource extends ServerResource {
 
 		JDFJob job = application.getJobById(jobId);
 		if (job == null) {
-			
 			job = application.getJobByName(jobId);
 			if (job == null) {
-			throw new ResourceException(404);
+				throw new ResourceException(404);
 			}
+			jsonJob.put(JOB_FRIENDLY, jobId);
+			jsonJob.put(JOB_ID, job.getId());
+		} else {
+			jsonJob.put(JOB_ID, jobId);
+			jsonJob.put(JOB_FRIENDLY, job.getName());
 		}
 		LOGGER.debug("JobID " + jobId + " is of job " + job);
 
@@ -117,7 +120,6 @@ public class JobResource extends ServerResource {
 			jobTasks.put(jTask);
 		};
 
-		jsonJob.put(JOB_ID, jobId);
 		jsonJob.put(JOB_TASKS, jobTasks);
 		return new StringRepresentation(jsonJob.toString(), MediaType.TEXT_PLAIN);
 	}

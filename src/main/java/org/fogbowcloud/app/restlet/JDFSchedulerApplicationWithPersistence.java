@@ -5,16 +5,15 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.log4j.Logger;
-import org.fogbowcloud.scheduler.client.JDFMain;
-import org.fogbowcloud.scheduler.client.JDFTasks;
+import org.fogbowcloud.app.model.JDFTasks;
 import org.fogbowcloud.scheduler.core.Scheduler;
-import org.fogbowcloud.scheduler.core.model.JDFJob;
+import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.scheduler.core.model.Job;
 import org.fogbowcloud.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.scheduler.core.model.Task;
 import org.fogbowcloud.scheduler.core.util.AppPropertiesConstants;
-import org.fogbowcloud.scheduler.restlet.resource.JobResource;
-import org.fogbowcloud.scheduler.restlet.resource.TaskResource4JDF;
+import org.fogbowcloud.app.resource.JobResource;
+import org.fogbowcloud.app.resource.TaskResource4JDF;
 import org.mapdb.DB;
 import org.restlet.Application;
 import org.restlet.Component;
@@ -66,11 +65,11 @@ public class JDFSchedulerApplicationWithPersistence extends Application {
 	public Restlet createInboundRoot() {
 
 		Router router = new Router(getContext());
-		router.attach("/sebal-scheduler/job/ui", JobEndpoint.class);
-		router.attach("/sebal-scheduler/job", JobResource.class);
-		router.attach("/sebal-scheduler/job/{jobpath}", JobResource.class);
-		router.attach("/sebal-scheduler/task/{taskId}", TaskResource4JDF.class);
-		router.attach("/sebal-scheduler/task/{taskId}/{varName}", TaskResource4JDF.class);
+		router.attach("/arrebol/job/ui", JobEndpoint.class);
+		router.attach("/arrebol/job", JobResource.class);
+		router.attach("/arrebol/job/{jobpath}", JobResource.class);
+		router.attach("/arrebol/task/{taskId}", TaskResource4JDF.class);
+		router.attach("/arrebol/task/{taskId}/{varName}", TaskResource4JDF.class);
 
 		return router;
 	}
@@ -159,10 +158,14 @@ public class JDFSchedulerApplicationWithPersistence extends Application {
 	public String stopJob(String jobId) {
 		Job jobToRemove = getJobByName(jobId);
 		if (jobToRemove != null){
+			jobMap.remove(jobId);
+			this.db.commit();
 			return scheduler.removeJob(jobToRemove.getId()).getId();
 		} else {
 			jobToRemove = getJobById(jobId);
 			if (jobToRemove != null){
+				jobMap.remove(jobId);
+				this.db.commit();
 				return scheduler.removeJob(jobToRemove.getId()).getId();
 			}
 		}
