@@ -21,23 +21,29 @@ import org.fogbowcloud.scheduler.infrastructure.InfrastructureProvider;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 /**
- * This class works as a translator. It receives a JDF file as an input
- * and creates a JDL file as the output.
- * @author Ricardo Araujo Santos - ricardo@lsd.ufcg.edu.br
+ * Arrebol entry point
  */
 public class ArrebolMain {
 
 	public static final Logger LOGGER = Logger.getLogger(ArrebolMain.class);
 
+	//FIXME: there is no need to declare these variables as class members. everything should be local to the main method
 	private static boolean blockWhileInitializing;
 	private static boolean isElastic;
+
+	//FIXME: two things: i) i wish we can remove all these threading complexity;
+	// ii) at least, move them to the bussiness logic code, not the ArrebolMain (it should handle mainly args parsing)
 	private static ManagerTimer executionMonitorTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
 	private static ManagerTimer schedulerTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
 
+	//FIXME: move to the bussiness logic?
 	private static ConcurrentMap<String, JDFJob> jobMapDB;
 	
 	private static Properties properties;
+
 	/**
+	 * //FIXME: doc the args instead of this JDF stuff
+	 *
 	 * This method receives a JDF file as input and requests the mapping of
 	 * its attributes to JDL attributes, generating a JDL file at the end
 	 * @param args 
@@ -45,13 +51,21 @@ public class ArrebolMain {
 	 */
 	public static void main( String[ ] args ) throws Exception {
 		properties = new Properties();
+		//FIXME: assign args[0] to a variable with a proper name
+		//FIXME: input is a bad name
+		//FIXME: handle file opening problems
 		FileInputStream input = new FileInputStream(args[0]);
 		properties.load(input);
+		//FIXME: use a constant to scheduler_conf_path
+		//FIXME: now I think that using a ref to a file within another config file is not ok. instead, use two file directly as args
 		FileInputStream schedconfiguration = new FileInputStream(properties.getProperty("scheduler_conf_path"));
 		properties.load(schedconfiguration);
+
+		//FIXME: this methods is odd
 		loadConfigFromProperties();
 
 		// Initialize a MapDB database
+		//FIXME: move this block to a method
 		final File pendingImageDownloadFile = new File(AppPropertiesConstants.DB_FILE_NAME);
 		final DB pendingImageDownloadDB = DBMaker.newFileDB(pendingImageDownloadFile).make();
 		pendingImageDownloadDB.checkShouldCreate(AppPropertiesConstants.DB_MAP_NAME);
@@ -61,7 +75,8 @@ public class ArrebolMain {
 		InfrastructureManager infraManager = new InfrastructureManager(null, isElastic, infraProvider,
 				properties);
 		infraManager.start(blockWhileInitializing);
-		
+
+		//FIXME: this block should be a method as well
 		ArrayList<JDFJob> legacyJobs = new ArrayList<JDFJob>();
 		
 		for (String key : jobMapDB.keySet()) {
@@ -71,7 +86,8 @@ public class ArrebolMain {
 			}
 			legacyJobs.add((JDFJob) jobMapDB.get(key));
 		}
-		LOGGER.debug("Propertie: " +properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
+
+		LOGGER.debug("Properties: " +properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
 			
 		Scheduler scheduler = new Scheduler(infraManager, legacyJobs.toArray(new JDFJob[legacyJobs.size()]));
 
