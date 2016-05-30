@@ -62,6 +62,11 @@ public class ArrebolMain {
 
 		//FIXME: this methods is odd
 		loadConfigFromProperties();
+		
+		if (!checkProperties(properties)) {
+			System.err.println("Missing required property, check Log for more information");
+			System.exit(1);
+		}
 
 		// Initialize a MapDB database
 		//FIXME: move this block to a method
@@ -123,6 +128,57 @@ public class ArrebolMain {
 		return (InfrastructureProvider) clazz;
 	}
 	
-	
+
+	private static boolean checkProperties(Properties properties) {
+		if (properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH) == null) {
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH + "was not set");
+			return false;
+		};
+		if (properties.getProperty(AppPropertiesConstants.INFRA_PROVIDER_CLASS_NAME) == null ){
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_PROVIDER_CLASS_NAME + "was not set");
+			return false;
+		};
+		if (properties.getProperty(AppPropertiesConstants.INFRA_RESOURCE_REUSE_TIMES) == null) {
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_REUSE_TIMES + "was not set");
+			return false;
+		};
+		if(properties.getProperty(AppPropertiesConstants.INFRA_ORDER_SERVICE_TIME) == null ){
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_ORDER_SERVICE_TIME + "was not set");
+			return false;
+		};
+
+		if (properties.getProperty(AppPropertiesConstants.INFRA_RESOURCE_SERVICE_TIME) == null){
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_SERVICE_TIME + "was not set");
+			return false;
+		};
+
+		if (properties.getProperty(AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME) == null){
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME + "was not set");
+			return false;
+		};
+
+		if (properties.getProperty(AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT)== null){
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT + "was not set");
+			return false;
+		};
+
+		if (properties.getProperty(AppPropertiesConstants.REST_SERVER_PORT)== null){
+			LOGGER.error("Required property " + AppPropertiesConstants.REST_SERVER_PORT + "was not set");
+			return false;
+		};
+		if (properties.getProperty(AppPropertiesConstants.EXECUTION_MONITOR_PERIOD) ==null){
+			LOGGER.error("Required property " + AppPropertiesConstants.EXECUTION_MONITOR_PERIOD + "was not set");
+			return false;
+		};
+		if(properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_BLOCK_CREATING)==null){
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_INITIAL_SPECS_BLOCK_CREATING + "was not set");
+			return false;
+		};
+		if (properties.getProperty(AppPropertiesConstants.INFRA_IS_STATIC) ==null){
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_IS_STATIC + "was not set");
+			return false;
+		};
+		return true;
+	}
 	
 }
