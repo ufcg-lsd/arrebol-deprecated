@@ -23,7 +23,7 @@ public class JobEndpoint extends ServerResource {
 	@Get
 	public Representation stopJob() throws IOException {
 
-		JDFSchedulerApplicationWithPersistence application = (JDFSchedulerApplicationWithPersistence) getApplication();
+		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 
 		JSONArray jArray = new JSONArray();
 

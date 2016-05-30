@@ -6,7 +6,7 @@
 	import org.fogbowcloud.app.model.JDFJob;
 	import org.fogbowcloud.scheduler.core.model.Job.TaskState;
 	import org.fogbowcloud.scheduler.core.model.Task;
-	import org.fogbowcloud.app.restlet.JDFSchedulerApplicationWithPersistence;
+	import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 	import org.restlet.data.Form;
 	import org.restlet.data.MediaType;
 	import org.restlet.representation.Representation;
@@ -51,7 +51,7 @@
 			LOGGER.info("Getting Jobs...");
 			String jobId = (String) getRequest().getAttributes().get(JOBPATH);
 			LOGGER.debug("JobId is " + jobId);
-			JDFSchedulerApplicationWithPersistence application = (JDFSchedulerApplicationWithPersistence) getApplication();
+			JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 			JSONObject jsonJob = new JSONObject();
 
 			JSONArray jobs = new JSONArray();
@@ -126,7 +126,7 @@
 
 		@Post
 		public StringRepresentation addJob(Representation entity) throws IOException {
-			JDFSchedulerApplicationWithPersistence application = (JDFSchedulerApplicationWithPersistence) getApplication();
+			JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 			final Form form = new Form(entity);
 
 			String JDFFilePath = form.getFirstValue(JDF_FILE_PATH);
@@ -155,7 +155,7 @@
 
 		@Delete
 		public StringRepresentation stopJob() {
-			JDFSchedulerApplicationWithPersistence application = (JDFSchedulerApplicationWithPersistence) getApplication();
+			JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 
 			String JDFString = (String) getRequest().getAttributes().get(JOBPATH);
 

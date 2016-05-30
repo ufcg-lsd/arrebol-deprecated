@@ -23,43 +23,73 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentMap;
 
-public class JDFSchedulerApplicationWithPersistence extends Application {
+public class JDFSchedulerApplication extends Application {
 
-    private Properties properties;
-    private Scheduler scheduler;
-    private DB db;
-    private ConcurrentMap<String, JDFJob> jobMap;
+    private final Properties properties;
+    private final Scheduler scheduler;
+    private final DB jobDB;
+    private final ConcurrentMap<String, JDFJob> jobMap;
 
-    public static final Logger LOGGER = Logger.getLogger(JDFSchedulerApplicationWithPersistence.class);
+    private Component restletComponent;
 
-    private Component c;
+    private static final Logger LOGGER = Logger.getLogger(JDFSchedulerApplication.class);
 
-    public JDFSchedulerApplicationWithPersistence(Scheduler scheduler, Properties properties, DB pendingImageDownloadDB) {
+    private int restServerPort;
+
+    public JDFSchedulerApplication(Scheduler scheduler, Properties properties, DB jobDB) {
+
+        //FIXME: remember to handle the IAE exception in ArrebolMain
+
+        //FIXME: load properties in a single method
+        //FIXME: raise error if we miss any important property
+
+        //FIXME; I do not like to pass the properties around I guess at this point we should use the variables.
+        // The problem is that task creation abuses using it
+        
+        if (scheduler == null) {
+            throw new IllegalArgumentException("scheduler cannot be null");
+        }
+        if (properties == null) {
+            throw new IllegalArgumentException("properties cannot be null");
+        }
+        if (properties == null) {
+            throw new IllegalArgumentException("jobDB cannot be null");
+        }
+
         this.properties = properties;
+        loadProperties();
+
         this.scheduler = scheduler;
-        this.db = pendingImageDownloadDB;
-        this.jobMap = db.getHashMap(AppPropertiesConstants.DB_MAP_NAME);
+
+        this.jobDB = jobDB;
+        this.jobMap = this.jobDB.getHashMap(AppPropertiesConstants.DB_MAP_NAME);
     }
 
+    private void loadProperties() {
+
+        if (!properties.contains(AppPropertiesConstants.REST_SERVER_PORT)) {
+            throw new IllegalArgumentException(AppPropertiesConstants.REST_SERVER_PORT + "is missing on properties.");
+        }
+        this.restServerPort = (Integer) properties.get(AppPropertiesConstants.REST_SERVER_PORT);
+    }
 
     public void startServer() throws Exception {
-        LOGGER.debug("Just Starting JDF Application");
+
+        LOGGER.info("Starting service on port: " + restServerPort);
+
         ConnectorService corsService = new ConnectorService();
-
         this.getServices().add(corsService);
-        LOGGER.debug("Starting application on port: " + properties.getProperty(AppPropertiesConstants.REST_SERVER_PORT));
-        c = new Component();
-        int port = Integer.parseInt(properties.getProperty(AppPropertiesConstants.REST_SERVER_PORT));
-        c.getServers().add(Protocol.HTTP, port);
-        c.getDefaultHost().attach(this);
-        LOGGER.debug("Starting JDF Application");
-        c.start();
 
+        restletComponent = new Component();
+        restletComponent.getServers().add(Protocol.HTTP, restServerPort);
+        restletComponent.getDefaultHost().attach(this);
 
+        restletComponent.start();
     }
 
     public void stopServer() throws Exception {
-        c.stop();
+        //FIXME: it is odd nobody is calling this
+        restletComponent.stop();
     }
 
     @Override
@@ -74,11 +104,6 @@ public class JDFSchedulerApplicationWithPersistence extends Application {
 
         return router;
     }
-
-    public Properties getProperties() {
-        return properties;
-    }
-
 
     public JDFJob getJobById(String jobId) {
         return (JDFJob) this.scheduler.getJobById(jobId);
@@ -101,10 +126,9 @@ public class JDFSchedulerApplicationWithPersistence extends Application {
         return job.getId();
     }
 
-    public List<Task> getTasksFromJDFFile(String jobId, String jdfFilePath, String schedPath, Properties properties) {
+    private List<Task> getTasksFromJDFFile(String jobId, String jdfFilePath, String schedPath, Properties properties) {
         return JDFTasks.getTasksFromJDFFile(jobId, jdfFilePath, schedPath, properties);
     }
-
 
     public ArrayList<JDFJob> getAllJobs() {
         ArrayList<JDFJob> jobList = new ArrayList<JDFJob>();
@@ -115,46 +139,22 @@ public class JDFSchedulerApplicationWithPersistence extends Application {
         return jobList;
     }
 
-    public Task getTaskById(String taskId) {
-        for (Job job : getAllJobs()) {
-            JDFJob jdfJob = (JDFJob) job;
-            Task task = jdfJob.getTaskById(taskId);
-            if (task != null) {
-                return task;
-            }
-        }
-        return null;
-    }
-
-    public void updateJob(JDFJob job) {
+    private void updateJob(JDFJob job) {
         this.jobMap.put(job.getId(), job);
-        this.db.commit();
+        this.jobDB.commit();
     }
-
-
-    public TaskState getTaskState(String taskId) {
-        for (Job job : getAllJobs()) {
-            JDFJob jdfJob = (JDFJob) job;
-            TaskState taskState = jdfJob.getTaskState(taskId);
-            if (taskState != null) {
-                return taskState;
-            }
-        }
-        return null;
-    }
-
 
     public String stopJob(String jobId) {
         Job jobToRemove = getJobByName(jobId);
         if (jobToRemove != null) {
             jobMap.remove(jobId);
-            this.db.commit();
+            this.jobDB.commit();
             return scheduler.removeJob(jobToRemove.getId()).getId();
         } else {
             jobToRemove = getJobById(jobId);
             if (jobToRemove != null) {
                 jobMap.remove(jobId);
-                this.db.commit();
+                this.jobDB.commit();
                 return scheduler.removeJob(jobToRemove.getId()).getId();
             }
         }
