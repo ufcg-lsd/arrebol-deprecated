@@ -14,10 +14,6 @@ public class JDFJob extends Job {
     private final String name;
     private String schedPath;
 
-    public JDFJob(String schedPath) {
-        this(schedPath, "");
-    }
-
     public JDFJob(String schedPath, String jobName) {
         super();
         this.schedPath = schedPath;
