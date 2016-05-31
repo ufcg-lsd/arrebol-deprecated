@@ -1,133 +1,118 @@
 package org.fogbowcloud.app.model;
 
-import java.util.UUID;
-
 import org.fogbowcloud.scheduler.core.model.Job;
-import org.fogbowcloud.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.scheduler.core.model.Task;
 
+import java.util.UUID;
 
-public class JDFJob extends Job{
+/**
+ * It add the job name, job name and sched path to the {@link Job} abstraction.
+ */
+public class JDFJob extends Job {
 
-	public String jobId = "0";
-	
-	public String name;
-	
-	public String schedPath;
-	
-	public JDFJob(){
-		super();
-		setJobId(UUID.randomUUID().toString());
-	}
-	
-	public void setJobId(String jobId) {
-		this.jobId = jobId;
-	}
-	
-	public void setSchedPath(String schedPath) {
-		this.schedPath = schedPath;
-	}
-	
-	public void setName(String name) {
-		this.name = name;
-	}
-	
-	public String getName() {
-		return this.name;
-	}
-	
-	
-	public String getSchedPath() {
-		return this.schedPath;
-	}
-	
-	@Override
-	public void run(Task task) {
-		tasksReady.remove(task);
-		tasksRunning.add(task);
-		
-	}
+    private final String jobId;
+    private final String name;
+    private String schedPath;
 
-	public void restart(Task task) {
-		tasksRunning.remove(task);
-		tasksReady.add(task);
-	}
-	
-	@Override
-	public void finish(Task task) {
-		tasksRunning.remove(task);
-		tasksCompleted.add(task);
-	}
+    public JDFJob(String schedPath, String jobName) {
+        super();
+        this.schedPath = schedPath;
+        this.name = jobName;
+        this.jobId = UUID.randomUUID().toString();
+    }
 
-	@Override
-	public void fail(Task task) {
-		tasksRunning.remove(task);
-		tasksFailed.add(task);		
-	}
+    public String getId() {
+        return jobId;
+    }
 
+    public String getName() {
+        return this.name;
+    }
 
-	public String getId() {
-		return jobId;
-	}
-	
-	public Task getCompletedTask(String taskId){
-		for (Task task : this.tasksCompleted){
-			if (task.getId().equals(taskId)){
-				return task;
-			}
-		}
-		return null;
-	}
+    public String getSchedPath() {
+        //FIXME: it is odd nobody uses it. Do we really need it?
+        return this.schedPath;
+    }
 
-	public Task getTaskById(String taskId) {
-		for (Task task : this.tasksCompleted){
-			if (task.getId().equals(taskId)){
-				return task;
-			}
-		}
-		for (Task task : this.tasksFailed){
-			if (task.getId().equals(taskId)){
-				return task;
-			}
-		}
-		for (Task task : this.tasksRunning){
-			if (task.getId().equals(taskId)){
-				return task;
-			}
-		}
-		for (Task task : this.tasksReady){
-			if (task.getId().equals(taskId)){
-				return task;
-			}
-		}
-		return null;
-	}
-	
-	public TaskState getTaskState(String taskId) {
-		for (Task task : this.tasksCompleted){
-			if (task.getId().equals(taskId)){
-				return TaskState.COMPLETED;
-			}
-		}
-		for (Task task : this.tasksFailed){
-			if (task.getId().equals(taskId)){
-				return TaskState.FAILED;
-			}
-		}
-		for (Task task : this.tasksRunning){
-			if (task.getId().equals(taskId)){
-				return TaskState.RUNNING;
-			}
-		}
-		for (Task task : this.tasksReady){
-			if (task.getId().equals(taskId)){
-				return TaskState.READY;
-			}
-		}
-		return null;
-	}
-	
-	
-	
-	
+    @Override
+    public void run(Task task) {
+        tasksReady.remove(task);
+        tasksRunning.add(task);
+
+    }
+
+    public void restart(Task task) {
+        tasksRunning.remove(task);
+        tasksReady.add(task);
+    }
+
+    @Override
+    public void finish(Task task) {
+        tasksRunning.remove(task);
+        tasksCompleted.add(task);
+    }
+
+    @Override
+    public void fail(Task task) {
+        tasksRunning.remove(task);
+        tasksFailed.add(task);
+    }
+
+    public Task getCompletedTask(String taskId) {
+        for (Task task : this.tasksCompleted) {
+            if (task.getId().equals(taskId)) {
+                return task;
+            }
+        }
+        return null;
+    }
+
+    public Task getTaskById(String taskId) {
+        for (Task task : this.tasksCompleted) {
+            if (task.getId().equals(taskId)) {
+                return task;
+            }
+        }
+        for (Task task : this.tasksFailed) {
+            if (task.getId().equals(taskId)) {
+                return task;
+            }
+        }
+        for (Task task : this.tasksRunning) {
+            if (task.getId().equals(taskId)) {
+                return task;
+            }
+        }
+        for (Task task : this.tasksReady) {
+            if (task.getId().equals(taskId)) {
+                return task;
+            }
+        }
+        return null;
+    }
+
+    public TaskState getTaskState(String taskId) {
+        for (Task task : this.tasksCompleted) {
+            if (task.getId().equals(taskId)) {
+                return TaskState.COMPLETED;
+            }
+        }
+        for (Task task : this.tasksFailed) {
+            if (task.getId().equals(taskId)) {
+                return TaskState.FAILED;
+            }
+        }
+        for (Task task : this.tasksRunning) {
+            if (task.getId().equals(taskId)) {
+                return TaskState.RUNNING;
+            }
+        }
+        for (Task task : this.tasksReady) {
+            if (task.getId().equals(taskId)) {
+                return TaskState.READY;
+            }
+        }
+        return null;
+    }
+
 }

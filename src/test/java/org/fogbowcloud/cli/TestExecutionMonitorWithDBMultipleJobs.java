@@ -12,7 +12,7 @@ import static org.mockito.Mockito.verify;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.fogbowcloud.scheduler.core.model.JDFJob;
+import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.scheduler.core.model.Resource;
 import org.fogbowcloud.scheduler.core.model.Task;
