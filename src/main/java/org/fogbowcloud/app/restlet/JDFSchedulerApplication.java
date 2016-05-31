@@ -11,6 +11,7 @@ import org.fogbowcloud.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.scheduler.core.model.Task;
 import org.fogbowcloud.scheduler.core.util.AppPropertiesConstants;
 import org.mapdb.DB;
+import org.ourgrid.common.specification.main.CompilerException;
 import org.restlet.Application;
 import org.restlet.Component;
 import org.restlet.Restlet;
@@ -109,25 +110,22 @@ public class JDFSchedulerApplication extends Application {
         return (JDFJob) this.scheduler.getJobById(jobId);
     }
 
-    public String addJob(String jdfFilePath, String schedPath) {
+    public String addJob(String jdfFilePath, String schedPath) throws CompilerException {
         return addJob(jdfFilePath, schedPath, "");
     }
 
-    public String addJob(String jdfFilePath, String schedPath, String friendlyName) {
+    public String addJob(String jdfFilePath, String schedPath, String friendlyName) throws CompilerException {
 
         JDFJob job = new JDFJob(schedPath, friendlyName);
 
-        List<Task> taskList = getTasksFromJDFFile(job.getId(), jdfFilePath, schedPath, properties);
+        List<Task> taskList = JDFTasks.getTasksFromJDFFile(job.getId(), jdfFilePath, schedPath, properties);
+
         for (Task task : taskList) {
             job.addTask(task);
         }
 
         this.scheduler.addJob(job);
         return job.getId();
-    }
-
-    private List<Task> getTasksFromJDFFile(String jobId, String jdfFilePath, String schedPath, Properties properties) {
-        return JDFTasks.getTasksFromJDFFile(jobId, jdfFilePath, schedPath, properties);
     }
 
     public ArrayList<JDFJob> getAllJobs() {

@@ -21,101 +21,106 @@ public class JDFTasks {
     //FIXME: it is nobody is using this
     private static final String SCHED_PATH = "SchedPath";
 
+    //FIXME: what is this?
     private static final String SANDBOX = "sandbox";
+
+    //FIXME: what is this?
     private static final String LOCAL_OUTPUT_FOLDER = "local_output";
     private static final String REMOTE_OUTPUT_FOLDER = "remote_output_folder";
-    private static final String PRIVATE_KEY_FILEPATH = "private_key_filepath";
-    private static String standardImage = "fogbow-ubuntu";
-    private static final Logger LOGGER = Logger.getLogger(JDFTasks.class);
-    public static final String PUBLIC_KEY_CONSTANT = "public_key";
 
+    private static final String PRIVATE_KEY_FILEPATH = "private_key_filepath";
+
+    private static String standardImage = "fogbow-ubuntu";
+
+    private static final String PUBLIC_KEY_CONSTANT = "public_key";
     private final static String SSH_SCP_PRECOMMAND = "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no";
 
-    public static List<Task> getTasksFromJDFFile(String jobID, String jdfFilePath, String schedPath, Properties properties) {
+    private static final Logger LOGGER = Logger.getLogger(JDFTasks.class);
+
+    /**
+     *
+     * @param jobID
+     * @param jdfFilePath
+     * @param schedPath
+     * @param properties
+     * @return
+     * @throws IllegalArgumentException
+     * @throws CompilerException
+     */
+    public static List<Task> getTasksFromJDFFile(String jobID, String jdfFilePath, String schedPath, Properties properties) throws CompilerException {
 
         ArrayList<Task> taskList = new ArrayList<Task>();
 
-
         if (jdfFilePath == null) {
-            LOGGER.error("Invalid jdf file: " + jdfFilePath);
-            return null;
+            throw new IllegalArgumentException("jdfFilePath cannot be null");
         }
 
         File file = new File(jdfFilePath);
+
         if (file.exists()) {
-
             if (file.canRead()) {
-
                 //Compiling JDF
                 CommonCompiler commonCompiler = new CommonCompiler();
-                try {
-                    commonCompiler.compile(jdfFilePath, FileType.JDF);
+                commonCompiler.compile(jdfFilePath, FileType.JDF);
 
-                    JobSpecification jobSpec = (JobSpecification) commonCompiler.getResult().get(0);
+                JobSpecification jobSpec = (JobSpecification) commonCompiler.getResult().get(0);
 
-                    //Mapping attributes
-                    int taskID = 0;
-                    String jobRequirementes = jobSpec.getRequirements();
-                    for (TaskSpecification taskSpec : jobSpec.getTaskSpecs()) {
-                        jobRequirementes = jobRequirementes.replace("(", "").replace(")", "");
+                //Mapping attributes
 
-                        String image = standardImage;
-
-                        for (String req : jobRequirementes.split("and")) {
-                            if (req.trim().startsWith("image")) {
-                                image = req.split("==")[1].trim();
-                            }
-                        }
-
-                        Specification spec = new Specification(image, properties.getProperty(AppPropertiesConstants.INFRA_FOGBOW_USERNAME),
-                                properties.getProperty(PUBLIC_KEY_CONSTANT), properties.getProperty(PRIVATE_KEY_FILEPATH));
-                        LOGGER.debug("===============================================================");
-                        LOGGER.debug(properties.getProperty(AppPropertiesConstants.INFRA_FOGBOW_USERNAME));
-                        LOGGER.debug(properties.getProperty("local.output"));
-                        int i = 0;
-                        for (String req : jobRequirementes.split("and")) {
-                            if (i == 0 && !req.trim().startsWith("image")) {
-                                i++;
-                                spec.addRequirement(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS, req);
-
-                            } else if (!req.trim().startsWith("image")) {
-                                spec.addRequirement(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS, spec.getRequirementValue(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS) + " && " + req);
-                            }
-                        }
-
-                        spec.addRequirement(FogbowRequirementsHelper.METADATA_FOGBOW_REQUEST_TYPE, "one-time");
-
-                        Task task = new TaskImpl("TaskNumber" + taskID, spec);
-                        task.putMetadata(TaskImpl.METADATA_REMOTE_OUTPUT_FOLDER, properties.getProperty(REMOTE_OUTPUT_FOLDER));
-                        task.putMetadata(TaskImpl.METADATA_LOCAL_OUTPUT_FOLDER, schedPath + properties.getProperty(LOCAL_OUTPUT_FOLDER));
-                        task.putMetadata(TaskImpl.METADATA_SANDBOX, SANDBOX);
-                        task.putMetadata(TaskImpl.METADATA_REMOTE_COMMAND_EXIT_PATH, properties.getProperty(REMOTE_OUTPUT_FOLDER) + "/exit");
-
-                        parseInputBlocks(jobID, taskSpec, task, schedPath);
-
-                        parseExecutable(jobID, taskSpec, task);
-
-                        parseOutputBlocks(jobID, taskSpec, task, schedPath);
-
-                        parseEpilogue(jobID, taskSpec, task);
-
-
-                        taskList.add(task);
-                        LOGGER.debug("Task specs: " + task.getSpecification().toString());
-                        taskID++;
+                //FIXME: what does this block do?
+                String jobRequirementes = jobSpec.getRequirements();
+                jobRequirementes = jobRequirementes.replace("(", "").replace(")", "");
+                String image = standardImage;
+                for (String req : jobRequirementes.split("and")) {
+                    if (req.trim().startsWith("image")) {
+                        image = req.split("==")[1].trim();
                     }
-
-                } catch (CompilerException e) {
-                    LOGGER.error("Problems with your JDF file. See errors below:", e);
-                } catch (Exception e) {
-                    LOGGER.error(e);
                 }
+
+                Specification spec = new Specification(image, properties.getProperty(AppPropertiesConstants.INFRA_FOGBOW_USERNAME),
+                        properties.getProperty(PUBLIC_KEY_CONSTANT), properties.getProperty(PRIVATE_KEY_FILEPATH));
+
+                LOGGER.debug(properties.getProperty(AppPropertiesConstants.INFRA_FOGBOW_USERNAME));
+
+                int i = 0;
+                for (String req : jobRequirementes.split("and")) {
+                    if (i == 0 && !req.trim().startsWith("image")) {
+                        i++;
+                        spec.addRequirement(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS, req);
+
+                    } else if (!req.trim().startsWith("image")) {
+                        spec.addRequirement(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS, spec.getRequirementValue(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS) + " && " + req);
+                    }
+                }
+
+                spec.addRequirement(FogbowRequirementsHelper.METADATA_FOGBOW_REQUEST_TYPE, "one-time");
+
+                int taskID = 0;
+                for (TaskSpecification taskSpec : jobSpec.getTaskSpecs()) {
+
+                    Task task = new TaskImpl("TaskNumber" + taskID, spec);
+                    task.putMetadata(TaskImpl.METADATA_REMOTE_OUTPUT_FOLDER, properties.getProperty(REMOTE_OUTPUT_FOLDER));
+                    task.putMetadata(TaskImpl.METADATA_LOCAL_OUTPUT_FOLDER, schedPath + properties.getProperty(LOCAL_OUTPUT_FOLDER));
+                    task.putMetadata(TaskImpl.METADATA_SANDBOX, SANDBOX);
+                    task.putMetadata(TaskImpl.METADATA_REMOTE_COMMAND_EXIT_PATH, properties.getProperty(REMOTE_OUTPUT_FOLDER) + "/exit");
+
+                    parseInputBlocks(jobID, taskSpec, task, schedPath);
+                    parseExecutable(jobID, taskSpec, task);
+                    parseOutputBlocks(jobID, taskSpec, task, schedPath);
+                    parseEpilogue(jobID, taskSpec, task);
+
+                    taskList.add(task);
+                    LOGGER.debug("Task spec: " + task.getSpecification().toString());
+                    taskID++;
+                }
+
             } else {
-                LOGGER.error("Check your permissions for file: " + file.getAbsolutePath());
+                throw new IllegalArgumentException("Unable to read file: " + file.getAbsolutePath() + " check your permissions.");
             }
         } else {
-            LOGGER.error("File: " + file.getAbsolutePath() + " does not exists.");
+            throw new IllegalArgumentException("File: " + file.getAbsolutePath() + " does not exists.");
         }
+
         return taskList;
     }
 
@@ -125,14 +130,13 @@ public class JDFTasks {
      * @param jobID
      * @param taskSpec The task specification {@link TaskSpecification}
      * @param task     The output expression containing the JDL job
-     * @throws Exception
+     * @throws IllegalArgumentException
      */
-    private static void parseExecutable(String jobID, TaskSpecification taskSpec, Task task) throws Exception {
+    private static void parseExecutable(String jobID, TaskSpecification taskSpec, Task task) throws IllegalArgumentException {
 
         String exec = taskSpec.getRemoteExec();
         if (exec.contains(";")) {
-            LOGGER.error("Task \n-------\n" + taskSpec + " \n-------\ncould not be parsed as it contains more than one executable command.");
-            throw new Exception();
+            throw new IllegalArgumentException("Task \n-------\n" + taskSpec + " \n-------\ncould not be parsed as it contains more than one executable command.");
         }
 
         exec = parseEnvironmentVariables(jobID, task.getId(), exec);
@@ -140,8 +144,6 @@ public class JDFTasks {
         Command command = new Command("\"" + exec + " ; echo 0 > " + task.getMetadata(TaskImpl.METADATA_REMOTE_COMMAND_EXIT_PATH) + "\"", Command.Type.REMOTE);
         LOGGER.debug("Remote command:" + exec);
         task.addCommand(command);
-        //		}
-
     }
 
     /**
@@ -152,7 +154,7 @@ public class JDFTasks {
      * @return A string with the environment variables replaced
      */
     private static String parseEnvironmentVariables(String jobID, String taskID, String string) {
-
+        //FIXME: do we still need playpen and and storage variables ?
         return string.replaceAll("\\$JOB", jobID).replaceAll("\\$TASK",
                 taskID).replaceAll("\\$PLAYPEN", ".").replaceAll("\\$STORAGE", ".");
     }
@@ -184,7 +186,6 @@ public class JDFTasks {
      * @param jobID
      * @param taskSpec The task specification {@link TaskSpecification}
      * @param task     The output expression containing the JDL job
-     * @param string
      */
     private static void parseInputBlocks(String jobID, TaskSpecification taskSpec, Task task, String schedPath) {
 
@@ -252,7 +253,6 @@ public class JDFTasks {
     }
 
     private static Command stageOutCommand(String remoteFile, String localFile) {
-
         String scpCommand = "scp " + SSH_SCP_PRECOMMAND + " -P $" + Resource.ENV_SSH_PORT + " -i $" + Resource.ENV_PRIVATE_KEY_FILE + " $"
                 + Resource.ENV_SSH_USER + "@" + "$" + Resource.ENV_HOST + ":" + remoteFile + " " + localFile;
         return new Command(scpCommand, Command.Type.EPILOGUE);
