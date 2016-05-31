@@ -81,7 +81,6 @@ public class JDFTasks {
 								properties.getProperty(PUBLIC_KEY_CONSTANT) , properties.getProperty(PRIVATE_KEY_FILEPATH));
 						LOGGER.debug("===============================================================");
 						LOGGER.debug(properties.getProperty(AppPropertiesConstants.INFRA_FOGBOW_USERNAME));
-						LOGGER.debug(properties.getProperty("local.output"));
 						int i = 0;
 						for (String req : jobRequirementes.split("and") ){
 							if (i == 0 && !req.trim().startsWith("image")) {

@@ -138,73 +138,61 @@ public class ArrebolMain {
 	
 
 	private static boolean checkProperties(Properties properties) {
-		if (!properties.contains(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH)) {
-			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH + "was not set");
+		if (!properties.containsKey(AppPropertiesConstants.INFRA_PROVIDER_CLASS_NAME)){
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_PROVIDER_CLASS_NAME + " was not set");
 			return false;
 		};
-		if (!properties.contains(AppPropertiesConstants.INFRA_PROVIDER_CLASS_NAME)){
-			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_PROVIDER_CLASS_NAME + "was not set");
-			return false;
-		};
-		if (!properties.contains(AppPropertiesConstants.INFRA_RESOURCE_REUSE_TIMES)) {
-			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_REUSE_TIMES + "was not set");
-			return false;
-		};
-		if(!properties.contains(AppPropertiesConstants.INFRA_ORDER_SERVICE_TIME)){
-			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_ORDER_SERVICE_TIME + "was not set");
+		if(!properties.containsKey(AppPropertiesConstants.INFRA_ORDER_SERVICE_TIME)){
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_ORDER_SERVICE_TIME + " was not set");
 			return false;
 		};
 
-		if (!properties.contains(AppPropertiesConstants.INFRA_RESOURCE_SERVICE_TIME)){
-			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_SERVICE_TIME + "was not set");
+		if (!properties.containsKey(AppPropertiesConstants.INFRA_RESOURCE_SERVICE_TIME)){
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_SERVICE_TIME + " was not set");
 			return false;
 		};
 
-		if (!properties.contains(AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME)){
-			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME + "was not set");
+		if (!properties.containsKey(AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME)){
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME + " was not set");
 			return false;
 		};
 
-		if (!properties.contains(AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT)){
-			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT + "was not set");
+		if (!properties.containsKey(AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT)){
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT + " was not set");
 			return false;
 		};
 
-		if (!properties.contains(AppPropertiesConstants.REST_SERVER_PORT)){
-			LOGGER.error("Required property " + AppPropertiesConstants.REST_SERVER_PORT + "was not set");
+		if (!properties.containsKey(AppPropertiesConstants.REST_SERVER_PORT)){
+			LOGGER.error("Required property " + AppPropertiesConstants.REST_SERVER_PORT + " was not set");
 			return false;
 		};
-		if (!properties.contains(AppPropertiesConstants.EXECUTION_MONITOR_PERIOD)){
-			LOGGER.error("Required property " + AppPropertiesConstants.EXECUTION_MONITOR_PERIOD + "was not set");
+		if (!properties.containsKey(AppPropertiesConstants.EXECUTION_MONITOR_PERIOD)){
+			LOGGER.error("Required property " + AppPropertiesConstants.EXECUTION_MONITOR_PERIOD + " was not set");
 			return false;
 		};
-		if(!properties.contains(AppPropertiesConstants.INFRA_INITIAL_SPECS_BLOCK_CREATING)){
-			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_INITIAL_SPECS_BLOCK_CREATING + "was not set");
+		if (!properties.containsKey(AppPropertiesConstants.INFRA_IS_STATIC)){
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_IS_STATIC + " was not set");
 			return false;
 		};
-		if (!properties.contains(AppPropertiesConstants.INFRA_IS_STATIC)){
-			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_IS_STATIC + "was not set");
-			return false;
-		};
-		if (!properties.contains(AppPropertiesConstants.INFRA_FOGBOW_USERNAME)) {
-			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_FOGBOW_USERNAME + "was not set");
+		if (!properties.containsKey(AppPropertiesConstants.INFRA_FOGBOW_USERNAME)) {
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_FOGBOW_USERNAME + " was not set");
 			return false;
 		}
-		if (!properties.contains(PUBLIC_KEY_CONSTANT)){
-			LOGGER.error("Required property " + PUBLIC_KEY_CONSTANT + "was not set");
+		if (!properties.containsKey(PUBLIC_KEY_CONSTANT)){
+			LOGGER.error("Required property " + PUBLIC_KEY_CONSTANT + " was not set");
 			return false;
 		}
-		if (!properties.contains(PRIVATE_KEY_FILEPATH)){
-			LOGGER.error("Required property " + PRIVATE_KEY_FILEPATH + "was not set");
+		if (!properties.containsKey(PRIVATE_KEY_FILEPATH)){
+			LOGGER.error("Required property " + PRIVATE_KEY_FILEPATH + " was not set");
 			return false;
 		}
-		if (!properties.contains(REMOTE_OUTPUT_FOLDER)){
-			LOGGER.error("Required property " + REMOTE_OUTPUT_FOLDER + "was not set");
+		if (!properties.containsKey(REMOTE_OUTPUT_FOLDER)){
+			LOGGER.error("Required property " + REMOTE_OUTPUT_FOLDER + " was not set");
 			return false;
 		}
 		
-		if (!properties.contains(LOCAL_OUTPUT_FOLDER)) {
-			LOGGER.error("Required property " + LOCAL_OUTPUT_FOLDER + "was not set");
+		if (!properties.containsKey(LOCAL_OUTPUT_FOLDER)) {
+			LOGGER.error("Required property " + LOCAL_OUTPUT_FOLDER + " was not set");
 			return false;
 		}
 		LOGGER.debug("All properties are set");
