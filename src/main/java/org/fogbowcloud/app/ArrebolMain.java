@@ -8,7 +8,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
-import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.scheduler.core.ManagerTimer;
 import org.fogbowcloud.scheduler.core.Scheduler;
 import org.fogbowcloud.app.model.JDFJob;
@@ -17,6 +16,7 @@ import org.fogbowcloud.scheduler.core.model.Task;
 import org.fogbowcloud.scheduler.core.util.AppPropertiesConstants;
 import org.fogbowcloud.scheduler.infrastructure.InfrastructureManager;
 import org.fogbowcloud.scheduler.infrastructure.InfrastructureProvider;
+import org.fogbowcloud.scheduler.restlet.JDFSchedulerApplicationWithPersistence;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 /**
@@ -30,6 +30,14 @@ public class ArrebolMain {
 	private static boolean blockWhileInitializing;
 	private static boolean isElastic;
 
+	public static final String PUBLIC_KEY_CONSTANT = "public_key";
+	
+	private static final String PRIVATE_KEY_FILEPATH = "private_key_filepath";
+
+	private static final String LOCAL_OUTPUT_FOLDER = "local_output";
+
+	private static final String REMOTE_OUTPUT_FOLDER = "remote_output_folder";
+	
 	//FIXME: two things: i) i wish we can remove all these threading complexity;
 	// ii) at least, move them to the bussiness logic code, not the ArrebolMain (it should handle mainly args parsing)
 	private static ManagerTimer executionMonitorTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
@@ -59,14 +67,14 @@ public class ArrebolMain {
 		//FIXME: now I think that using a ref to a file within another config file is not ok. instead, use two file directly as args
 		FileInputStream schedconfiguration = new FileInputStream(properties.getProperty("scheduler_conf_path"));
 		properties.load(schedconfiguration);
-
-		//FIXME: this methods is odd
-		loadConfigFromProperties();
-		
 		if (!checkProperties(properties)) {
 			System.err.println("Missing required property, check Log for more information");
 			System.exit(1);
 		}
+
+		//FIXME: this methods is odd
+		loadConfigFromProperties();
+		
 
 		// Initialize a MapDB database
 		//FIXME: move this block to a method
@@ -98,7 +106,7 @@ public class ArrebolMain {
 		
 		LOGGER.debug("Application to be started on port: " +properties.getProperty(AppPropertiesConstants.REST_SERVER_PORT));
 		ExecutionMonitorWithDB executionMonitor = new ExecutionMonitorWithDB(scheduler, pendingImageDownloadDB);
-		JDFSchedulerApplication app = new JDFSchedulerApplication(scheduler, properties, pendingImageDownloadDB);
+		JDFSchedulerApplicationWithPersistence app = new JDFSchedulerApplicationWithPersistence(scheduler, properties, pendingImageDownloadDB);
 		app.startServer();
 
 		
@@ -130,54 +138,64 @@ public class ArrebolMain {
 	
 
 	private static boolean checkProperties(Properties properties) {
-		if (properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH) == null) {
-			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH + "was not set");
+		if (!properties.containsKey(AppPropertiesConstants.INFRA_PROVIDER_CLASS_NAME)){
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_PROVIDER_CLASS_NAME + " was not set");
 			return false;
 		};
-		if (properties.getProperty(AppPropertiesConstants.INFRA_PROVIDER_CLASS_NAME) == null ){
-			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_PROVIDER_CLASS_NAME + "was not set");
-			return false;
-		};
-		if (properties.getProperty(AppPropertiesConstants.INFRA_RESOURCE_REUSE_TIMES) == null) {
-			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_REUSE_TIMES + "was not set");
-			return false;
-		};
-		if(properties.getProperty(AppPropertiesConstants.INFRA_ORDER_SERVICE_TIME) == null ){
-			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_ORDER_SERVICE_TIME + "was not set");
+		if(!properties.containsKey(AppPropertiesConstants.INFRA_ORDER_SERVICE_TIME)){
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_ORDER_SERVICE_TIME + " was not set");
 			return false;
 		};
 
-		if (properties.getProperty(AppPropertiesConstants.INFRA_RESOURCE_SERVICE_TIME) == null){
-			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_SERVICE_TIME + "was not set");
+		if (!properties.containsKey(AppPropertiesConstants.INFRA_RESOURCE_SERVICE_TIME)){
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_SERVICE_TIME + " was not set");
 			return false;
 		};
 
-		if (properties.getProperty(AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME) == null){
-			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME + "was not set");
+		if (!properties.containsKey(AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME)){
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME + " was not set");
 			return false;
 		};
 
-		if (properties.getProperty(AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT)== null){
-			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT + "was not set");
+		if (!properties.containsKey(AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT)){
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT + " was not set");
 			return false;
 		};
 
-		if (properties.getProperty(AppPropertiesConstants.REST_SERVER_PORT)== null){
-			LOGGER.error("Required property " + AppPropertiesConstants.REST_SERVER_PORT + "was not set");
+		if (!properties.containsKey(AppPropertiesConstants.REST_SERVER_PORT)){
+			LOGGER.error("Required property " + AppPropertiesConstants.REST_SERVER_PORT + " was not set");
 			return false;
 		};
-		if (properties.getProperty(AppPropertiesConstants.EXECUTION_MONITOR_PERIOD) ==null){
-			LOGGER.error("Required property " + AppPropertiesConstants.EXECUTION_MONITOR_PERIOD + "was not set");
+		if (!properties.containsKey(AppPropertiesConstants.EXECUTION_MONITOR_PERIOD)){
+			LOGGER.error("Required property " + AppPropertiesConstants.EXECUTION_MONITOR_PERIOD + " was not set");
 			return false;
 		};
-		if(properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_BLOCK_CREATING)==null){
-			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_INITIAL_SPECS_BLOCK_CREATING + "was not set");
+		if (!properties.containsKey(AppPropertiesConstants.INFRA_IS_STATIC)){
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_IS_STATIC + " was not set");
 			return false;
 		};
-		if (properties.getProperty(AppPropertiesConstants.INFRA_IS_STATIC) ==null){
-			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_IS_STATIC + "was not set");
+		if (!properties.containsKey(AppPropertiesConstants.INFRA_FOGBOW_USERNAME)) {
+			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_FOGBOW_USERNAME + " was not set");
 			return false;
-		};
+		}
+		if (!properties.containsKey(PUBLIC_KEY_CONSTANT)){
+			LOGGER.error("Required property " + PUBLIC_KEY_CONSTANT + " was not set");
+			return false;
+		}
+		if (!properties.containsKey(PRIVATE_KEY_FILEPATH)){
+			LOGGER.error("Required property " + PRIVATE_KEY_FILEPATH + " was not set");
+			return false;
+		}
+		if (!properties.containsKey(REMOTE_OUTPUT_FOLDER)){
+			LOGGER.error("Required property " + REMOTE_OUTPUT_FOLDER + " was not set");
+			return false;
+		}
+		
+		if (!properties.containsKey(LOCAL_OUTPUT_FOLDER)) {
+			LOGGER.error("Required property " + LOCAL_OUTPUT_FOLDER + " was not set");
+			return false;
+		}
+		LOGGER.debug("All properties are set");
 		return true;
 	}
 	
