@@ -14,11 +14,11 @@ print_menu() {
 do_get() {
 	if [ $# -eq 0 ]
 	then
-		response=$(curl -G "$host/arrebol/job")
+		response=$(curl -G "$host/arrebol/job" 2> /dev/null)
 		echo $response
 	elif [ $# -eq 1 ]
 	then
-        	response=$(curl -G "$host/arrebol/job/$1")
+        	response=$(curl -G "$host/arrebol/job/$1" 2> /dev/null)
         	echo $response
 	else
 		print_menu
@@ -58,7 +58,7 @@ do_post() {
 			base_curl_cmd="${base_curl_cmd} --data friendly=${friendly}"
 		fi
 		base_curl_cmd="${base_curl_cmd} $host/arrebol/job"
-        	response=$($base_curl_cmd)
+        	response=$($base_curl_cmd 2> /dev/null)
                 echo $response
 	else
         	echo "Error: jdffilepath<$jdffilepath> not found."
@@ -69,7 +69,7 @@ do_post() {
 do_stop() {
 	if [ $# -eq 1 ]
 	then
-        	response=$(curl -X DELETE "$host/arrebol/job/$1")
+        	response=$(curl -X DELETE "$host/arrebol/job/$1" 2> /dev/null)
                 echo $response
         else
 		print_menu
@@ -78,7 +78,7 @@ do_stop() {
 }
 
 do_getui() {
-	response=$(curl -G "$host/arrebol/job/ui")
+	response=$(curl -G "$host/arrebol/job/ui" 2> /dev/null)
 	echo $response
 }
 
