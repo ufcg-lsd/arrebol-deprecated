@@ -68,10 +68,10 @@ public class JDFSchedulerApplication extends Application {
 
     private void loadProperties() {
 
-        if (!properties.contains(AppPropertiesConstants.REST_SERVER_PORT)) {
+        if (!properties.containsKey(AppPropertiesConstants.REST_SERVER_PORT)) {
             throw new IllegalArgumentException(AppPropertiesConstants.REST_SERVER_PORT + "is missing on properties.");
         }
-        this.restServerPort = (Integer) properties.get(AppPropertiesConstants.REST_SERVER_PORT);
+        this.restServerPort = Integer.valueOf((String) properties.get(AppPropertiesConstants.REST_SERVER_PORT));
     }
 
     public void startServer() throws Exception {
