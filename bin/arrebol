@@ -48,14 +48,14 @@ do_post() {
 	then
 		shift
         	define_parameters $@
-		base_curl_cmd="curl -X POST --data jdffilepath=${jdffilepath}"
+		base_curl_cmd="curl -X POST --form jdffilepath=@${jdffilepath}"
                 if [[ $schedpath ]]
 		then
-			base_curl_cmd="${base_curl_cmd} --data schedpath=${schedpath}"
+			base_curl_cmd="${base_curl_cmd} --form schedpath=${schedpath}"
 		fi
                 if [[ $friendly ]]
 		then
-			base_curl_cmd="${base_curl_cmd} --data friendly=${friendly}"
+			base_curl_cmd="${base_curl_cmd} --form friendly=${friendly}"
 		fi
 		base_curl_cmd="${base_curl_cmd} $host/arrebol/job"
         	response=$($base_curl_cmd)
