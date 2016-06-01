@@ -1,20 +1,35 @@
 package org.fogbowcloud.app.resource;
 
-import com.amazonaws.util.json.JSONArray;
-import com.amazonaws.util.json.JSONObject;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.scheduler.core.model.Task;
 import org.ourgrid.common.specification.main.CompilerException;
-import org.restlet.data.Form;
 import org.restlet.data.MediaType;
+import org.restlet.ext.fileupload.RestletFileUpload;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
-import org.restlet.resource.*;
+import org.restlet.resource.Delete;
+import org.restlet.resource.Get;
+import org.restlet.resource.Post;
+import org.restlet.resource.ResourceException;
+import org.restlet.resource.ServerResource;
 
-import java.io.IOException;
+import com.amazonaws.util.json.JSONArray;
+import com.amazonaws.util.json.JSONObject;
 
 public class JobResource extends ServerResource {
     private static final String JOB_LIST = "Jobs";
@@ -125,40 +140,90 @@ public class JobResource extends ServerResource {
     }
 
     @Post
-    public StringRepresentation addJob(Representation entity) throws IOException {
+    public StringRepresentation addJob(Representation entity) throws IOException, FileUploadException {
+    	if (entity == null && !MediaType.MULTIPART_FORM_DATA
+    			.equals(entity.getMediaType(), true)) {
+    		throw new ResourceException(HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE);
+    	}
+    	
+    	DiskFileItemFactory factory = new DiskFileItemFactory();
+    	factory.setSizeThreshold(1000240);
+    	RestletFileUpload upload = new RestletFileUpload(factory);
+    	FileItemIterator fileIterator = upload.getItemIterator(entity);
+    	
+    	Map<String, File> fileMap = new HashMap<String, File>();
+    	fileMap.put(JDF_FILE_PATH, null);
+    	
+    	Map<String, String> fieldMap = new HashMap<String, String>();
+    	fieldMap.put(SCHED_PATH, null);
+    	fieldMap.put(FRIENDLY, null);
+    	
+    	loadFields(fileIterator, fieldMap, fileMap);
+    	
+    	File jdf = fileMap.get(JDF_FILE_PATH);
+		if (jdf == null) {
+			throw new ResourceException(HttpStatus.SC_BAD_REQUEST);
+		}
+		
+		String friendlyName = fieldMap.get(FRIENDLY);
+		String schedPath = fieldMap.get(SCHED_PATH);
+
         JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
-        final Form form = new Form(entity);
-
-        String JDFFilePath = form.getFirstValue(JDF_FILE_PATH);
-        LOGGER.debug("all names: " + form.getNames());
-        String schedPath = form.getFirstValue(SCHED_PATH);
-
-        String friendlyName = form.getFirstValue(FRIENDLY);
 
         if (application.getJobByName(friendlyName) != null) {
-            throw new ResourceException(406, "Friendly name already in use", "406", friendlyName);
+            throw new ResourceException(HttpStatus.SC_NOT_ACCEPTABLE, "Friendly name already in use", 
+            		HttpStatus.getStatusText(HttpStatus.SC_NOT_ACCEPTABLE), friendlyName);
         }
 
-
-        LOGGER.debug("URL INFO" + JDFFilePath);
-
-        String jobId = "job";
-
+        String jdfAbsolutePath = jdf.getAbsolutePath();
+        
         try {
+        	String jobId;
             if (friendlyName != null) {
-                LOGGER.debug("Job friendly name is: " + friendlyName);
-                jobId = application.addJob(JDFFilePath, schedPath, friendlyName);
+            	LOGGER.debug("jdfpath <" + jdfAbsolutePath + ">" + " friendlyName <"+ friendlyName + ">" + " schedPath <" + schedPath +">");
+                jobId = application.addJob(jdfAbsolutePath, schedPath, friendlyName);
             } else {
-                jobId = application.addJob(JDFFilePath, schedPath);
+            	LOGGER.debug("jdfpath <" + jdfAbsolutePath + ">" + " schedPath <" + schedPath +">");
+                jobId = application.addJob(jdfAbsolutePath, schedPath);
             }
+            return new StringRepresentation(jobId, MediaType.TEXT_PLAIN);
         } catch (CompilerException ce) {
-
+        	LOGGER.debug(ce.getMessage(), ce);
+        	throw new ResourceException(HttpStatus.SC_INTERNAL_SERVER_ERROR, ce);
         } catch (IllegalArgumentException iae) {
-
+        	LOGGER.debug(iae.getMessage(), iae);
+        	throw new ResourceException(HttpStatus.SC_BAD_REQUEST, iae);
         }
-
-        return new StringRepresentation(jobId, MediaType.TEXT_PLAIN);
+        
+        
     }
+    
+    private void loadFields(FileItemIterator fileIterator, Map<String, 
+    		String> formFieldstoLoad, Map<String, File> filesToLoad) throws FileUploadException, IOException {
+    	
+    	while (fileIterator.hasNext()) {
+    		FileItemStream fi = fileIterator.next();
+    		String fieldName = fi.getFieldName();
+    		if (fi.isFormField()) {
+    			if (formFieldstoLoad.containsKey(fieldName)) {
+    				formFieldstoLoad.put(fieldName, IOUtils.toString(fi.openStream()));
+    			}
+    		} else {
+    			if (filesToLoad.containsKey(fieldName)) {
+        			String fileContent = IOUtils.toString(fi.openStream());
+        			String fileName = fi.getName();
+        			File file = createTmpFile(fileContent, fileName);
+    				filesToLoad.put(fieldName, file);
+        		}
+    		}
+    	}
+    }
+    
+    private File createTmpFile(String content, String fileName) throws IOException {
+		File tempFile = File.createTempFile(fileName, null);
+		IOUtils.write(content, new FileOutputStream(tempFile));
+		return tempFile;
+	}
 
     @Delete
     public StringRepresentation stopJob() {

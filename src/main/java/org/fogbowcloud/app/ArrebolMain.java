@@ -8,15 +8,15 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
+import org.fogbowcloud.app.model.JDFJob;
+import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.scheduler.core.ManagerTimer;
 import org.fogbowcloud.scheduler.core.Scheduler;
-import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.scheduler.core.model.Task;
 import org.fogbowcloud.scheduler.core.util.AppPropertiesConstants;
 import org.fogbowcloud.scheduler.infrastructure.InfrastructureManager;
 import org.fogbowcloud.scheduler.infrastructure.InfrastructureProvider;
-import org.fogbowcloud.scheduler.restlet.JDFSchedulerApplicationWithPersistence;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 /**
@@ -106,7 +106,7 @@ public class ArrebolMain {
 		
 		LOGGER.debug("Application to be started on port: " +properties.getProperty(AppPropertiesConstants.REST_SERVER_PORT));
 		ExecutionMonitorWithDB executionMonitor = new ExecutionMonitorWithDB(scheduler, pendingImageDownloadDB);
-		JDFSchedulerApplicationWithPersistence app = new JDFSchedulerApplicationWithPersistence(scheduler, properties, pendingImageDownloadDB);
+		JDFSchedulerApplication app = new JDFSchedulerApplication(scheduler, properties, pendingImageDownloadDB);
 		app.startServer();
 
 		
