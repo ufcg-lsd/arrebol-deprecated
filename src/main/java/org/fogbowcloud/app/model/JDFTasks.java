@@ -18,7 +18,7 @@ import java.util.Properties;
 
 public class JDFTasks {
 
-    //FIXME: it is nobody is using this
+    //FIXME: it is odd nobody is using this
     private static final String SCHED_PATH = "SchedPath";
 
     //FIXME: what is this?
@@ -141,7 +141,7 @@ public class JDFTasks {
         exec = parseEnvironmentVariables(jobID, task.getId(), exec);
 
         Command command = new Command("\"" + exec + " ; echo 0 > " + task.getMetadata(TaskImpl.METADATA_REMOTE_COMMAND_EXIT_PATH) + "\"", Command.Type.REMOTE);
-        LOGGER.debug("Remote command:" + exec);
+        LOGGER.debug("JobId: " + jobID + " task: " + task.getId() + " remote command: " + exec);
         task.addCommand(command);
     }
 
@@ -173,7 +173,7 @@ public class JDFTasks {
             return;
         }
         sabotageCheck = parseEnvironmentVariables(jobID, task.getId(), sabotageCheck);
-        LOGGER.debug("Epilogue command:" + sabotageCheck);
+        LOGGER.debug("JobId: " + jobID + " task: " + task.getId() + " epilogue command: " + sabotageCheck);
 
         Command command = new Command(sabotageCheck, Command.Type.EPILOGUE);
         task.addCommand(command);
@@ -202,7 +202,8 @@ public class JDFTasks {
             } else {
                 task.addCommand(stageInCommand(schedPath + sourceFile, destination));
             }
-            LOGGER.debug("Input command:" + stageInCommand(schedPath + sourceFile, destination).getCommand());
+            LOGGER.debug("JobId: " + jobID + " task: " + task.getId() +
+                    " input command:" + stageInCommand(schedPath + sourceFile, destination).getCommand());
         }
     }
 

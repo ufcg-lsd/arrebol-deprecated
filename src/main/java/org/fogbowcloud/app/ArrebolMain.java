@@ -99,19 +99,19 @@ public class ArrebolMain {
 			legacyJobs.add((JDFJob) jobMapDB.get(key));
 		}
 
-		LOGGER.debug("Properties: " +properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
+		LOGGER.info("init spec path: " + properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
 			
 		Scheduler scheduler = new Scheduler(infraManager, legacyJobs.toArray(new JDFJob[legacyJobs.size()]));
 
 		
-		LOGGER.debug("Application to be started on port: " +properties.getProperty(AppPropertiesConstants.REST_SERVER_PORT));
+		LOGGER.info("rest server port: " + properties.getProperty(AppPropertiesConstants.REST_SERVER_PORT));
 		ExecutionMonitorWithDB executionMonitor = new ExecutionMonitorWithDB(scheduler, pendingImageDownloadDB);
 		JDFSchedulerApplication app = new JDFSchedulerApplication(scheduler, properties, pendingImageDownloadDB);
 		app.startServer();
 
 		
-
-		LOGGER.debug("Starting Scheduler and Execution Monitor, execution monitor period: " + properties.getProperty(AppPropertiesConstants.EXECUTION_MONITOR_PERIOD));
+		//FIXME: it is not using the property value
+		LOGGER.info("monitor period: " + properties.getProperty(AppPropertiesConstants.EXECUTION_MONITOR_PERIOD));
 		schedulerTimer.scheduleAtFixedRate(scheduler, 0, 30000);
 		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0, 30000);
 	}
