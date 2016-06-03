@@ -48,9 +48,9 @@ public class JobResource extends ServerResource {
 
     private static final String FRIENDLY = "friendly";
 
-    private static final String SCHED_PATH = "schedpath";
+    public static final String SCHED_PATH = "schedpath";
 
-    private static final String JDF_FILE_PATH = "jdffilepath";
+    public static final String JDF_FILE_PATH = "jdffilepath";
 
     private static final Logger LOGGER = Logger.getLogger(JobResource.class);
 
@@ -141,8 +141,7 @@ public class JobResource extends ServerResource {
 
     @Post
     public StringRepresentation addJob(Representation entity) throws IOException, FileUploadException {
-    	if (entity == null && !MediaType.MULTIPART_FORM_DATA
-    			.equals(entity.getMediaType(), true)) {
+    	if (entity != null && !MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
     		throw new ResourceException(HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE);
     	}
     	

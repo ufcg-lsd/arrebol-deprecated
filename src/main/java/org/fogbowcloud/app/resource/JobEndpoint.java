@@ -1,9 +1,10 @@
-package org.fogbowcloud.app.restlet;
+package org.fogbowcloud.app.resource;
 
 import java.io.IOException;
 
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.model.JDFJob;
+import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.scheduler.core.model.Task;
 import org.json.JSONException;
@@ -13,7 +14,6 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;
-
 import org.json.JSONArray;
 
 public class JobEndpoint extends ServerResource {
