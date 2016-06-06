@@ -23,6 +23,7 @@ import org.restlet.service.ConnectorService;
 public class JDFSchedulerApplication extends Application {
 
 	private ArrebolController arrebolController;
+	private Component restletComponent;
 	private static final Logger LOGGER = Logger.getLogger(JDFSchedulerApplication.class);
     
     public JDFSchedulerApplication(ArrebolController arrebolController) throws Exception {
@@ -42,15 +43,15 @@ public class JDFSchedulerApplication extends Application {
         ConnectorService corsService = new ConnectorService();
         this.getServices().add(corsService);
 
-        Component restletComponent = new Component();
-        restletComponent.getServers().add(Protocol.HTTP, restServerPort);
-        restletComponent.getDefaultHost().attach(this);
+        this.restletComponent = new Component();
+        this.restletComponent.getServers().add(Protocol.HTTP, restServerPort);
+        this.restletComponent.getDefaultHost().attach(this);
 
-        restletComponent.start();
+        this.restletComponent.start();
     }
 
     public void stopServer() throws Exception {
-        this.stop();
+    	this.restletComponent.stop();
     }
 
     @Override

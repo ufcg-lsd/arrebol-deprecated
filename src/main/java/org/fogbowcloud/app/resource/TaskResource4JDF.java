@@ -25,6 +25,7 @@ public class TaskResource4JDF extends ServerResource {
 		LOGGER.info("Getting tasks...");
 		String taskId = (String) getRequest().getAttributes().get("taskId");
 		LOGGER.debug("TaskId is " + taskId);
+		// FIXME not being used
 		String varName = (String) getRequest().getAttributes().get("varName");
 		LOGGER.debug("varName is " + varName);
 
