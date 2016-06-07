@@ -55,8 +55,7 @@ public class JDFSchedulerApplication extends Application {
     }
 
     @Override
-    public Restlet createInboundRoot() {
-    	
+    public Restlet createInboundRoot() {    	
         Router router = new Router(getContext());
         router.attach("/arrebol/job/ui", JobEndpoint.class);
         router.attach("/arrebol/job", JobResource.class);

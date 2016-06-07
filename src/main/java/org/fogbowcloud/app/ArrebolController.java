@@ -164,13 +164,13 @@ public class ArrebolController {
     public String stopJob(String jobReference) {
         Job jobToRemove = getJobByName(jobReference);
         if (jobToRemove != null) {
-            jobMap.remove(jobToRemove.getId());
+            this.jobMap.remove(jobToRemove.getId());
             this.jobDB.commit();
 			return scheduler.removeJob(jobToRemove.getId()).getId();
         } else {
             jobToRemove = getJobById(jobReference);
             if (jobToRemove != null) {
-                jobMap.remove(jobReference);
+                this.jobMap.remove(jobReference);
                 this.jobDB.commit();
                 return scheduler.removeJob(jobToRemove.getId()).getId();
             }
@@ -182,7 +182,7 @@ public class ArrebolController {
         if (jobName == null) {
             return null;
         }
-        for (Job job : scheduler.getJobs()) {
+        for (Job job : this.scheduler.getJobs()) {
             if (jobName.equals(((JDFJob) job).getName())) {
                 return (JDFJob) job;
             }
@@ -214,7 +214,7 @@ public class ArrebolController {
     
     protected List<Task> getTasksFromJDFFile(String jdfFilePath, String schedPath,
     		JDFJob job) throws CompilerException {
-    	List<Task> taskList = JDFTasks.getTasksFromJDFFile(job.getId(), jdfFilePath, schedPath, properties);
+    	List<Task> taskList = JDFTasks.getTasksFromJDFFile(job.getId(), jdfFilePath, schedPath, this.properties);
     	return taskList;
     }
 	

@@ -18,9 +18,6 @@ import java.util.Properties;
 
 public class JDFTasks {
 
-    //FIXME: it is nobody is using this
-    private static final String SCHED_PATH = "SchedPath";
-
     //FIXME: what is this?
     private static final String SANDBOX = "sandbox";
 

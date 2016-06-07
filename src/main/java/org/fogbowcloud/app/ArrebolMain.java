@@ -12,8 +12,6 @@ public class ArrebolMain {
 	public static final Logger LOGGER = Logger.getLogger(ArrebolMain.class);
 	
 	/**
-	 * //FIXME: doc the args instead of this JDF stuff
-	 *
 	 * This method receives a JDF file as input and requests the mapping of
 	 * its attributes to JDL attributes, generating a JDL file at the end
 	 * @param args 
@@ -21,7 +19,7 @@ public class ArrebolMain {
 	 */
 	public static void main(String[] args) throws Exception {
 		if (args.length < 2) {
-			System.err.println("Worng size args. Necessary pass two args. (1) arrebol.conf path and (2) sheduler.conf path.");
+			System.err.println("Incomplete arguments. Necessary pass two args. (1) arrebol.conf path and (2) sheduler.conf path.");
 			System.exit(1);			
 		} 
 		
@@ -31,11 +29,10 @@ public class ArrebolMain {
 		properties.load(new FileInputStream(ARREBOL_CONF_PATH));
 		
 		final String SCHEDULER_CONF_PATH = args[1];
-		FileInputStream schedconfiguration = new FileInputStream(SCHEDULER_CONF_PATH);
-		properties.load(schedconfiguration);
+		properties.load(new FileInputStream(SCHEDULER_CONF_PATH));
 		
 		if (!checkProperties(properties)) {
-			System.err.println("Missing required property, check Log for more information");
+			System.err.println("Missing required property, check Log for more information.");
 			System.exit(1);
 		}
 	
