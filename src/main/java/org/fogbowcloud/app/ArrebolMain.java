@@ -5,7 +5,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
-import org.fogbowcloud.scheduler.core.util.AppPropertiesConstants;
+import org.fogbowcloud.app.utils.AppPropertiesConstants;
 
 public class ArrebolMain {
 

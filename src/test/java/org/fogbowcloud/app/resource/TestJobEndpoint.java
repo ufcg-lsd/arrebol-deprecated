@@ -40,12 +40,12 @@ public class TestJobEndpoint {
 		
 		ArrayList<JDFJob> jobs = new ArrayList<JDFJob>();
 		String jobNameOne = "jobNameOne";
-		JDFJob jdfJob = new JDFJob("jobPathOne", jobNameOne);
+		JDFJob jdfJob = new JDFJob("jobPathOne", jobNameOne, "owner");
 		jobs.add(jdfJob);
-		jobs.add(new JDFJob("jobPathTwo", "jobNameTwo"));
-		jobs.add(new JDFJob("jobPathThree", "jobNameThree"));		
+		jobs.add(new JDFJob("jobPathTwo", "jobNameTwo", "owner"));
+		jobs.add(new JDFJob("jobPathThree", "jobNameThree", "owner"));		
 		
-		Mockito.when(resourceTestUtil.getArrebolController().getAllJobs()).thenReturn(jobs);
+		Mockito.when(resourceTestUtil.getArrebolController().getAllJobs("owner")).thenReturn(jobs);
 		
 		HttpResponse response = HttpClients.createMinimal().execute(get);
 		String responseStr = EntityUtils.toString(response.getEntity(), "UTF-8");

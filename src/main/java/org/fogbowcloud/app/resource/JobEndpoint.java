@@ -1,6 +1,7 @@
 package org.fogbowcloud.app.resource;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -15,6 +16,7 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;
+import org.restlet.util.Series;
 import org.json.JSONArray;
 
 public class JobEndpoint extends ServerResource {
@@ -22,11 +24,15 @@ public class JobEndpoint extends ServerResource {
 	private static final Logger LOGGER = Logger.getLogger(JobEndpoint.class);
 
 	@Get
-	public Representation stopJob() throws IOException {
+	public Representation stopJob() throws IOException, NoSuchAlgorithmException {
 
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 
-		JSONArray jobsJSONArray = jobsToJSONArray(application.getAllJobs());
+        @SuppressWarnings("rawtypes")
+		String owner = ResourceUtil.authenticateUser(application, (Series)getRequestAttributes()
+				.get("org.restlet.http.headers"));
+		
+		JSONArray jobsJSONArray = jobsToJSONArray(application.getAllJobs(owner));
 		LOGGER.debug("Info:" + jobsJSONArray.toString());
 
 		return new StringRepresentation(jobsJSONArray.toString(), MediaType.TEXT_PLAIN);

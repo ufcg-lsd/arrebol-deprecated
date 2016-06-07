@@ -13,12 +13,14 @@ public class JDFJob extends Job {
     private final String jobId;
     private final String name;
     private String schedPath;
+    private final String owner;
 
-    public JDFJob(String schedPath, String jobName) {
+    public JDFJob(String schedPath, String jobName, String owner) {
         super();
         this.schedPath = schedPath;
         this.name = jobName;
         this.jobId = UUID.randomUUID().toString();
+        this.owner = owner;
     }
 
     public String getId() {
@@ -32,6 +34,10 @@ public class JDFJob extends Job {
     public String getSchedPath() {
         return this.schedPath;
     }
+    
+    public String getOwner(){
+    	return this.owner;
+    }    
 
     @Override
     public void run(Task task) {

@@ -1,6 +1,8 @@
 package org.fogbowcloud.app;
 
 import java.io.File;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -10,12 +12,13 @@ import java.util.concurrent.Executors;
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.JDFTasks;
+import org.fogbowcloud.app.utils.AppPropertiesConstants;
+import org.fogbowcloud.app.utils.AuthUtils;
 import org.fogbowcloud.scheduler.core.ManagerTimer;
 import org.fogbowcloud.scheduler.core.Scheduler;
 import org.fogbowcloud.scheduler.core.model.Job;
 import org.fogbowcloud.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.scheduler.core.model.Task;
-import org.fogbowcloud.scheduler.core.util.AppPropertiesConstants;
 import org.fogbowcloud.scheduler.infrastructure.InfrastructureManager;
 import org.fogbowcloud.scheduler.infrastructure.InfrastructureProvider;
 import org.mapdb.DB;
@@ -30,9 +33,12 @@ public class ArrebolController {
 	public static final Logger LOGGER = Logger.getLogger(ArrebolController.class);
 	
 	private DB jobDB;
+	private DB usersDB;
 	private Scheduler scheduler;
+	private List<Integer> nonces;
 	private Properties properties;	
 	private ConcurrentMap<String, JDFJob> jobMap;
+	private ConcurrentMap<String, String> userList;
 	
 	private static ManagerTimer executionMonitorTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
 	private static ManagerTimer schedulerTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));	
@@ -63,9 +69,13 @@ public class ArrebolController {
 	
 	public void init() throws Exception {
 		final File pendingImageDownloadFile = new File(AppPropertiesConstants.DB_FILE_NAME);
-		final DB pendingImageDownloadDB = DBMaker.newFileDB(pendingImageDownloadFile).make();
-		pendingImageDownloadDB.checkShouldCreate(AppPropertiesConstants.DB_MAP_NAME);
-		ConcurrentMap<String, JDFJob> jobMapDB = pendingImageDownloadDB.getHashMap(AppPropertiesConstants.DB_MAP_NAME);
+		this.jobDB = DBMaker.newFileDB(pendingImageDownloadFile).make();
+		this.jobDB.checkShouldCreate(AppPropertiesConstants.DB_MAP_NAME);
+		ConcurrentMap<String, JDFJob> jobMapDB = this.jobDB.getHashMap(AppPropertiesConstants.DB_MAP_NAME);
+		
+		final File usersFile = new File(AppPropertiesConstants.DB_FILE_USERS);
+		this.usersDB = DBMaker.newFileDB(usersFile).make();
+		this.usersDB.checkShouldCreate(AppPropertiesConstants.DB_MAP_USERS);		
 		
 		Boolean blockWhileInitializing = new Boolean(this.properties.getProperty(
 				AppPropertiesConstants.INFRA_INITIAL_SPECS_BLOCK_CREATING)).booleanValue();
@@ -81,10 +91,13 @@ public class ArrebolController {
 		this.scheduler = new Scheduler(infraManager, legacyJobs.toArray(new JDFJob[legacyJobs.size()]));		
 		LOGGER.debug("Application to be started on port: " + properties
 				.getProperty(AppPropertiesConstants.REST_SERVER_PORT));
-		ExecutionMonitorWithDB executionMonitor = new ExecutionMonitorWithDB(this.scheduler, pendingImageDownloadDB);		
+		ExecutionMonitorWithDB executionMonitor = new ExecutionMonitorWithDB(this.scheduler, this.jobDB);		
 		
-        this.jobDB = pendingImageDownloadDB;
         this.jobMap = this.jobDB.getHashMap(AppPropertiesConstants.DB_MAP_NAME);		
+		this.userList = usersDB.getHashMap(AppPropertiesConstants.DB_MAP_USERS);
+		this.userList.put("user", "password");
+		this.usersDB.commit();		
+		this.nonces = new ArrayList<Integer>();        
 		
 		LOGGER.debug("Starting Scheduler and Execution Monitor, execution monitor period: " + properties
 				.getProperty(AppPropertiesConstants.EXECUTION_MONITOR_PERIOD));
@@ -125,16 +138,20 @@ public class ArrebolController {
 		return (InfrastructureProvider) clazz;
 	}	
 	
-    public JDFJob getJobById(String jobId) {
-        return (JDFJob) this.scheduler.getJobById(jobId);
+    public JDFJob getJobById(String jobId, String owner) {
+        JDFJob jdfJob = (JDFJob) this.scheduler.getJobById(jobId);
+		if (jdfJob != null && jdfJob.getOwner().equals(owner)) {
+			return jdfJob;
+		}
+		return null;
     }
 
-    public String addJob(String jdfFilePath, String schedPath) throws CompilerException {
-        return addJob(jdfFilePath, schedPath, "");
+    public String addJob(String jdfFilePath, String schedPath, String owner) throws CompilerException {
+        return addJob(jdfFilePath, schedPath, owner, "");
     }
 
-    public String addJob(String jdfFilePath, String schedPath, String friendlyName) throws CompilerException {
-        JDFJob job = new JDFJob(schedPath, friendlyName);
+    public String addJob(String jdfFilePath, String schedPath, String owner ,String friendlyName) throws CompilerException {
+        JDFJob job = new JDFJob(schedPath, friendlyName, owner);
 
         List<Task> taskList = getTasksFromJDFFile(jdfFilePath, schedPath, job);
 
@@ -147,11 +164,14 @@ public class ArrebolController {
     }
 
 
-    public ArrayList<JDFJob> getAllJobs() {
+    public ArrayList<JDFJob> getAllJobs(String owner) {
         ArrayList<JDFJob> jobList = new ArrayList<JDFJob>();
         for (Job job : this.scheduler.getJobs()) {
-            jobList.add((JDFJob) job);
-            updateJob((JDFJob) job);
+        	JDFJob jdfJob = (JDFJob) job;
+        	if (jdfJob.getOwner().equals(owner)) {
+        		jobList.add((JDFJob) job);
+        		updateJob((JDFJob) job);        		
+        	}
         }
         return jobList;
     }
@@ -161,14 +181,14 @@ public class ArrebolController {
         this.jobDB.commit();
     }
 
-    public String stopJob(String jobReference) {
-        Job jobToRemove = getJobByName(jobReference);
+    public String stopJob(String jobReference, String owner) {
+        Job jobToRemove = getJobByName(jobReference, owner);
         if (jobToRemove != null) {
             this.jobMap.remove(jobToRemove.getId());
             this.jobDB.commit();
 			return scheduler.removeJob(jobToRemove.getId()).getId();
         } else {
-            jobToRemove = getJobById(jobReference);
+            jobToRemove = getJobById(jobReference, owner);
             if (jobToRemove != null) {
                 this.jobMap.remove(jobReference);
                 this.jobDB.commit();
@@ -178,20 +198,24 @@ public class ArrebolController {
         return null;
     }
 
-    public JDFJob getJobByName(String jobName) {
+    public JDFJob getJobByName(String jobName, String owner) {
         if (jobName == null) {
             return null;
         }
         for (Job job : this.scheduler.getJobs()) {
-            if (jobName.equals(((JDFJob) job).getName())) {
-                return (JDFJob) job;
-            }
+        	JDFJob jdfJob = (JDFJob) job;
+        	// TODO review this IFs
+        	if (jdfJob.getOwner().equals(owner)) {
+        		if (jobName.equals(((JDFJob) job).getName())) {
+        			return (JDFJob) job;
+        		}        		
+        	}
         }
         return null;
     }
     
-	public Task getTaskById(String taskId){
-		for (Job job : getAllJobs()){
+	public Task getTaskById(String taskId, String owner){
+		for (Job job : getAllJobs(owner)){
 			JDFJob jdfJob = (JDFJob) job;
 			Task task = jdfJob.getTaskById(taskId);
 			if (task != null) {
@@ -201,8 +225,8 @@ public class ArrebolController {
 		return null;
 	}
 	
-	public TaskState getTaskState(String taskId) {
-		for (Job job : getAllJobs()){
+	public TaskState getTaskState(String taskId, String owner) {
+		for (Job job : getAllJobs(owner)){
 			JDFJob jdfJob = (JDFJob) job;
 			TaskState taskState = jdfJob.getTaskState(taskId);
 			if (taskState != null) {
@@ -210,6 +234,29 @@ public class ArrebolController {
 			}
 		}
 		return null;
+	}
+	
+	public boolean authUser(String user, String hash, String nonce) throws NoSuchAlgorithmException, IOException {
+		if (user == null || hash == null || nonce == null) {
+			return false;
+		}
+		
+		Integer nonceValue = Integer.valueOf(nonce);
+		if (this.nonces.contains(nonceValue)){
+			String pass = userList.get(user);
+			if (AuthUtils.checkHash(hash, pass, nonceValue)){
+				nonces.remove(nonceValue);
+				return true;
+			}
+		}
+		nonces.remove(nonceValue);
+		return false;
+	}
+    
+	public int getNonce() {
+		int nonce = AuthUtils.getNonce();
+		this.nonces.add(nonce);
+		return nonce;
 	}	
     
     protected List<Task> getTasksFromJDFFile(String jdfFilePath, String schedPath,

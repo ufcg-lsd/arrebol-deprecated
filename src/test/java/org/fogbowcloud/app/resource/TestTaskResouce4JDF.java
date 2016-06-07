@@ -43,8 +43,8 @@ public class TestTaskResouce4JDF {
 		Task task = new TaskImpl(taskId, new Specification("image", "username", "publicKey", "privateKeyFilePath"));
 		task.putMetadata("keyOne", "metadataOne");
 		task.putMetadata("keyTwo", "metadataTwo");
-		Mockito.when(resourceTestUtil.getArrebolController().getTaskById(Mockito.eq(taskId))).thenReturn(task);
-		Mockito.when(resourceTestUtil.getArrebolController().getTaskState(taskId)).thenReturn(TaskState.RUNNING);
+		Mockito.when(resourceTestUtil.getArrebolController().getTaskById(Mockito.eq(taskId), Mockito.anyString())).thenReturn(task);
+		Mockito.when(resourceTestUtil.getArrebolController().getTaskState(taskId, Mockito.anyString())).thenReturn(TaskState.RUNNING);
 		
 		HttpResponse response = HttpClients.createMinimal().execute(get);
 		String responseStr = EntityUtils.toString(response.getEntity(), "UTF-8");
@@ -59,7 +59,7 @@ public class TestTaskResouce4JDF {
 	@Test
 	public void testGetTaskNotfound() throws Exception {
 		HttpGet get = new HttpGet(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.TASK_RESOURCE_SUFIX + "notfound");
-		Mockito.when(resourceTestUtil.getArrebolController().getTaskById(Mockito.anyString())).thenReturn(null);
+		Mockito.when(resourceTestUtil.getArrebolController().getTaskById(Mockito.anyString(), Mockito.anyString())).thenReturn(null);
 		
 		HttpResponse response = HttpClients.createMinimal().execute(get);
 	

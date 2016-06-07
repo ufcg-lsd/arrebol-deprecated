@@ -1,17 +1,20 @@
 package org.fogbowcloud.app.restlet;
 
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.ArrebolController;
 import org.fogbowcloud.app.model.JDFJob;
+import org.fogbowcloud.app.resource.AuthenticationResource;
 import org.fogbowcloud.app.resource.JobEndpoint;
 import org.fogbowcloud.app.resource.JobResource;
 import org.fogbowcloud.app.resource.TaskResource4JDF;
 import org.fogbowcloud.scheduler.core.model.Task;
 import org.fogbowcloud.scheduler.core.model.Job.TaskState;
-import org.fogbowcloud.scheduler.core.util.AppPropertiesConstants;
+import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.ourgrid.common.specification.main.CompilerException;
 import org.restlet.Application;
 import org.restlet.Component;
@@ -62,39 +65,48 @@ public class JDFSchedulerApplication extends Application {
         router.attach("/arrebol/job/{jobpath}", JobResource.class);
         router.attach("/arrebol/task/{taskId}", TaskResource4JDF.class);
         router.attach("/arrebol/task/{taskId}/{varName}", TaskResource4JDF.class);
+        router.attach("/arrebol/nonce", AuthenticationResource.class);
 
         return router;
     }
 
-    public JDFJob getJobById(String jobId) {
-    	return this.arrebolController.getJobById(jobId);
+    public JDFJob getJobById(String jobId, String owner) {
+    	return this.arrebolController.getJobById(jobId, owner);
     }
 
-    public String addJob(String jdfFilePath, String schedPath) throws CompilerException {
-    	return this.arrebolController.addJob(jdfFilePath, schedPath);
+    public String addJob(String jdfFilePath, String schedPath, String owner) throws CompilerException {
+    	return this.arrebolController.addJob(jdfFilePath, schedPath, owner);
     }
 
-    public String addJob(String jdfFilePath, String schedPath, String friendlyName) throws CompilerException {
-    	return this.arrebolController.addJob(jdfFilePath, schedPath, friendlyName);
+    public String addJob(String jdfFilePath, String schedPath, String friendlyName, String owner) throws CompilerException {
+    	return this.arrebolController.addJob(jdfFilePath, schedPath, friendlyName, owner);
     }
 
-    public ArrayList<JDFJob> getAllJobs() {
-    	return this.arrebolController.getAllJobs();
+    public ArrayList<JDFJob> getAllJobs(String owner) {
+    	return this.arrebolController.getAllJobs(owner);
     }
 
-    public String stopJob(String jobId) {
-    	return this.arrebolController.stopJob(jobId);
+    public String stopJob(String jobId, String owner) {
+    	return this.arrebolController.stopJob(jobId, owner);
     }
 
-    public JDFJob getJobByName(String jobName) {
-    	return this.arrebolController.getJobByName(jobName);
+    public JDFJob getJobByName(String jobName, String owner) {
+    	return this.arrebolController.getJobByName(jobName, owner);
     }
     
-    public Task getTaskById(String taskId) {
-    	return this.arrebolController.getTaskById(taskId);
+    public Task getTaskById(String taskId, String owner) {
+    	return this.arrebolController.getTaskById(taskId, owner);
     }
     
-    public TaskState getTaskState(String taskId) {
-    	return this.arrebolController.getTaskState(taskId);
+    public TaskState getTaskState(String taskId, String owner) {
+    	return this.arrebolController.getTaskState(taskId, owner);
+    }
+    
+    public int getNonce() {
+    	return this.arrebolController.getNonce();
+    }
+    
+    public boolean authUser(String user, String hash, String nonce) throws NoSuchAlgorithmException, IOException {
+    	return authUser(user, hash, nonce);
     }
 }

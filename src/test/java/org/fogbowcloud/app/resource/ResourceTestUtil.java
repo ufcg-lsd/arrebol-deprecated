@@ -4,7 +4,7 @@ import java.util.Properties;
 
 import org.fogbowcloud.app.ArrebolController;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
-import org.fogbowcloud.scheduler.core.util.AppPropertiesConstants;
+import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.mockito.Mockito;
 
 public class ResourceTestUtil {

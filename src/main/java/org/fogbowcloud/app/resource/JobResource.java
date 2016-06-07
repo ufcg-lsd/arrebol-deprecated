@@ -3,6 +3,7 @@ package org.fogbowcloud.app.resource;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,6 +28,7 @@ import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
+import org.restlet.util.Series;
 
 import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONObject;
@@ -67,8 +69,12 @@ public class JobResource extends ServerResource {
 
         JSONArray jobs = new JSONArray();
 
+        @SuppressWarnings("rawtypes")
+		String owner = ResourceUtil.authenticateUser(application, (Series)getRequestAttributes()
+				.get("org.restlet.http.headers"));
+        
         if (jobId == null) {
-            for (JDFJob job : application.getAllJobs()) {
+            for (JDFJob job : application.getAllJobs(owner)) {
                 JSONObject jJob = new JSONObject();
                 if (job.getName() != null) {
                 	jJob.put("id", job.getId());
@@ -96,9 +102,9 @@ public class JobResource extends ServerResource {
             return result;
         }
 
-        JDFJob job = application.getJobById(jobId);
+        JDFJob job = application.getJobById(jobId, owner);
         if (job == null) {
-            job = application.getJobByName(jobId);
+            job = application.getJobByName(jobId, owner);
             if (job == null) {
                 throw new ResourceException(404);
             }
@@ -146,7 +152,7 @@ public class JobResource extends ServerResource {
     }
 
     @Post
-    public StringRepresentation addJob(Representation entity) throws IOException, FileUploadException {
+    public StringRepresentation addJob(Representation entity) throws IOException, FileUploadException, NoSuchAlgorithmException {
     	if (entity != null && !MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
     		throw new ResourceException(HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE);
     	}
@@ -173,7 +179,10 @@ public class JobResource extends ServerResource {
 
         JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 
-        JDFJob jobByName = application.getJobByName(friendlyName);
+        @SuppressWarnings("rawtypes")
+		String owner = ResourceUtil.authenticateUser(application, (Series)getRequestAttributes().get("org.restlet.http.headers"));
+        
+        JDFJob jobByName = application.getJobByName(friendlyName, owner);
 		if (jobByName != null) {
             throw new ResourceException(HttpStatus.SC_NOT_ACCEPTABLE, "Friendly name already in use", 
             		HttpStatus.getStatusText(HttpStatus.SC_NOT_ACCEPTABLE), friendlyName);
@@ -185,10 +194,10 @@ public class JobResource extends ServerResource {
         	String jobId;
             if (friendlyName != null) {
             	LOGGER.debug("jdfpath <" + jdfAbsolutePath + ">" + " friendlyName <"+ friendlyName + ">" + " schedPath <" + schedPath +">");
-                jobId = application.addJob(jdfAbsolutePath, schedPath, friendlyName);
+                jobId = application.addJob(jdfAbsolutePath, schedPath, friendlyName, owner);
             } else {
             	LOGGER.debug("jdfpath <" + jdfAbsolutePath + ">" + " schedPath <" + schedPath +">");
-                jobId = application.addJob(jdfAbsolutePath, schedPath);
+                jobId = application.addJob(jdfAbsolutePath, schedPath, owner);
             }
             return new StringRepresentation(jobId, MediaType.TEXT_PLAIN);
         } catch (CompilerException ce) {
@@ -230,14 +239,18 @@ public class JobResource extends ServerResource {
 	}
 
     @Delete
-    public StringRepresentation stopJob() {
+    public StringRepresentation stopJob() throws NoSuchAlgorithmException, IOException {
         JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 
+        @SuppressWarnings("rawtypes")
+		String owner = ResourceUtil.authenticateUser(application, (Series) getRequestAttributes()
+						.get("org.restlet.http.headers"));
+        
         String JDFString = (String) getRequest().getAttributes().get(JOBPATH);
 
         LOGGER.debug("Got JDF File: " + JDFString);
 
-        String jobId = application.stopJob(JDFString);
+        String jobId = application.stopJob(JDFString, owner);
 
         if (jobId == null) {
             throw new ResourceException(404);

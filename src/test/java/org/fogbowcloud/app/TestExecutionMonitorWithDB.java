@@ -19,7 +19,7 @@ import org.fogbowcloud.scheduler.core.model.Task;
 import org.fogbowcloud.scheduler.core.model.TaskImpl;
 import org.fogbowcloud.app.ExecutionMonitorWithDB;
 import org.fogbowcloud.scheduler.core.Scheduler;
-import org.fogbowcloud.scheduler.core.util.AppPropertiesConstants;
+import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.fogbowcloud.scheduler.infrastructure.InfrastructureManager;
 import org.fogbowcloud.scheduler.infrastructure.exceptions.InfrastructureException;
 import org.fogbowcloud.sebal.ImageDataStore;

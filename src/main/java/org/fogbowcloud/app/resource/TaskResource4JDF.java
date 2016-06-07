@@ -12,6 +12,7 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
+import org.restlet.util.Series;
 
 import com.amazonaws.util.json.JSONObject;
 
@@ -30,7 +31,12 @@ public class TaskResource4JDF extends ServerResource {
 		LOGGER.debug("varName is " + varName);
 
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
-		Task task = application.getTaskById(taskId);
+		
+        @SuppressWarnings("rawtypes")
+		String owner = ResourceUtil.authenticateUser(application, (Series)getRequestAttributes()
+				.get("org.restlet.http.headers"));		
+		
+		Task task = application.getTaskById(taskId, owner);
 		LOGGER.debug("TaskId " + taskId + " is of task " + task);
 		if (task == null) {
 			throw new ResourceException(404, new Exception("Task id not found"));
@@ -39,7 +45,7 @@ public class TaskResource4JDF extends ServerResource {
 		JSONObject jsonTask = new JSONObject();
 
 		jsonTask.put("metadata", task.getAllMetadata());
-		jsonTask.put("state", application.getTaskState(taskId).toString());
+		jsonTask.put("state", application.getTaskState(taskId, owner).toString());
 		return new StringRepresentation(jsonTask.toString(), MediaType.TEXT_PLAIN);
 	}
 }

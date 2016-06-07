@@ -63,8 +63,8 @@ public class TestJobResource {
 		String jobName = "jobName00";
 		HttpGet get = new HttpGet(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX + "/" + jobName);
 		
-		JDFJob job = new JDFJob("schedPath", jobName);
-		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.eq(jobName))).thenReturn(job);
+		JDFJob job = new JDFJob("schedPath", jobName, "owner");
+		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.eq(jobName), Mockito.anyString())).thenReturn(job);
 		
 		HttpClient client = HttpClients.createMinimal();
 		HttpResponse response = client.execute(get);
@@ -83,10 +83,10 @@ public class TestJobResource {
 		HttpGet get = new HttpGet(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
 		
 		ArrayList<JDFJob> jobs = new ArrayList<JDFJob>();
-		jobs.add(new JDFJob("schedPath", jobName));
-		jobs.add(new JDFJob("schedPathTwo", "jobNameTwo"));
-		jobs.add(new JDFJob("schedPathThree", "jobNameThree"));
-		Mockito.when(resourceTestUtil.getArrebolController().getAllJobs()).thenReturn(jobs);
+		jobs.add(new JDFJob("schedPath", jobName, "owner"));
+		jobs.add(new JDFJob("schedPathTwo", "jobNameTwo", "owner"));
+		jobs.add(new JDFJob("schedPathThree", "jobNameThree", "owner"));
+		Mockito.when(resourceTestUtil.getArrebolController().getAllJobs("owner")).thenReturn(jobs);
 		
 		HttpClient client = HttpClients.createMinimal();
 		HttpResponse response = client.execute(get);
@@ -105,7 +105,7 @@ public class TestJobResource {
 		HttpDelete delete = new HttpDelete(ResourceTestUtil.DEFAULT_PREFIX_URL + 
 				ResourceTestUtil.JOB_RESOURCE_SUFIX + "/" + jobId);	
 		
-		Mockito.when(resourceTestUtil.getArrebolController().stopJob(Mockito.eq(jobId))).thenReturn(jobId);
+		Mockito.when(resourceTestUtil.getArrebolController().stopJob(Mockito.eq(jobId), Mockito.anyString())).thenReturn(jobId);
 		
 		HttpResponse response = HttpClients.createMinimal().execute(delete);		
 		
@@ -130,8 +130,8 @@ public class TestJobResource {
 		HttpPost post = new HttpPost(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
 		
 		String jobName = "jobName00";
-		JDFJob job = new JDFJob("schedPath", jobName);
-		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.eq(jobName))).thenReturn(job);
+		JDFJob job = new JDFJob("schedPath", jobName, "owner");
+		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.eq(jobName), Mockito.anyString())).thenReturn(job);
 		String jdfFilePath = "jdfFilePath";
 		String schedPath = "schedPath";
 		String friendlyName = "friendly";
@@ -160,8 +160,8 @@ public class TestJobResource {
 		HttpPost post = new HttpPost(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
 		
 		String jobName = "jobName00";
-		JDFJob job = new JDFJob("schedPath", jobName);
-		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.eq(jobName))).thenReturn(job);
+		JDFJob job = new JDFJob("schedPath", jobName, "owner");
+		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.eq(jobName), Mockito.anyString())).thenReturn(job);
 		String jdfFilePath = "jdfFilePath";
 		String schedPath = "schedPath";
 		String friendlyName = "friendly";
@@ -184,8 +184,8 @@ public class TestJobResource {
 	public void testPostJobNotAcceptable() throws Exception {
 		HttpPost post = new HttpPost(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
 		
-		JDFJob job = new JDFJob("", "");
-		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.anyString())).thenReturn(job);
+		JDFJob job = new JDFJob("", "", "owner");
+		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.anyString(), Mockito.anyString())).thenReturn(job);
 		String jdfFilePath = "jdfFilePath";
 		String schedPath = "schedPath";
 		
@@ -206,8 +206,8 @@ public class TestJobResource {
 		HttpPost post = new HttpPost(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
 		
 		String jobName = "jobName00";
-		JDFJob job = new JDFJob("schedPath", jobName);
-		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.eq(jobName))).thenReturn(job);
+		JDFJob job = new JDFJob("schedPath", jobName, "owner");
+		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.eq(jobName), Mockito.anyString())).thenReturn(job);
 		String jdfFilePath = "jdfFilePath";
 		String schedPath = "schedPath";
 		String friendlyName = "friendly";
