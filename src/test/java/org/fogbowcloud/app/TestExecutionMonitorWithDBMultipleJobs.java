@@ -1,4 +1,4 @@
-package org.fogbowcloud.cli;
+package org.fogbowcloud.app;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -46,6 +46,7 @@ public class TestExecutionMonitorWithDBMultipleJobs {
 	private DB db;
 	private HTreeMap<String, JDFJob> jobMap;	
 
+	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp(){
 		task = spy(new TaskImpl(FAKE_TASK_ID, null));

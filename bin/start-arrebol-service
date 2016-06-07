@@ -7,4 +7,4 @@ CONF_LOG=-Dlog4j.configuration=file:$LOG4J
 else
 CONF_LOG=
 fi
-java $CONF_LOG -cp target/arrebol-0.0.1.jar:target/lib/* org.fogbowcloud.app.ArrebolMain arrebol.conf > /dev/null &
+java $CONF_LOG -cp target/arrebol-0.0.1.jar:target/lib/* org.fogbowcloud.app.ArrebolMain arrebol.conf sched.conf > /dev/null &

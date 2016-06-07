@@ -1,9 +1,11 @@
-package org.fogbowcloud.app.restlet;
+package org.fogbowcloud.app.resource;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.model.JDFJob;
+import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.scheduler.core.model.Task;
 import org.json.JSONException;
@@ -13,7 +15,6 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;
-
 import org.json.JSONArray;
 
 public class JobEndpoint extends ServerResource {
@@ -25,9 +26,16 @@ public class JobEndpoint extends ServerResource {
 
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 
+		JSONArray jobsJSONArray = jobsToJSONArray(application.getAllJobs());
+		LOGGER.debug("Info:" + jobsJSONArray.toString());
+
+		return new StringRepresentation(jobsJSONArray.toString(), MediaType.TEXT_PLAIN);
+	}
+
+	protected JSONArray jobsToJSONArray(List<JDFJob> jobs) {
 		JSONArray jArray = new JSONArray();
 
-		for (JDFJob job : application.getAllJobs()) {
+		for (JDFJob job : jobs) {
 			JSONObject jobInfo = new JSONObject();
 			JSONArray taskArray = new JSONArray();
 			try {
@@ -41,9 +49,7 @@ public class JobEndpoint extends ServerResource {
 				LOGGER.error(e.getMessage());
 			}
 		}
-		LOGGER.debug("Info:" + jArray.toString());
-
-		return new StringRepresentation(jArray.toString(), MediaType.TEXT_PLAIN);
+		return jArray;
 	}
 
 	private void fillTasks(JSONArray jArray, JDFJob job, int taskNumber) throws JSONException {

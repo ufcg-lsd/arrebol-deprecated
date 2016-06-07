@@ -32,7 +32,7 @@ import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONObject;
 
 public class JobResource extends ServerResource {
-    private static final String JOB_LIST = "Jobs";
+    public static final String JOB_LIST = "Jobs";
 
     private static final String JOB_TASKS = "Tasks";
 
@@ -46,11 +46,11 @@ public class JobResource extends ServerResource {
 
     private static final String JOBPATH = "jobpath";
 
-    private static final String FRIENDLY = "friendly";
+    public static final String FRIENDLY = "friendly";
 
-    private static final String SCHED_PATH = "schedpath";
+    public static final String SCHED_PATH = "schedpath";
 
-    private static final String JDF_FILE_PATH = "jdffilepath";
+    public static final String JDF_FILE_PATH = "jdffilepath";
 
     private static final Logger LOGGER = Logger.getLogger(JobResource.class);
 
@@ -147,8 +147,7 @@ public class JobResource extends ServerResource {
 
     @Post
     public StringRepresentation addJob(Representation entity) throws IOException, FileUploadException {
-    	if (entity == null && !MediaType.MULTIPART_FORM_DATA
-    			.equals(entity.getMediaType(), true)) {
+    	if (entity != null && !MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
     		throw new ResourceException(HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE);
     	}
     	
@@ -156,17 +155,15 @@ public class JobResource extends ServerResource {
     	factory.setSizeThreshold(1000240);
     	RestletFileUpload upload = new RestletFileUpload(factory);
     	FileItemIterator fileIterator = upload.getItemIterator(entity);
-    	
-    	Map<String, File> fileMap = new HashMap<String, File>();
-    	fileMap.put(JDF_FILE_PATH, null);
-    	
+    	    	
     	Map<String, String> fieldMap = new HashMap<String, String>();
     	fieldMap.put(SCHED_PATH, null);
     	fieldMap.put(FRIENDLY, null);
+    	fieldMap.put(JDF_FILE_PATH, null);
     	
-    	loadFields(fileIterator, fieldMap, fileMap);
+    	loadFields(fileIterator, fieldMap, new HashMap<String, File>());
     	
-    	File jdf = fileMap.get(JDF_FILE_PATH);
+    	String jdf = fieldMap.get(JDF_FILE_PATH);
 		if (jdf == null) {
 			throw new ResourceException(HttpStatus.SC_BAD_REQUEST);
 		}
@@ -176,12 +173,13 @@ public class JobResource extends ServerResource {
 
         JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 
-        if (application.getJobByName(friendlyName) != null) {
+        JDFJob jobByName = application.getJobByName(friendlyName);
+		if (jobByName != null) {
             throw new ResourceException(HttpStatus.SC_NOT_ACCEPTABLE, "Friendly name already in use", 
             		HttpStatus.getStatusText(HttpStatus.SC_NOT_ACCEPTABLE), friendlyName);
         }
 
-        String jdfAbsolutePath = jdf.getAbsolutePath();
+        String jdfAbsolutePath = fieldMap.get(JDF_FILE_PATH);
         
         try {
         	String jobId;

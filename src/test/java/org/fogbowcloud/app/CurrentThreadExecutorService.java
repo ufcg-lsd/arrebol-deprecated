@@ -1,4 +1,4 @@
-package org.fogbowcloud.cli;
+package org.fogbowcloud.app;
 
 import java.util.Collection;
 import java.util.List;

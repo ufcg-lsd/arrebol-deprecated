@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.fogbowcloud.scheduler.core.model.Task;
-import org.fogbowcloud.scheduler.restlet.JDFSchedulerApplication;
+import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
@@ -25,6 +25,7 @@ public class TaskResource4JDF extends ServerResource {
 		LOGGER.info("Getting tasks...");
 		String taskId = (String) getRequest().getAttributes().get("taskId");
 		LOGGER.debug("TaskId is " + taskId);
+		// FIXME not being used
 		String varName = (String) getRequest().getAttributes().get("varName");
 		LOGGER.debug("varName is " + varName);
 

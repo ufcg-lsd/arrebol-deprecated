@@ -30,7 +30,6 @@ public class JDFJob extends Job {
     }
 
     public String getSchedPath() {
-        //FIXME: it is odd nobody uses it. Do we really need it?
         return this.schedPath;
     }
 

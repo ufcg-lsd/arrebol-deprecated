@@ -13,7 +13,7 @@ infra_fogbow_token_public_key_filepath=/home/username/Dev/cert
 
 accounting_datastore_url=jdbc:h2:/home/username/Dev/orders
 execution_monitor_period=60000
-local.output = /home/username/Dev/result
+local_output = /home/username/Dev/result
 local_command_interpreter=/bin/bash
 
 rest_server_port=44444
