@@ -53,12 +53,10 @@ public class ArrebolMain {
 			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_SERVICE_TIME + " was not set");
 			return false;
 		};
-
 		if (!properties.containsKey(AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME)){
 			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME + " was not set");
 			return false;
 		};
-
 		if (!properties.containsKey(AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT)){
 			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT + " was not set");
 			return false;

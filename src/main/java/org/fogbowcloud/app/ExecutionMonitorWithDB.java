@@ -43,8 +43,9 @@ public class ExecutionMonitorWithDB implements Runnable {
 		LOGGER.debug("Submitting monitoring tasks");
 		for (Job aJob : scheduler.getJobs()){
 			JDFJob aJDFJob = (JDFJob) aJob;
-			LOGGER.debug("Tasks for job: "+ aJDFJob.toString() );
+			LOGGER.debug("Submitting job: "+ aJDFJob.toString() );
 			for (Task task : aJDFJob.getByState(TaskState.RUNNING)) {
+				LOGGER.debug("Submitting taskId: "+ task.getId());
 				service.submit(new TaskExecutionChecker(task, this.scheduler, aJDFJob));
 			}
 			this.jobMap.put(aJDFJob.getId(), aJDFJob);
@@ -66,25 +67,24 @@ public class ExecutionMonitorWithDB implements Runnable {
 
 		@Override
 		public void run() {
-			LOGGER.info("Monitoring task " + task.getId() + ", failed=" + task.isFailed()
-			+ ", completed=" + task.isFinished());
+			LOGGER.debug("Monitoring task: " + task.getId() + " failed: " + task.isFailed() + " completed: " + task.isFinished());
 
 			if (task.checkTimeOuted()){
+				LOGGER.debug("Task: "+ task.getId() + " timed out");
 				job.fail(task);
 				scheduler.taskFailed(task);
-				LOGGER.error("Task "+ task.getId() + " timed out");
 				return;
 			}
 
 			if (task.isFailed()) {
-				LOGGER.info("Failing task " + task.getId());
+				LOGGER.debug("Task: " + task.getId() + " failed");
 				job.fail(task);
 				scheduler.taskFailed(task);
 				return;
 			}
 
 			if (task.isFinished()){
-				LOGGER.info("Completing task " + task.getId());
+				LOGGER.debug("Task: " + task.getId() + " finished");
 				job.finish(task);
 				scheduler.taskCompleted(task);
 				return;
