@@ -10,6 +10,8 @@ import org.mockito.Mockito;
 public class ResourceTestUtil {
 	public static final String DEFAULT_SERVER_PORT = "30023";	
 	public static final String DEFAULT_PREFIX_URL = "http://localhost:" + DEFAULT_SERVER_PORT;
+	public static final String DEFAULT_OWNER = "default_owner";
+	
 	public static final String JOB_RESOURCE_SUFIX = "/arrebol/job";
 	public static final String JOB_ENDPOINT_SUFIX = "/arrebol/job/ui";
 	public static final String TASK_RESOURCE_SUFIX = "/arrebol/task/";	
@@ -25,6 +27,9 @@ public class ResourceTestUtil {
 		Properties properties = new Properties();
 		properties.put(AppPropertiesConstants.REST_SERVER_PORT, DEFAULT_SERVER_PORT);
 		Mockito.when(this.arrebolController.getProperties()).thenReturn(properties);
+		
+		Mockito.when(this.arrebolController.authUser(Mockito.eq(DEFAULT_OWNER)
+				, Mockito.anyString(), Mockito.anyString())).thenReturn(new Boolean(true));		
 		
 		this.jdfSchedulerApplication = new JDFSchedulerApplication(this.arrebolController);
 	}

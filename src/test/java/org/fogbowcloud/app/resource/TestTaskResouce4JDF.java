@@ -4,8 +4,10 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
+import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.fogbowcloud.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.scheduler.core.model.Specification;
 import org.fogbowcloud.scheduler.core.model.Task;
@@ -39,12 +41,14 @@ public class TestTaskResouce4JDF {
 	public void testGetTask() throws Exception {
 		String taskId = "taskId00";
 		HttpGet get = new HttpGet(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.TASK_RESOURCE_SUFIX + taskId);
+		String owner = ResourceTestUtil.DEFAULT_OWNER;
+		get.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));
 		
 		Task task = new TaskImpl(taskId, new Specification("image", "username", "publicKey", "privateKeyFilePath"));
 		task.putMetadata("keyOne", "metadataOne");
 		task.putMetadata("keyTwo", "metadataTwo");
-		Mockito.when(resourceTestUtil.getArrebolController().getTaskById(Mockito.eq(taskId), Mockito.anyString())).thenReturn(task);
-		Mockito.when(resourceTestUtil.getArrebolController().getTaskState(taskId, Mockito.anyString())).thenReturn(TaskState.RUNNING);
+		Mockito.when(resourceTestUtil.getArrebolController().getTaskById(Mockito.eq(taskId), Mockito.eq(owner))).thenReturn(task);
+		Mockito.when(resourceTestUtil.getArrebolController().getTaskState(Mockito.eq(taskId), Mockito.eq(owner))).thenReturn(TaskState.RUNNING);
 		
 		HttpResponse response = HttpClients.createMinimal().execute(get);
 		String responseStr = EntityUtils.toString(response.getEntity(), "UTF-8");
@@ -59,6 +63,7 @@ public class TestTaskResouce4JDF {
 	@Test
 	public void testGetTaskNotfound() throws Exception {
 		HttpGet get = new HttpGet(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.TASK_RESOURCE_SUFIX + "notfound");
+		get.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, ResourceTestUtil.DEFAULT_OWNER));
 		Mockito.when(resourceTestUtil.getArrebolController().getTaskById(Mockito.anyString(), Mockito.anyString())).thenReturn(null);
 		
 		HttpResponse response = HttpClients.createMinimal().execute(get);

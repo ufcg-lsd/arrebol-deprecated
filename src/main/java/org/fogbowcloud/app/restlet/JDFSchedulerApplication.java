@@ -107,6 +107,6 @@ public class JDFSchedulerApplication extends Application {
     }
     
     public boolean authUser(String user, String hash, String nonce) throws NoSuchAlgorithmException, IOException {
-    	return authUser(user, hash, nonce);
+    	return this.arrebolController.authUser(user, hash, nonce);
     }
 }

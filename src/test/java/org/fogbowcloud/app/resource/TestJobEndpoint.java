@@ -6,9 +6,11 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
+import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.json.JSONArray;
 import org.junit.After;
 import org.junit.Assert;
@@ -36,16 +38,18 @@ public class TestJobEndpoint {
 	
 	@Test
 	public void testGetJobs() throws Exception {
+		String owner = ResourceTestUtil.DEFAULT_OWNER;
 		HttpGet get = new HttpGet(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_ENDPOINT_SUFIX);
+		get.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));
 		
 		ArrayList<JDFJob> jobs = new ArrayList<JDFJob>();
 		String jobNameOne = "jobNameOne";
-		JDFJob jdfJob = new JDFJob("jobPathOne", jobNameOne, "owner");
+		JDFJob jdfJob = new JDFJob("jobPathOne", jobNameOne, owner);
 		jobs.add(jdfJob);
-		jobs.add(new JDFJob("jobPathTwo", "jobNameTwo", "owner"));
-		jobs.add(new JDFJob("jobPathThree", "jobNameThree", "owner"));		
+		jobs.add(new JDFJob("jobPathTwo", "jobNameTwo", owner));
+		jobs.add(new JDFJob("jobPathThree", "jobNameThree", owner));		
 		
-		Mockito.when(resourceTestUtil.getArrebolController().getAllJobs("owner")).thenReturn(jobs);
+		Mockito.when(resourceTestUtil.getArrebolController().getAllJobs(Mockito.eq(owner))).thenReturn(jobs);
 		
 		HttpResponse response = HttpClients.createMinimal().execute(get);
 		String responseStr = EntityUtils.toString(response.getEntity(), "UTF-8");
