@@ -9,12 +9,11 @@ import org.apache.log4j.Logger;
 import org.fogbowcloud.app.ArrebolController;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.resource.AuthenticationResource;
-import org.fogbowcloud.app.resource.JobEndpoint;
 import org.fogbowcloud.app.resource.JobResource;
 import org.fogbowcloud.app.resource.TaskResource4JDF;
-import org.fogbowcloud.scheduler.core.model.Task;
-import org.fogbowcloud.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
+import org.fogbowcloud.scheduler.core.model.Job.TaskState;
+import org.fogbowcloud.scheduler.core.model.Task;
 import org.ourgrid.common.specification.main.CompilerException;
 import org.restlet.Application;
 import org.restlet.Component;
@@ -60,7 +59,6 @@ public class JDFSchedulerApplication extends Application {
     @Override
     public Restlet createInboundRoot() {    	
         Router router = new Router(getContext());
-        router.attach("/arrebol/job/ui", JobEndpoint.class);
         router.attach("/arrebol/job", JobResource.class);
         router.attach("/arrebol/job/{jobpath}", JobResource.class);
         router.attach("/arrebol/task/{taskId}", TaskResource4JDF.class);

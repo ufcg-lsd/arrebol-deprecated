@@ -62,6 +62,17 @@ public class TestJobResource {
 	}
 	
 	@Test
+	public void testGetJobUnathorized() throws Exception {
+		HttpGet get = new HttpGet(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX + "/" + "jobId");
+		get.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, "wrong owner"));
+		
+		HttpClient client = HttpClients.createMinimal();
+		HttpResponse response = client.execute(get);
+		
+		Assert.assertEquals(HttpStatus.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
+	}	
+	
+	@Test
 	public void testSpecificGetJob() throws Exception {
 		String jobName = "jobName00";
 		String owner = ResourceTestUtil.DEFAULT_OWNER;
