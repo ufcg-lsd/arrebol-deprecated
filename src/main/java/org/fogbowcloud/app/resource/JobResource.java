@@ -3,7 +3,7 @@ package org.fogbowcloud.app.resource;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
+import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -152,7 +152,8 @@ public class JobResource extends ServerResource {
     }
 
     @Post
-    public StringRepresentation addJob(Representation entity) throws IOException, FileUploadException, NoSuchAlgorithmException {
+    public StringRepresentation addJob(Representation entity) throws IOException, 
+    		FileUploadException, GeneralSecurityException {
     	if (entity != null && !MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
     		throw new ResourceException(HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE);
     	}
@@ -180,7 +181,8 @@ public class JobResource extends ServerResource {
         JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 
         @SuppressWarnings("rawtypes")
-		String owner = ResourceUtil.authenticateUser(application, (Series)getRequestAttributes().get("org.restlet.http.headers"));
+		String owner = ResourceUtil.authenticateUser(application, 
+				(Series)getRequestAttributes().get("org.restlet.http.headers"));
         
         JDFJob jobByName = application.getJobByName(friendlyName, owner);
 		if (jobByName != null) {
@@ -239,11 +241,12 @@ public class JobResource extends ServerResource {
 	}
 
     @Delete
-    public StringRepresentation stopJob() throws NoSuchAlgorithmException, IOException {
+    public StringRepresentation stopJob() throws IOException, GeneralSecurityException {
         JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 
         @SuppressWarnings("rawtypes")
-		String owner = ResourceUtil.authenticateUser(application, (Series) getRequestAttributes()
+		String owner = ResourceUtil.authenticateUser(application, 
+						(Series) getRequestAttributes()
 						.get("org.restlet.http.headers"));
         
         String JDFString = (String) getRequest().getAttributes().get(JOBPATH);
