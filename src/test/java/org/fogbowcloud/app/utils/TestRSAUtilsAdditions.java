@@ -3,9 +3,8 @@ package org.fogbowcloud.app.utils;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
-import java.security.PublicKey;
-
-import javax.crypto.Cipher;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,4 +35,35 @@ public class TestRSAUtilsAdditions {
 		Assert.assertEquals(testString, decrypt);
 		
 	}
+	
+	@Test
+	public void TestSavePrivateKey() throws GeneralSecurityException, IOException {
+		String testString = "testString";
+		
+		KeyPair pair = RSAUtils.generateKeyPair();
+		
+		String privateKeyValue = RSAUtils.savePrivateKey(pair.getPrivate());
+		
+		
+		RSAPrivateKey pk = RSAUtils.getPrivateKeyFromString(privateKeyValue);
+		
+		
+		Assert.assertEquals(pair.getPrivate(), pk);
+	}
+	
+	@Test
+	public void TestSavePublicKey() throws GeneralSecurityException, IOException {
+		String testString = "testString";
+		
+		KeyPair pair = RSAUtils.generateKeyPair();
+		
+		String publicKeyValue = RSAUtils.savePublicKey(pair.getPublic());
+		
+		
+		RSAPublicKey pk = RSAUtils.getPublicKeyFromString(publicKeyValue);
+		
+		
+		Assert.assertEquals(pair.getPublic(), pk);
+	}
+	
 }
