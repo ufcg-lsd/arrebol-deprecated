@@ -5,25 +5,33 @@
 print_menu() {
 	echo "Usage: $0 COMMAND [OPTIONS]"
 	echo "Commands are GET, POST, STOP or GETUI"
-	echo "GET | GET [job_id || friendly_name]"
-	echo "POST jdffilepath [s | --schedpath path] [-f | --friendly friendly_name]"
-	echo "STOP [job_id || friendly_name]"
+	echo "GET | GET [job_id || friendly_name] -u | --username username -p | --publicKeyFile /publicKey/file/path"
+	echo "POST jdffilepath [s | --schedpath path] [-f | --friendly friendly_name] -u | --username username -p | --publicKeyFile /publicKey/file/path"
+	echo "STOP [job_id || friendly_name] -u | --username username -p | --publicKeyFile /publicKey/file/path"
+	echo "CREATEUSER -u | --username username"
 	exit 1
 }
 
 do_get() {
-	if [ $# -eq 0 ]
+	define_parameters $@
+	if [ $# -eq 4 ]
 	then
-		response=$(curl -G "$host/arrebol/job" 2> /dev/null)
+		hash=$(echo -n $username$nonce | openssl rsautl -encrypt -pubin -inkey $publicKeyFile)
+		response=$(curl -G -H "X-auth-nonce: $nonce" -H "X-auth-username: $username" -H "X-auth-hash: $hash" "$host/arrebol/job" 2> /dev/null)
 		echo $response
-	elif [ $# -eq 1 ]
+	elif [ $# -eq 5 ]
 	then
-        	response=$(curl -G "$host/arrebol/job/$1" 2> /dev/null)
+		hash=$(echo -n $username$nonce | openssl rsautl -encrypt -pubin -inkey $publicKeyFile)
+        	response=$(curl -G -H "X-auth-nonce: $nonce" -H "X-auth-username: $username" -H "X-auth-hash: $hash" "$host/arrebol/job/$1" 2> /dev/null)
         	echo $response
 	else
 		print_menu
 		exit 1
 	fi
+}
+
+do_get_nonce() {
+	nonce=$(curl -G "$host/arrebol/nonce" 2> /dev/null)
 }
 
 define_parameters() {
@@ -37,6 +45,14 @@ define_parameters() {
 				shift;
 				friendly=$1;
 				;;
+			-u | --username)
+				shift;
+				username=$1;
+				;;
+			-p | --publicKeyFile)
+				shift;
+				publicKeyFile=$1;
+				;;
 		esac
 		shift
 	done
@@ -48,7 +64,8 @@ do_post() {
 	then
 		shift
         	define_parameters $@
-		base_curl_cmd="curl -X POST --form jdffilepath=${jdffilepath}"
+		hash=$(echo -n $username$nonce | openssl rsautl -encrypt -pubin -inkey $publicKeyFile)
+		base_curl_cmd="curl -X POST --form jdffilepath=@${jdffilepath} --form X-auth-nonce=$nonce --form X-auth-username=$username --form X-auth-hash=$hash"
                 if [[ $schedpath ]]
 		then
 			base_curl_cmd="${base_curl_cmd} --form schedpath=${schedpath}"
@@ -69,7 +86,9 @@ do_post() {
 do_stop() {
 	if [ $# -eq 1 ]
 	then
-        	response=$(curl -X DELETE "$host/arrebol/job/$1" 2> /dev/null)
+		define_parameters $@
+		hash=$(echo -n $username$nonce | openssl rsautl -encrypt -pubin -inkey $publicKeyFile)
+        	response=$(curl -X DELETE -H "X-auth-nonce: $nonce" -H "X-auth-username: $username" -H "X-auth-hash: $hash" "$host/arrebol/job/$1" 2> /dev/null)
                 echo $response
         else
 		print_menu
@@ -78,12 +97,27 @@ do_stop() {
 }
 
 do_getui() {
-	response=$(curl -G "$host/arrebol/job/ui" 2> /dev/null)
+	define_parameters $@
+	hash=$(echo -n $username$nonce | openssl rsautl -encrypt -pubin -inkey $publicKeyFile)
+	response=$(curl -G -H "X-auth-nonce: $nonce" -H "X-auth-username: $username" -H "X-auth-hash: $hash" "$host/arrebol/job/ui" 2> /dev/null)
 	echo $response
+}
+
+create_user() {
+	if [ $# -eq 2 ]
+	then
+		define_parameters $@
+		response=$(curl -X POST --data "username=$username" "$host/arrebol/user" 2> /dev/null)
+		echo $response
+	else
+		print_menu
+		exit 1
+	fi
 }
 
 if [ $# -gt 0 ]
 then
+do_get_nonce
 	op=$1
     case "$op" in
         GET)
@@ -102,6 +136,10 @@ then
             shift
             do_getui
             ;;
+	CREATEUSER)
+	    shift
+	    create_user $@
+	    ;;
         *)
             print_menu
             exit 1

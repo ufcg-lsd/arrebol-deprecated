@@ -3,6 +3,7 @@ package org.fogbowcloud.app;
 import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -15,6 +16,7 @@ import org.fogbowcloud.app.model.JDFTasks;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.fogbowcloud.app.utils.AuthUtils;
+import org.fogbowcloud.app.utils.RSAUtils;
 import org.fogbowcloud.scheduler.core.ManagerTimer;
 import org.fogbowcloud.scheduler.core.Scheduler;
 import org.fogbowcloud.scheduler.core.model.Job;
@@ -111,8 +113,6 @@ public class ArrebolController {
 
 		this.jobMap = this.jobDB.getHashMap(AppPropertiesConstants.DB_MAP_NAME);
 		this.userList = usersDB.getHashMap(AppPropertiesConstants.DB_MAP_USERS);
-		this.userList.put("user", "password");
-		this.usersDB.commit();
 		this.nonces = new ArrayList<Integer>();
 
 		LOGGER.debug("Starting Scheduler and Execution Monitor, execution monitor period: "
@@ -299,15 +299,27 @@ public class ArrebolController {
 	}
 
 	public User getUser(String username) {
-		this.userList.get(username);
-		return null;
+		User user = null;
+		String userJSONString = this.userList.get(username);
+		if (userJSONString == null || userJSONString.isEmpty()) {
+			return null;
+		}
+		try {
+			user = User.fromJSON(new JSONObject(userJSONString));
+		} catch (JSONException e) {
+			LOGGER.debug("Could not retrieve the user from database.", e);
+		}
+		return user;
 	}
 
-	public void addUser(String username, String publicKey) {
-		User user = new User(username, publicKey);
+	public User addUser(String username, KeyPair keyPair) {
 		try {
+			User user = new User(username, RSAUtils.savePrivateKey(
+					keyPair.getPrivate()), RSAUtils.savePublicKey(keyPair.getPublic()));
 			this.userList.put(username, user.toJSON().toString());
-		} catch (JSONException e) {
+			this.usersDB.commit();
+			return user;
+		} catch (Exception e) {
 			throw new RuntimeException("Could not add user", e);
 		}
 	}

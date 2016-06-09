@@ -2,6 +2,7 @@ package org.fogbowcloud.app.restlet;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -125,7 +126,7 @@ public class JDFSchedulerApplication extends Application {
 		return this.arrebolController.getUser(username);
 	}
 
-	public void addUser(String username, String publicKey) {
-		this.arrebolController.addUser(username, publicKey);
+	public User addUser(String username, KeyPair keyPair) {
+		return this.arrebolController.addUser(username, keyPair);
 	}
 }

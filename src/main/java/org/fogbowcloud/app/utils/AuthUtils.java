@@ -17,10 +17,10 @@ public class AuthUtils {
 		if (user == null) {
 			return false;
 		}
-//		RSAPrivateKey privateKey = RSAUtils.getPrivateKeyFromString(user.getPrivatekey());
-//		String decrypt = RSAUtils.decrypt(hash, privateKey);
-//		String userInHash = decrypt.replace(String.valueOf(nonce), "");
-//		return userInHash.equals(user.getUsername());
-		return true;
+		RSAPrivateKey privateKey = RSAUtils.getPrivateKeyFromString(user.getPrivateKey());
+		String decrypt = RSAUtils.decrypt(hash, privateKey);
+		String userInHash = decrypt.replace(String.valueOf(nonce), "");
+		return userInHash.equals(user.getUsername());
+		
 	}
 }
