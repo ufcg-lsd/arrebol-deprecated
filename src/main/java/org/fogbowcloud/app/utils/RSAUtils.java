@@ -159,7 +159,7 @@ public class RSAUtils {
     public static String encrypt(String rawText, PublicKey publicKey) throws IOException, GeneralSecurityException {
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        return new String(org.bouncycastle.util.encoders.Base64.decode(cipher.doFinal(rawText.getBytes("UTF-8"))));
+        return new String(org.bouncycastle.util.encoders.Base64.encode(cipher.doFinal(rawText.getBytes("UTF-8"))));
     }
     
     /**
