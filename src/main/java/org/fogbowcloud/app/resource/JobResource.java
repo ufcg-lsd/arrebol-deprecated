@@ -16,6 +16,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
+import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.fogbowcloud.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.scheduler.core.model.Task;
 import org.ourgrid.common.specification.main.CompilerException;
@@ -167,6 +168,9 @@ public class JobResource extends ServerResource {
     	fieldMap.put(SCHED_PATH, null);
     	fieldMap.put(FRIENDLY, null);
     	fieldMap.put(JDF_FILE_PATH, null);
+    	fieldMap.put(AppPropertiesConstants.X_AUTH_USER, null);
+    	fieldMap.put(AppPropertiesConstants.X_AUTH_NONCE, null);
+    	fieldMap.put(AppPropertiesConstants.X_AUTH_HASH, null);
     	
     	loadFields(fileIterator, fieldMap, new HashMap<String, File>());
     	
@@ -181,8 +185,15 @@ public class JobResource extends ServerResource {
         JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 
         @SuppressWarnings("rawtypes")
+		Series headers = (Series)getRequestAttributes().get("org.restlet.http.headers");
+        headers.add(AppPropertiesConstants.X_AUTH_NONCE, 
+        		fieldMap.get(AppPropertiesConstants.X_AUTH_NONCE));
+        headers.add(AppPropertiesConstants.X_AUTH_USER, 
+        		fieldMap.get(AppPropertiesConstants.X_AUTH_USER));
+        headers.add(AppPropertiesConstants.X_AUTH_HASH, 
+        		fieldMap.get(AppPropertiesConstants.X_AUTH_HASH));
 		String owner = ResourceUtil.authenticateUser(application, 
-				(Series)getRequestAttributes().get("org.restlet.http.headers"));
+				headers);
         
         JDFJob jobByName = application.getJobByName(friendlyName, owner);
 		if (jobByName != null) {

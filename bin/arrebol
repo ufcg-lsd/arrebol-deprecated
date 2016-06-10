@@ -65,7 +65,7 @@ do_post() {
 		shift
         	define_parameters $@
 		hash=$(echo -n $username$nonce | openssl rsautl -encrypt -pubin -inkey $publicKeyFile | base64 | awk 'BEGIN{ORS="*";} {print}')
-		base_curl_cmd="curl -X POST --form jdffilepath=@${jdffilepath} --form X-auth-nonce=$nonce --form X-auth-username=$username --form X-auth-hash=$hash"
+		base_curl_cmd="curl -X POST --form jdffilepath=${jdffilepath} --form X-auth-nonce=$nonce --form X-auth-username=$username --form X-auth-hash=$hash"
                 if [[ $schedpath ]]
 		then
 			base_curl_cmd="${base_curl_cmd} --form schedpath=${schedpath}"
