@@ -1,22 +1,20 @@
 package org.fogbowcloud.app.resource;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
+import org.fogbowcloud.app.utils.ServerResourceUtils;
 import org.fogbowcloud.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.scheduler.core.model.Task;
 import org.ourgrid.common.specification.main.CompilerException;
@@ -159,11 +157,6 @@ public class JobResource extends ServerResource {
     		throw new ResourceException(HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE);
     	}
     	
-    	DiskFileItemFactory factory = new DiskFileItemFactory();
-    	factory.setSizeThreshold(1000240);
-    	RestletFileUpload upload = new RestletFileUpload(factory);
-    	FileItemIterator fileIterator = upload.getItemIterator(entity);
-    	    	
     	Map<String, String> fieldMap = new HashMap<String, String>();
     	fieldMap.put(SCHED_PATH, null);
     	fieldMap.put(FRIENDLY, null);
@@ -172,7 +165,7 @@ public class JobResource extends ServerResource {
     	fieldMap.put(AppPropertiesConstants.X_AUTH_NONCE, null);
     	fieldMap.put(AppPropertiesConstants.X_AUTH_HASH, null);
     	
-    	loadFields(fileIterator, fieldMap, new HashMap<String, File>());
+    	ServerResourceUtils.loadFields(entity, fieldMap, new HashMap<String, File>());
     	
     	String jdf = fieldMap.get(JDF_FILE_PATH);
 		if (jdf == null) {
@@ -224,33 +217,6 @@ public class JobResource extends ServerResource {
         
     }
     
-    private void loadFields(FileItemIterator fileIterator, Map<String, 
-    		String> formFieldstoLoad, Map<String, File> filesToLoad) throws FileUploadException, IOException {
-    	
-    	while (fileIterator.hasNext()) {
-    		FileItemStream fi = fileIterator.next();
-    		String fieldName = fi.getFieldName();
-    		if (fi.isFormField()) {
-    			if (formFieldstoLoad.containsKey(fieldName)) {
-    				formFieldstoLoad.put(fieldName, IOUtils.toString(fi.openStream()));
-    			}
-    		} else {
-    			if (filesToLoad.containsKey(fieldName)) {
-        			String fileContent = IOUtils.toString(fi.openStream());
-        			String fileName = fi.getName();
-        			File file = createTmpFile(fileContent, fileName);
-    				filesToLoad.put(fieldName, file);
-        		}
-    		}
-    	}
-    }
-    
-    private File createTmpFile(String content, String fileName) throws IOException {
-		File tempFile = File.createTempFile(fileName, null);
-		IOUtils.write(content, new FileOutputStream(tempFile));
-		return tempFile;
-	}
-
     @Delete
     public StringRepresentation stopJob() throws IOException, GeneralSecurityException {
         JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();

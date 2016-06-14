@@ -74,8 +74,8 @@ public class RSAUtils {
 		String privateKeyPEM = key;
 
 		// Remove the first and last lines
-		privateKeyPEM = privateKeyPEM.replace("-----BEGIN PRIVATE KEY-----n",
-				"");
+		privateKeyPEM = privateKeyPEM
+				.replace("-----BEGIN PRIVATE KEY-----", "");
 		privateKeyPEM = privateKeyPEM.replace("-----END PRIVATE KEY-----", "");
 
 		// Base64 decode data
@@ -117,7 +117,7 @@ public class RSAUtils {
 		String publicKeyPEM = key;
 
 		// Remove the first and last lines
-		publicKeyPEM = publicKeyPEM.replace("-----BEGIN PUBLIC KEY-----n", "");
+		publicKeyPEM = publicKeyPEM.replace("-----BEGIN PUBLIC KEY-----", "");
 		publicKeyPEM = publicKeyPEM.replace("-----END PUBLIC KEY-----", "");
 
 		// Base64 decode data
@@ -200,8 +200,8 @@ public class RSAUtils {
 			throws IOException, GeneralSecurityException {
 		Cipher cipher = Cipher.getInstance("RSA");
 		cipher.init(Cipher.DECRYPT_MODE, privateKey);
-		return new String(cipher.doFinal(org.bouncycastle.util.encoders.Base64.decode(cipherText)),
-				"UTF-8");
+		return new String(cipher.doFinal(org.bouncycastle.util.encoders.Base64
+				.decode(cipherText)), "UTF-8");
 	}
 
 	public static KeyPair generateKeyPair() throws NoSuchAlgorithmException {
@@ -232,11 +232,13 @@ public class RSAUtils {
 		return new String(org.bouncycastle.util.encoders.Base64.encode(spec
 				.getEncoded()));
 	}
-	
-	public static String savePublicKeyInPEMFormat(PublicKey publicKey) throws IOException {
+
+	public static String savePublicKeyInPEMFormat(PublicKey publicKey)
+			throws IOException {
 		StringWriter writer = new StringWriter();
 		PemWriter pemWriter = new PemWriter(writer);
-		pemWriter.writeObject(new PemObject("PUBLIC KEY", publicKey.getEncoded()));
+		pemWriter.writeObject(new PemObject("PUBLIC KEY", publicKey
+				.getEncoded()));
 		pemWriter.flush();
 		pemWriter.close();
 		return writer.toString();

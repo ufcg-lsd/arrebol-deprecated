@@ -3,7 +3,6 @@ package org.fogbowcloud.app;
 import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -16,7 +15,6 @@ import org.fogbowcloud.app.model.JDFTasks;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.fogbowcloud.app.utils.AuthUtils;
-import org.fogbowcloud.app.utils.RSAUtils;
 import org.fogbowcloud.scheduler.core.ManagerTimer;
 import org.fogbowcloud.scheduler.core.Scheduler;
 import org.fogbowcloud.scheduler.core.model.Job;
@@ -271,12 +269,16 @@ public class ArrebolController {
 		if (this.nonces.contains(nonceValue)) {
 			JSONObject userJSON;
 			try {
-				userJSON = new JSONObject(userList.get(username));
+				String userJSONString = userList.get(username);
+				if (userJSONString == null) {
+					return false;
+				}
+				userJSON = new JSONObject(userJSONString);
 			} catch (JSONException e) {
 				return false;
 			}
 			User user = User.fromJSON(userJSON);
-			if (AuthUtils.checkUserInAuthToken(hash, user, nonceValue)) {
+			if (AuthUtils.checkUserSignature(hash, user, nonceValue)) {
 				nonces.remove(nonceValue);
 				return true;
 			}
@@ -312,10 +314,9 @@ public class ArrebolController {
 		return user;
 	}
 
-	public User addUser(String username, KeyPair keyPair) {
+	public User addUser(String username, String publicKey) {
 		try {
-			User user = new User(username, RSAUtils.savePrivateKey(
-					keyPair.getPrivate()), RSAUtils.savePublicKey(keyPair.getPublic()));
+			User user = new User(username, publicKey);
 			this.userList.put(username, user.toJSON().toString());
 			this.usersDB.commit();
 			return user;

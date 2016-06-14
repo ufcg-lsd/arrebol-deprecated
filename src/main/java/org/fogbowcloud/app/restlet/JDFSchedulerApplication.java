@@ -90,7 +90,7 @@ public class JDFSchedulerApplication extends Application {
 	public String addJob(String jdfFilePath, String schedPath,
 			String friendlyName, String owner) throws CompilerException {
 		return this.arrebolController.addJob(jdfFilePath, schedPath,
-				friendlyName, owner);
+				owner, friendlyName);
 	}
 
 	public ArrayList<JDFJob> getAllJobs(String owner) {
@@ -126,7 +126,7 @@ public class JDFSchedulerApplication extends Application {
 		return this.arrebolController.getUser(username);
 	}
 
-	public User addUser(String username, KeyPair keyPair) {
-		return this.arrebolController.addUser(username, keyPair);
+	public User addUser(String username, String publicKey) {
+		return this.arrebolController.addUser(username, publicKey);
 	}
 }

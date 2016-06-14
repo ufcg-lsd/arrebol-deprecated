@@ -1,14 +1,16 @@
 package org.fogbowcloud.app.resource;
 
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPublicKey;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
-import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
-import org.fogbowcloud.app.utils.RSAUtils;
-import org.restlet.data.Form;
+import org.fogbowcloud.app.utils.ServerResourceUtils;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
@@ -21,41 +23,36 @@ public class UserResource extends ServerResource {
 	private static final String REQUEST_ATTR_PUBLICKEY = "publicKey";
 	
 	@Post
-	public Representation createUser(Representation entity) throws ResourceException {
-		Form form = new Form(entity);
+	public Representation createUser(Representation entity) 
+			throws ResourceException, FileUploadException, IOException {
 		JDFSchedulerApplication app = (JDFSchedulerApplication) getApplication();
-		checkMandatoryAttributes(form);
 		
-		String username = form.getFirstValue(REQUEST_ATTR_USERNAME);
+		Map<String, String> fieldMap = new HashMap<String, String>();
+    	fieldMap.put(REQUEST_ATTR_USERNAME, null);
+    	Map<String, File> fileMap = new HashMap<String, File>();
+    	fileMap.put(REQUEST_ATTR_PUBLICKEY, null);
+    	
+    	ServerResourceUtils.loadFields(entity, fieldMap, fileMap);
+		checkMandatoryAttributes(fieldMap, fileMap);
+		
+		String username = fieldMap.get(REQUEST_ATTR_USERNAME);
+		File publicKeyFile = fileMap.get(REQUEST_ATTR_PUBLICKEY);
 		if (app.getUser(username) != null) {
 			throw new ResourceException(HttpStatus.SC_BAD_REQUEST);
 		}
-		KeyPair keyPair;
-		try {
-			keyPair = RSAUtils.generateKeyPair();
-		} catch (NoSuchAlgorithmException e) {
-			throw new ResourceException(HttpStatus.SC_INTERNAL_SERVER_ERROR, 
-					"Internal Server Error", "Could not create the user's key pair.", "");
-		}
-		
-		User user = app.addUser(username, keyPair);
+		String publicKey = IOUtils.toString(new FileInputStream(publicKeyFile));
+		app.addUser(username, publicKey);
 		setStatus(Status.SUCCESS_CREATED);
-		RSAPublicKey publicKey = null;
-		String pemPublicKey = null;
-		try {
-			publicKey = RSAUtils.getPublicKeyFromString(user.getPublicKey());
-			pemPublicKey = RSAUtils.savePublicKeyInPEMFormat(publicKey);
-		} catch (Exception e) {
-			//TODO catches an exception, need to remove the user
-		}
-		return new StringRepresentation(pemPublicKey);
+		return new StringRepresentation("OK");
 	}
 
-	private void checkMandatoryAttributes(Form form) {
-		String username = form.getFirstValue(REQUEST_ATTR_USERNAME);
-		if (username == null || username.isEmpty()) {
+	private void checkMandatoryAttributes(Map<String, String> fieldMap,
+			Map<String, File> fileMap) {
+		String username = fieldMap.get(REQUEST_ATTR_USERNAME);
+		File publicKey = fileMap.get(REQUEST_ATTR_PUBLICKEY);
+		if (username == null || username.isEmpty() 
+				|| publicKey == null || !publicKey.exists()) {
 			throw new ResourceException(HttpStatus.SC_BAD_REQUEST);
 		}
 	}
-	
 }
