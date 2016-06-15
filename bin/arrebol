@@ -96,13 +96,6 @@ do_stop() {
         fi
 }
 
-do_getui() {
-	define_parameters $@
-	hash=$(echo -n $username$nonce | openssl dgst -sha1 -binary -sign $privateKeyFile | base64 | awk 'BEGIN{ORS="*";} {print}')
-	response=$(curl -G -H "X-auth-nonce: $nonce" -H "X-auth-username: $username" -H "X-auth-hash: $hash" "$host/arrebol/job/ui" 2> /dev/null)
-	echo $response
-}
-
 create_user() {
 	if [ $# -eq 2 ]
 	then
@@ -128,33 +121,31 @@ create_user() {
 
 if [ $# -gt 0 ]
 then
-do_get_nonce
-	op=$1
+    op=$1
     case "$op" in
         GET)
             shift
+            do_get_nonce
             do_get $@
-            ;;
+        ;;
         POST)
             shift
+            do_get_nonce
             do_post $@
-            ;;
+        ;;
         STOP)
             shift
+            do_get_nonce
             do_stop $@
-            ;;
-        GETUI)
+        ;;
+        CREATEUSER)
             shift
-            do_getui
-            ;;
-	CREATEUSER)
-	    shift
-	    create_user $@
-	    ;;
+            create_user $@
+        ;;
         *)
             print_menu
             exit 1
-            ;;
+        ;;
     esac
 else
 	print_menu
