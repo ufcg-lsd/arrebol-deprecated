@@ -103,15 +103,13 @@ create_user() {
 		arrebol_certificates_dir="$HOME/.arrebol/$username"
 		echo "Creating certificates directory for the user $username: $arrebol_certificates_dir"
 		mkdir -p $arrebol_certificates_dir
-		echo "Generating your private key file in PEM format"
-		openssl genrsa -des3 -out "$arrebol_certificates_dir/private.pem" 2048
 		echo "Generating your private key file in RSA format"
-		openssl rsa -in "$arrebol_certificates_dir/private.pem" -out "$arrebol_certificates_dir/private.rsa"
-		echo "Generating your public key file in PEM format"
-		openssl rsa -in "$arrebol_certificates_dir/private.pem" -outform PEM -pubout -out "$arrebol_certificates_dir/public.pem"
+		openssl genrsa -out "$arrebol_certificates_dir/private.rsa" 2048
+		echo "Generating your public key file in RSA format"
+		openssl rsa -in "$arrebol_certificates_dir/private.rsa" -outform PEM -pubout -out "$arrebol_certificates_dir/public.rsa"
 		echo "Your public and private keys are in: $arrebol_certificates_dir"
-		echo "Requesting the creation of the user $username with the public key in $arrebol_certificates_dir/public.pem"
-		response=$(curl -X POST --form "username=$username" --form "publicKey=@$arrebol_certificates_dir/public.pem" "$host/arrebol/user" 2> /dev/null)
+		echo "Requesting the creation of the user $username with the public key in $arrebol_certificates_dir/public.rsa"
+		response=$(curl -X POST --form "username=$username" --form "publicKey=@$arrebol_certificates_dir/public.rsa" "$host/arrebol/user" 2> /dev/null)
 		echo $response
 	else
 		print_menu
