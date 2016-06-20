@@ -10,6 +10,7 @@ infra_initial_specs_block_creating=true
 	
 infra_fogbow_manager_base_url=http://150.165.15.81:8182
 infra_fogbow_token_public_key_filepath=/home/username/Dev/cert
+infra_fogbow_token_update_plugin=org.fogbowcloud.infrastructure.plugin.KeystoneTokenUpdatePlugin
 
 accounting_datastore_url=jdbc:h2:/home/username/Dev/orders
 execution_monitor_period=60000
