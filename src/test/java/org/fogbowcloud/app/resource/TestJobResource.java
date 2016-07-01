@@ -18,6 +18,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.fogbowcloud.app.NameAlreadyInUseException;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
@@ -79,7 +80,8 @@ public class TestJobResource {
 		HttpGet get = new HttpGet(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX + "/" + jobName);
 		get.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));
 		
-		JDFJob job = new JDFJob("schedPath", jobName, owner);
+		JDFJob job = new JDFJob("schedPath", owner);
+		job.setFriendlyName(jobName);
 		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.eq(jobName), Mockito.eq(owner))).thenReturn(job);
 		
 		HttpClient client = HttpClients.createMinimal();
@@ -101,9 +103,9 @@ public class TestJobResource {
 		get.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));	
 		
 		ArrayList<JDFJob> jobs = new ArrayList<JDFJob>();
-		jobs.add(new JDFJob("schedPath", jobName, owner));
-		jobs.add(new JDFJob("schedPathTwo", "jobNameTwo", owner));
-		jobs.add(new JDFJob("schedPathThree", "jobNameThree", owner));
+		jobs.add(new JDFJob("schedPath", owner));
+		jobs.add(new JDFJob("schedPathTwo", owner));
+		jobs.add(new JDFJob("schedPathThree", owner));
 		Mockito.when(resourceTestUtil.getArrebolController().getAllJobs(Mockito.eq(owner))).thenReturn(jobs);
 		
 		HttpClient client = HttpClients.createMinimal();
@@ -156,14 +158,14 @@ public class TestJobResource {
 		post.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));
 		
 		String jobName = "jobName00";
-		JDFJob job = new JDFJob("schedPath", jobName, owner);
+		JDFJob job = new JDFJob("schedPath", owner);
 		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.eq(jobName), Mockito.eq(owner))).thenReturn(job);
 		String jdfFilePath = "jdfFilePath";
 		String schedPath = "schedPath";
 		String friendlyName = "friendly";
 		String jobId = "jobId00";
 		Mockito.when(resourceTestUtil.getArrebolController().addJob(Mockito.eq(jdfFilePath), Mockito.eq(
-				schedPath), Mockito.eq(friendlyName), Mockito.eq(owner))).thenReturn(jobId);
+				schedPath), Mockito.eq(owner))).thenReturn(jobId);
 		
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.addTextBody(JobResource.SCHED_PATH, schedPath, ContentType.TEXT_PLAIN);
@@ -188,14 +190,14 @@ public class TestJobResource {
 		post.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));
 		
 		String jobName = "jobName00";
-		JDFJob job = new JDFJob("schedPath", jobName, owner);
+		JDFJob job = new JDFJob("schedPath", owner);
 		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.eq(jobName), Mockito.eq(owner))).thenReturn(job);
 		String jdfFilePath = "jdfFilePath";
 		String schedPath = "schedPath";
 		String friendlyName = "friendly";
 		String jobId = "jobId00";
 		Mockito.when(resourceTestUtil.getArrebolController().addJob(Mockito.eq(jdfFilePath), Mockito.eq(
-				schedPath), Mockito.eq(friendlyName), Mockito.eq(owner))).thenReturn(jobId);
+				schedPath),Mockito.eq(owner))).thenReturn(jobId);
 		
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.addTextBody(JobResource.SCHED_PATH, schedPath, ContentType.TEXT_PLAIN);
@@ -214,8 +216,9 @@ public class TestJobResource {
 		HttpPost post = new HttpPost(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
 		post.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));
 		
-		JDFJob job = new JDFJob("", "", owner);
-		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.anyString(), Mockito.anyString())).thenReturn(job);
+		JDFJob job = new JDFJob("", owner);
+		job.setFriendlyName("friendlyName");
+		Mockito.when(resourceTestUtil.getArrebolController().addJob(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenThrow(new NameAlreadyInUseException("in user"));
 		String jdfFilePath = "jdfFilePath";
 		String schedPath = "schedPath";
 		
@@ -228,7 +231,7 @@ public class TestJobResource {
 		
 		HttpResponse response = HttpClients.createMinimal().execute(post);
 		
-		Assert.assertEquals(HttpStatus.SC_NOT_ACCEPTABLE, response.getStatusLine().getStatusCode()); 
+		Assert.assertEquals(HttpStatus.SC_BAD_REQUEST, response.getStatusLine().getStatusCode()); 
 	}	
 	
 	@Test
@@ -238,13 +241,13 @@ public class TestJobResource {
 		post.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));
 		
 		String jobName = "jobName00";
-		JDFJob job = new JDFJob("schedPath", jobName, owner);
+		JDFJob job = new JDFJob("schedPath", owner);
 		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.eq(jobName), Mockito.anyString())).thenReturn(job);
 		String jdfFilePath = "jdfFilePath";
 		String schedPath = "schedPath";
 		String friendlyName = "friendly";
 		Mockito.when(resourceTestUtil.getArrebolController().addJob(Mockito.eq(jdfFilePath), Mockito.eq(
-				schedPath), Mockito.eq(friendlyName), Mockito.eq(owner))).thenThrow(new CompilerException(""));
+				schedPath), Mockito.eq(owner))).thenThrow(new CompilerException(""));
 		
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.addTextBody(JobResource.SCHED_PATH, schedPath, ContentType.TEXT_PLAIN);

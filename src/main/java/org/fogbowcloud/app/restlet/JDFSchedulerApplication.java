@@ -8,6 +8,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.ArrebolController;
+import org.fogbowcloud.app.NameAlreadyInUseException;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.resource.AuthenticationResource;
@@ -83,14 +84,8 @@ public class JDFSchedulerApplication extends Application {
 	}
 
 	public String addJob(String jdfFilePath, String schedPath, String owner)
-			throws CompilerException {
+			throws CompilerException, NameAlreadyInUseException {
 		return this.arrebolController.addJob(jdfFilePath, schedPath, owner);
-	}
-
-	public String addJob(String jdfFilePath, String schedPath,
-			String friendlyName, String owner) throws CompilerException {
-		return this.arrebolController.addJob(jdfFilePath, schedPath,
-				owner, friendlyName);
 	}
 
 	public ArrayList<JDFJob> getAllJobs(String owner) {

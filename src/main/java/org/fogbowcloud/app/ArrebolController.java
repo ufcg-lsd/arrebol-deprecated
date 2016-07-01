@@ -168,17 +168,15 @@ public class ArrebolController {
 		return null;
 	}
 
-	public String addJob(String jdfFilePath, String schedPath, String owner)
-			throws CompilerException {
-		return addJob(jdfFilePath, schedPath, owner, "");
-	}
-
-	public String addJob(String jdfFilePath, String schedPath, String owner,
-			String friendlyName) throws CompilerException {
-		JDFJob job = new JDFJob(schedPath, friendlyName, owner);
+	public String addJob(String jdfFilePath, String schedPath, String owner) throws CompilerException, NameAlreadyInUseException {
+		JDFJob job = new JDFJob(schedPath, owner);
 
 		List<Task> taskList = getTasksFromJDFFile(jdfFilePath, schedPath, job);
 
+		if (getJobByName(job.getName(), owner) != null) {
+			throw new NameAlreadyInUseException("The name " + job.getName() +" is already in use for the user "+ "owner");
+		}
+		
 		for (Task task : taskList) {
 			job.addTask(task);
 		}
@@ -295,7 +293,7 @@ public class ArrebolController {
 
 	protected List<Task> getTasksFromJDFFile(String jdfFilePath,
 			String schedPath, JDFJob job) throws CompilerException {
-		List<Task> taskList = JDFTasks.getTasksFromJDFFile(job.getId(),
+		List<Task> taskList = JDFTasks.getTasksFromJDFFile(job,
 				jdfFilePath, schedPath, this.properties);
 		return taskList;
 	}

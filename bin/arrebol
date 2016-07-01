@@ -6,7 +6,7 @@ print_menu() {
 	echo "Usage: $0 COMMAND [OPTIONS]"
 	echo "Commands are GET, POST, STOP or GETUI"
 	echo "GET | GET [job_id || friendly_name] -u | --username username -p | --privateKeyFile /privateKey/file/path"
-	echo "POST jdffilepath [s | --schedpath path] [-f | --friendly friendly_name] -u | --username username -p | --privateKeyFile /privateKey/file/path"
+	echo "POST jdffilepath [s | --schedpath path] -u | --username username -p | --privateKeyFile /privateKey/file/path"
 	echo "STOP [job_id || friendly_name] -u | --username username -p | --privateKeyFile /privateKey/file/path"
 	echo "CREATEUSER -u | --username username"
 	exit 1
@@ -69,10 +69,6 @@ do_post() {
                 if [[ $schedpath ]]
 		then
 			base_curl_cmd="${base_curl_cmd} --form schedpath=${schedpath}"
-		fi
-                if [[ $friendly ]]
-		then
-			base_curl_cmd="${base_curl_cmd} --form friendly=${friendly}"
 		fi
 		base_curl_cmd="${base_curl_cmd} $host/arrebol/job"
         	response=$($base_curl_cmd 2> /dev/null)

@@ -6,11 +6,14 @@ import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.naming.NameAlreadyBoundException;
+
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
+import org.fogbowcloud.app.NameAlreadyInUseException;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
@@ -159,7 +162,6 @@ public class JobResource extends ServerResource {
     	
     	Map<String, String> fieldMap = new HashMap<String, String>();
     	fieldMap.put(SCHED_PATH, null);
-    	fieldMap.put(FRIENDLY, null);
     	fieldMap.put(JDF_FILE_PATH, null);
     	fieldMap.put(AppPropertiesConstants.X_AUTH_USER, null);
     	fieldMap.put(AppPropertiesConstants.X_AUTH_NONCE, null);
@@ -172,7 +174,6 @@ public class JobResource extends ServerResource {
 			throw new ResourceException(HttpStatus.SC_BAD_REQUEST);
 		}
 		
-		String friendlyName = fieldMap.get(FRIENDLY);
 		String schedPath = fieldMap.get(SCHED_PATH);
 
         JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
@@ -188,23 +189,12 @@ public class JobResource extends ServerResource {
 		String owner = ResourceUtil.authenticateUser(application, 
 				headers);
         
-        JDFJob jobByName = application.getJobByName(friendlyName, owner);
-		if (jobByName != null) {
-            throw new ResourceException(HttpStatus.SC_NOT_ACCEPTABLE, "Friendly name already in use", 
-            		HttpStatus.getStatusText(HttpStatus.SC_NOT_ACCEPTABLE), friendlyName);
-        }
-
         String jdfAbsolutePath = fieldMap.get(JDF_FILE_PATH);
         
         try {
         	String jobId;
-            if (friendlyName != null) {
-            	LOGGER.debug("jdfpath <" + jdfAbsolutePath + ">" + " friendlyName <"+ friendlyName + ">" + " schedPath <" + schedPath +">");
-                jobId = application.addJob(jdfAbsolutePath, schedPath, friendlyName, owner);
-            } else {
             	LOGGER.debug("jdfpath <" + jdfAbsolutePath + ">" + " schedPath <" + schedPath +">");
                 jobId = application.addJob(jdfAbsolutePath, schedPath, owner);
-            }
             return new StringRepresentation(jobId, MediaType.TEXT_PLAIN);
         } catch (CompilerException ce) {
         	LOGGER.debug(ce.getMessage(), ce);
@@ -212,6 +202,9 @@ public class JobResource extends ServerResource {
         } catch (IllegalArgumentException iae) {
         	LOGGER.debug(iae.getMessage(), iae);
         	throw new ResourceException(HttpStatus.SC_BAD_REQUEST, iae);
+        } catch (NameAlreadyInUseException e) {
+        	LOGGER.debug(e.getMessage(), e);
+        	throw new ResourceException(HttpStatus.SC_BAD_REQUEST, e);
         }
         
         

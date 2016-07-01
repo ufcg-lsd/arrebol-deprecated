@@ -37,7 +37,7 @@ public class JDFTasks {
 
     /**
      *
-     * @param jobID
+     * @param job
      * @param jdfFilePath
      * @param schedPath
      * @param properties
@@ -45,7 +45,7 @@ public class JDFTasks {
      * @throws IllegalArgumentException
      * @throws CompilerException
      */
-    public static List<Task> getTasksFromJDFFile(String jobID, String jdfFilePath, String schedPath, Properties properties) throws CompilerException {
+    public static List<Task> getTasksFromJDFFile(JDFJob job, String jdfFilePath, String schedPath, Properties properties) throws CompilerException {
 
         ArrayList<Task> taskList = new ArrayList<Task>();
 
@@ -62,6 +62,8 @@ public class JDFTasks {
                 commonCompiler.compile(jdfFilePath, FileType.JDF);
 
                 JobSpecification jobSpec = (JobSpecification) commonCompiler.getResult().get(0);
+                
+                job.setFriendlyName(jobSpec.getLabel());
 
                 //Mapping attributes
 
@@ -100,11 +102,12 @@ public class JDFTasks {
                     task.putMetadata(TaskImpl.METADATA_LOCAL_OUTPUT_FOLDER, schedPath + properties.getProperty(LOCAL_OUTPUT_FOLDER));
                     task.putMetadata(TaskImpl.METADATA_SANDBOX, SANDBOX);
                     task.putMetadata(TaskImpl.METADATA_REMOTE_COMMAND_EXIT_PATH, properties.getProperty(REMOTE_OUTPUT_FOLDER) + "/exit");
-
-                    parseInputBlocks(jobID, taskSpec, task, schedPath);
-                    parseExecutable(jobID, taskSpec, task);
-                    parseOutputBlocks(jobID, taskSpec, task, schedPath);
-                    parseEpilogue(jobID, taskSpec, task);
+                    
+                    
+                    parseInputBlocks(job.getId(), taskSpec, task, schedPath);
+                    parseExecutable(job.getId(), taskSpec, task);
+                    parseOutputBlocks(job.getId(), taskSpec, task, schedPath);
+                    parseEpilogue(job.getId(), taskSpec, task);
 
                     taskList.add(task);
                     LOGGER.debug("Task spec: " + task.getSpecification().toString());
