@@ -16,7 +16,7 @@ public class ResourceUtil {
         String nonce = headers.getFirstValue(AppPropertiesConstants.X_AUTH_NONCE);
         String user = headers.getFirstValue(AppPropertiesConstants.X_AUTH_USER);
         String hash = headers.getFirstValue(AppPropertiesConstants.X_AUTH_HASH);
-        
+         
         if (!application.authUser(user, hash, nonce)) {
         	throw new ResourceException(HttpStatus.SC_UNAUTHORIZED);
         }

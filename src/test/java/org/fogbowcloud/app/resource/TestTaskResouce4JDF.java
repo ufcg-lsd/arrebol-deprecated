@@ -44,7 +44,7 @@ public class TestTaskResouce4JDF {
 		String owner = ResourceTestUtil.DEFAULT_OWNER;
 		get.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));
 		
-		Task task = new TaskImpl(taskId, new Specification("image", "username", "publicKey", "privateKeyFilePath"));
+		Task task = new TaskImpl(taskId, new Specification("image", "username", "publicKey", "privateKeyFilePath", "", ""));
 		task.putMetadata("keyOne", "metadataOne");
 		task.putMetadata("keyTwo", "metadataTwo");
 		Mockito.when(resourceTestUtil.getArrebolController().getTaskById(Mockito.eq(taskId), Mockito.eq(owner))).thenReturn(task);

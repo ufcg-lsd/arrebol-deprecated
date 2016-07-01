@@ -15,6 +15,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 
 public class JDFTasks {
 
@@ -75,7 +76,7 @@ public class JDFTasks {
                 }
 
                 Specification spec = new Specification(image, properties.getProperty(AppPropertiesConstants.INFRA_FOGBOW_USERNAME),
-                        properties.getProperty(PUBLIC_KEY_CONSTANT), properties.getProperty(PRIVATE_KEY_FILEPATH));
+                        properties.getProperty(PUBLIC_KEY_CONSTANT), properties.getProperty(PRIVATE_KEY_FILEPATH), "", "");
                 LOGGER.debug(properties.getProperty(AppPropertiesConstants.INFRA_FOGBOW_USERNAME));
 
                 int i = 0;
@@ -94,7 +95,7 @@ public class JDFTasks {
                 int taskID = 0;
                 for (TaskSpecification taskSpec : jobSpec.getTaskSpecs()) {
 
-                    Task task = new TaskImpl("TaskNumber" + taskID, spec);
+                    Task task = new TaskImpl("TaskNumber" + "-" + taskID + "-" + UUID.randomUUID(), spec);
                     task.putMetadata(TaskImpl.METADATA_REMOTE_OUTPUT_FOLDER, properties.getProperty(REMOTE_OUTPUT_FOLDER));
                     task.putMetadata(TaskImpl.METADATA_LOCAL_OUTPUT_FOLDER, schedPath + properties.getProperty(LOCAL_OUTPUT_FOLDER));
                     task.putMetadata(TaskImpl.METADATA_SANDBOX, SANDBOX);

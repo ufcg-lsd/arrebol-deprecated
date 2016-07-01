@@ -84,7 +84,7 @@ do_post() {
 }
 
 do_stop() {
-	if [ $# -eq 1 ]
+	if [ $# -eq 5 ]
 	then
 		define_parameters $@
 		hash=$(echo -n $username$nonce | openssl dgst -sha1 -binary -sign $privateKeyFile | base64 | awk 'BEGIN{ORS="*";} {print}')

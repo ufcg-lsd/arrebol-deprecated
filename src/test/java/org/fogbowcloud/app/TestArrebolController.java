@@ -176,7 +176,7 @@ public class TestArrebolController {
 	@Test
 	public void testGetTaskById() {
 		String taskId = "taskId00";
-		Task task = new TaskImpl(taskId, new Specification("image", "username", "publicKey", "privateKeyFilePath"));
+		Task task = new TaskImpl(taskId, new Specification("image", "username", "publicKey", "privateKeyFilePath", "", ""));
 		
 		ArrayList<Job> jobs = new ArrayList<Job>();
 		String owner = "owner";
@@ -192,7 +192,7 @@ public class TestArrebolController {
 	@Test
 	public void testGetTaskState() {
 		String taskId = "taskId00";
-		Task task = new TaskImpl(taskId, new Specification("image", "username", "publicKey", "privateKeyFilePath"));
+		Task task = new TaskImpl(taskId, new Specification("image", "username", "publicKey", "privateKeyFilePath", "", ""));
 		
 		ArrayList<Job> jobs = new ArrayList<Job>();
 		String owner = "owner";
