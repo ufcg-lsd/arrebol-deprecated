@@ -85,7 +85,9 @@ public class GalsGrammarReader implements GrammarReader {
 	public Grammar read( InputStream stream, Grammar toFillGrammar ) throws MalformedGrammarException,
 		FileNotFoundException, IOException {
 
-		this.reader = new BufferedReader( new InputStreamReader( stream ) );
+		InputStreamReader in = new InputStreamReader( stream );
+		
+		this.reader = new BufferedReader(in);
 		buildGrammar( toFillGrammar );
 		return this.grammar;
 	}

@@ -59,7 +59,8 @@ public class CommonCompiler implements Compiler {
 //	private String GDF_FILE_NAME = "/resources/specs/GDFGrammar.gals";
 
 //	private String SDF_FILE_NAME = "/resources/specs/SDFGrammar.gals";
-
+	
+//	private String JDF_FILE_NAME = "/home/igorvcs/git/arrebol/resources/specs/JDFGrammar.gals";
 	private String JDF_FILE_NAME = "/resources/specs/JDFGrammar.gals";
 
 	private static File sourceFile;
