@@ -20,6 +20,7 @@
 package org.fogbowcloud.app.jdfcompiler.main;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,7 +62,7 @@ public class CommonCompiler implements Compiler {
 //	private String SDF_FILE_NAME = "/resources/specs/SDFGrammar.gals";
 	
 //	private String JDF_FILE_NAME = "/home/igorvcs/git/arrebol/resources/specs/JDFGrammar.gals";
-	private String JDF_FILE_NAME = "/resources/specs/JDFGrammar.gals";
+	private String JDF_FILE_NAME = "resources/specs/JDFGrammar.gals";
 
 	private static File sourceFile;
 
@@ -92,7 +93,14 @@ public class CommonCompiler implements Compiler {
 	 */
 	public void compile( String sourceFileName, FileType languageType ) throws CompilerException {
 
-		this.openFiles( sourceFileName, languageType );
+		try {
+			this.openFiles( sourceFileName, languageType );
+		} catch (FileNotFoundException e) {
+			throw new CompilerException( CompilerMessages.BAD_LANGUAGE_TYPE );
+		}
+		System.out.println("file stream" +this.grammarFileStream);
+		System.out.println("factory"+ this.factory);
+		System.out.println("sourceFile" + CommonCompiler.sourceFile);
 		CommonSemanticAnalyzer semanticAnalyzer = this.buildSemanticAnalyzer( languageType );
 		CommonSyntacticalAnalyzer syntactical = (CommonSyntacticalAnalyzer) this
 				.buildSyntacticalAnalyzer( semanticAnalyzer );
@@ -192,8 +200,9 @@ public class CommonCompiler implements Compiler {
 	 * @param source the source file to be compiled.
 	 * @param languageType the language type of the file to be compiled.
 	 * @throws CompilerException If any of the files could not be found or read.
+	 * @throws FileNotFoundException 
 	 */
-	private void openFiles( String source, FileType languageType ) throws CompilerException {
+	private void openFiles( String source, FileType languageType ) throws CompilerException, FileNotFoundException {
 
 		// Validating the files
 		CommonCompiler.sourceFile = new File( source );
@@ -202,23 +211,22 @@ public class CommonCompiler implements Compiler {
 			throw new CompilerException( ioex.getMessage(), ioex );
 		}
 
-		String resourceURL = null;
-		switch ( languageType ) {
-			case JDF:
-				resourceURL = JDF_FILE_NAME;
-				break;
-//			case GDF:
-//				resourceURL = GDF_FILE_NAME;
+		String resourceURL = JDF_FILE_NAME;
+		this.grammarFileStream = new FileInputStream(new File(resourceURL));
+//		switch ( languageType ) {
+//			case JDF:
 //				break;
-//			case SDF:
-//				resourceURL = SDF_FILE_NAME;
-//				break;
-			case JDL:
-				return;
-			default:
-				throw new CompilerException( CompilerMessages.BAD_LANGUAGE_TYPE );
-		}
-		this.grammarFileStream = this.getClass().getResourceAsStream(resourceURL);
+////			case GDF:
+////				resourceURL = GDF_FILE_NAME;
+////				break;
+////			case SDF:
+////				resourceURL = SDF_FILE_NAME;
+////				break;
+//			case JDL:
+//				return;
+//			default:
+//				throw new CompilerException( CompilerMessages.BAD_LANGUAGE_TYPE );
+//		}
 	}
 
 

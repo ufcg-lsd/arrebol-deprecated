@@ -75,7 +75,7 @@ public class TestJobSpec {
 	public void testExSimpleJob2( ) throws Exception {
 
 		JobSpecification spec = DescriptionFileCompile.compileJDF( EXSIMPLE_JOB2 );
-		assertEquals( "SimpleJob", spec.getLabel() );
+		assertEquals( "SimpleJob2", spec.getLabel() );
 		// yes the label for SimpleJob2 has the same name as in SimpleJob
 		assertTrue( 2 == spec.getTaskSpecs().size() );
 	}
