@@ -251,13 +251,11 @@ public class JDLSemanticAnalyzer {
 	private static TaskSpecification parseTaskSpec(JobAd jobAd) {
 		String executable = parseExecCommand( jobAd );
 		
-		String epilogue = parseEpilogue( jobAd );
-		
 		InputBlock inputBlock = parseInput(jobAd);
 		
 		OutputBlock outputBlock = parseOutput(jobAd);
 		
-		TaskSpecification task = new TaskSpecification(jobAd.toString(), executable, inputBlock, outputBlock, epilogue);
+		TaskSpecification task = new TaskSpecification(jobAd.toString(), executable, inputBlock, outputBlock);
 		return task;
 	}
 	

@@ -16,12 +16,32 @@ public class TestJobSpec {
 
 	public static final String EXSIMPLE_JOB = "examples" + File.separator + "addJob" + File.separator + "simplejob.jdf";
 
+	public static final String EXSIMPLEST_JOB = "examples" + File.separator + "addJob" + File.separator + "simplestjob.jdf";
+
+	
 	public static final String EXSIMPLE_JOB2 = "examples" + File.separator + "addJob" + File.separator
 			+ "simplejob2.jdf";
 
 	public static final String EXSIMPLE_JOB3 = "examples" + File.separator + "addJob" + File.separator
 			+ "simplejob3.jdf";
+	
+	public static final String EXSIMPLE_JOB4 = "examples" + File.separator + "addJob" + File.separator
+			+ "NewSimpleJob.jdf";
+	
+	public static final String EXSIMPLE_JOB5 = "examples" + File.separator + "addJob" + File.separator
+			+ "NewSimpleJob2.jdf";
+	
+	public static final String EXSIMPLE_JOB6 = "examples" + File.separator + "addJob" + File.separator
+			+ "NewSimpleJob3.jdf";
+	
+	public static final String EXSIMPLE_JOB7 = "examples" + File.separator + "addJob" + File.separator
+			+ "NewSimpleJob4.jdf";
+	
 
+	public static final String EXSIMPLE_JOB8 = "examples" + File.separator + "addJob" + File.separator
+			+ "FJob.jdf";
+	
+	
 	public static final String RESOURCE_DIR = "test" + File.separator + "resources";
 
 	
@@ -70,7 +90,16 @@ public class TestJobSpec {
 
 	}
 
+	@Test
+	public void testSimplestJob( ) throws Exception {
 
+		JobSpecification spec = DescriptionFileCompile.compileJDF( EXSIMPLEST_JOB );
+		assertEquals( "SimpleJob", spec.getLabel() );		
+		assertTrue( 1 == spec.getTaskSpecs().size() );
+
+	}
+	
+	
 	@Test
 	public void testExSimpleJob2( ) throws Exception {
 
@@ -165,4 +194,50 @@ public class TestJobSpec {
 		assertTrue( 4 == spec.getTaskSpecs().size() );
 	}
 
+	@Test
+	public void testNewJobClausesMultiplePutOnInit( ) throws Exception {
+
+		JobSpecification spec = DescriptionFileCompile.compileJDF( EXSIMPLE_JOB4 );
+		assertEquals( "SimpleJob4", spec.getLabel() );		
+		assertTrue( 4 == spec.getTaskSpecs().size() );
+	}
+	
+	@Test
+	public void testNewJobRunningThingsOnInit( ) throws Exception {
+
+		JobSpecification spec = DescriptionFileCompile.compileJDF( EXSIMPLE_JOB5 );
+		assertEquals( "SimpleJob4", spec.getLabel() );		
+		assertTrue( 4 == spec.getTaskSpecs().size() );
+	}
+	
+	@Test
+	public void testNewJobRunningMoreThanOneLineOnRemote( ) throws Exception {
+
+		JobSpecification spec = DescriptionFileCompile.compileJDF( EXSIMPLE_JOB6 );
+		assertEquals( "SimpleJob4", spec.getLabel() );		
+		assertTrue( 4 == spec.getTaskSpecs().size() );
+	}
+	
+	
+	@Test
+	public void testNewJobRunningPutOnRemote( ) throws Exception {
+
+		JobSpecification spec = DescriptionFileCompile.compileJDF( EXSIMPLE_JOB7 );
+		assertEquals( "SimpleJob4", spec.getLabel() );
+		spec.getTaskSpecs().get(0).getInitBlock();
+		assertTrue( 4 == spec.getTaskSpecs().size() );
+	}
+	
+	@Test
+	public void testNewFJob( ) throws Exception {
+
+		JobSpecification spec = DescriptionFileCompile.compileJDF( EXSIMPLE_JOB8 );
+		assertEquals( "SimpleJob4", spec.getLabel() );
+		spec.getTaskSpecs().get(0).getInitBlock();
+		assertTrue( 3 == spec.getTaskSpecs().size() );
+	}
+	
+	
+	
+	
 }

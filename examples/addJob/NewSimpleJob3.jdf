@@ -1,0 +1,12 @@
+job : 
+label 	: SimpleJob
+init: 
+task :
+task :
+	  echo Hello World
+	  echo Hello Sky
+	  echo Hello Hello
+task :
+	  echo Hello World
+task :
+	  echo Hello World

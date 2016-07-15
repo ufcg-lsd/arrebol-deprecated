@@ -27,13 +27,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.fogbowcloud.app.jdfcompiler.CommonUtils;
+import org.fogbowcloud.app.jdfcompiler.semantic.Block;
 
 /**
  * This entity handles the input and output entries for a task.
  * 
  * @see IOEntry Created on Jul 1, 2004
  */
-public class IOBlock implements Serializable {
+public class IOBlock extends Block  implements Serializable {
 
 	/**
 	 * Serial identification of the class. It need to be changed only if the
@@ -47,6 +48,8 @@ public class IOBlock implements Serializable {
 	 * An empty constructor
 	 */
 	public IOBlock() {
+		super();
+		this.setBlockType(BlockType.IO);
 		entries = CommonUtils.createSerializableMap();
 	}
 

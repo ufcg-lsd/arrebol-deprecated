@@ -358,6 +358,7 @@ public class CommonGrammar implements Grammar {
 		for ( int i = 0; (hasEmpty) && (i < symbols.length); i++ ) {
 			hasEmpty = false;
 			Symbol nextSymbol = symbols[i];
+			System.out.println("Current symbol: "+ nextSymbol.toString());
 			Iterator<Symbol> firstIt = first( nextSymbol ).iterator();
 			while ( firstIt.hasNext() ) {
 				Symbol first = firstIt.next();

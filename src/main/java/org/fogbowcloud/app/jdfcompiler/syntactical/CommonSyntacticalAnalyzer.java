@@ -93,6 +93,7 @@ public class CommonSyntacticalAnalyzer implements SyntacticalAnalyzer {
 			while ( !sdt.top().equals( grammar.getEndOfSourceSymbol() ) ) {
 				if ( !sdt.top().equals( Symbol.EMPTY ) && !sdt.top().isSemanticAction() ) {
 					this.actualSymbol = this.getSymbolFromToken();
+					System.out.println("actual symbol: " + actualSymbol.getValue());
 				}
 
 				if ( sdt.top().isTerminal() ) {
@@ -154,10 +155,13 @@ public class CommonSyntacticalAnalyzer implements SyntacticalAnalyzer {
 				delim.addDelimiter( ' ' );
 				delim.addDelimiter( '\t' );
 				token = lexical.getToken( delim );
+				System.out.println("Token "+ token.getSymbol());
 			} else if ( operationalMode == MODE_READLINE ) {
 				TokenDelimiter delim = new TokenDelimiter();
 				delim.addDelimiter( '\n' );
+				System.out.println("Delimiters " +delim.toString());
 				token = lexical.getToken( delim );
+				System.out.println("Token "+ token.getSymbol());
 			}
 		} catch ( LexicalException lex ) {
 			throw new SyntacticalException( lex.getMessage(), lex );

@@ -1,0 +1,10 @@
+job : 
+label : SimpleJob
+init: 
+task :
+task :
+	  put a b
+task :
+	  echo Hello World
+task :
+	  echo Hello World

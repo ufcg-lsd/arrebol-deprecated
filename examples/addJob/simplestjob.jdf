@@ -1,0 +1,7 @@
+job : 
+label : SimpleJob
+task : GET a b
+	   PUT b a
+	   sleep time
+	   
+	   

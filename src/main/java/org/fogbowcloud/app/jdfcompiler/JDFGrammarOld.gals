@@ -57,18 +57,21 @@ VERSION
 <definitions>
 <requirements>
 <init>
-<blocks>
-<block>
+<remote>
+<final>
+<check>
+<inputBlocks>
 <inputBlock>
 <inputElse>
+<inputCommands>
 <inputCommand>
 <inCommand>
-<final>
+<outputBlocks>
 <outputBlock>
 <outputElse>
+<outputCommands>
 <outputCommand>
 <outCommand>
-<remote>
 <expression>
 <expression2>
 <and_Or>
@@ -77,30 +80,46 @@ VERSION
 <value>
 
 #Grammar
-<job> ::= JOB  ":" <label> #8 #33 #33 <taskList> #22 ;
+<job> ::= JOB  ":" <defaultTask> #8 <taskList> #22 ;
 <defaultTask> ::= <label> <requirements> <definitions> ;
 <label> ::= LABEL #26 ":" string #24 "\n"
 	| @ #25 ;
-<taskList> ::= TASK ":" <blocks> #9 <taskList> 
+<taskList> ::= TASK ":" <definitions> #9 <taskList> 
 	| @ ;
-<definitions> ::= <init> #33 <final> #33;
+<definitions> ::= <init> <remote> <final> <check> ;
 <requirements> ::= REQUIREMENTS ":" #10 <expression> "\n" #14 
 	| @ ;
-<init> ::= INIT ":" <blocks>  
+<init> ::= INIT ":" #15 <inputBlocks> #21 
 	| @  ;
-<blocks> ::=  <block> <blocks>
-	| <remote> "\n" <blocks>
+<inputBlocks> ::= <inputBlock> <inputBlocks>
  	| none "\n"
 	| @  ;
-<block> ::= <inputCommand> | <outputCommand> ;
-<inputCommand> ::= #17 <inCommand>  #26 string #18 string #18 #27 "\n" #19 #21 ;
+<inputBlock> ::= IF #10 <expression> #16 THEN <inputCommand> <inputCommands> <inputElse> ENDIF #12
+	| #17 <inputCommand> <inputCommands> #12 ;
+<inputElse> ::= ELSE #13 <inputCommand> <inputCommands>
+	| @ ;
+<inputCommands> ::= <inputCommand> <inputCommands>
+	| @ #20 ;
+<inputCommand> ::= <inCommand> #26 string #18 string #18 #27 "\n" #19 ;
 <inCommand> ::= PUT #18
 	| STORE #18 ;
-<final> ::= FINAL ":" <blocks> 
+<remote> ::= REMOTE ":" #28 string #4 #27 "\n"
 	| @  ;
-<outputCommand> ::= #17 <outCommand> #26 string #18 string #18 #27 "\n" #19 #23 ;
+<final> ::= FINAL ":" #15 <outputBlocks> #23
+	| @  ;
+<check> ::= CHECK ":" #28 string #29 #27 "\n"
+	| @	 ;
+<outputBlocks> ::= <outputBlock> <outputBlocks>
+ 	| none "\n"
+	| @  ;
+<outputBlock> ::= IF #10 <expression> #16 THEN <outputCommand> <outputCommands> <outputElse> ENDIF #12 
+	| #17 <outputCommand> <outputCommands> #12 ;
+<outputElse> ::= ELSE #13 <outputCommand> <outputCommands> 
+	| @ ;
+<outputCommands> ::= <outputCommand> <outputCommands>
+	| @ #20 ;
+<outputCommand> ::= <outCommand> #26 string #18 string #18 #27 "\n" #19 ;
 <outCommand> ::= GET #18 ;
-<remote> ::= #28 string "\n" #4 #27  ;
 <expression> ::= <expression2> <and_Or> ;
 <expression2> ::= "!" #11 <expression> 
 	| NOT #11 <expression>
@@ -125,4 +144,3 @@ VERSION
 	| ">=" #11 <value> 
 	| @ ;
 <value> ::= string #11 ;
-
