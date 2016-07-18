@@ -1,5 +1,11 @@
 job : 
 label : SimpleJob
+INIT : PUT a b
+	   dklamsdmal admasmdlkas
+FINAL : GET d n
+	    fmlsdmflçs dskmfmsdlfmlskdmflksd
+	    mdkfmsl
+	    GET d a	   
 task : 
 task : sleep
 	   GET a b

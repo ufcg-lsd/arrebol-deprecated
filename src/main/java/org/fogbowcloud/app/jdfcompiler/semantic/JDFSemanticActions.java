@@ -69,7 +69,9 @@ public class JDFSemanticActions implements SemanticActions {
 	// Job (default) attributes
 	private String jobRemoteScript = null;
 
-	private List<Block> initBlocks, finalBlocks, taskBlocks = new ArrayList<Block>();
+	private List<Block> initBlocks = new ArrayList<Block>();
+	private List<Block> finalBlocks = new ArrayList<Block>();
+	private List<Block> taskBlocks = new ArrayList<Block>();
 
 	private IOBlock jobInputEntries, jobOutputEntries = null;
 
@@ -315,13 +317,13 @@ public class JDFSemanticActions implements SemanticActions {
 	public void action19() throws SemanticException {
 		System.out.println("Calling 19");
 		System.out.println("stack is "+ stack.toString());
+		this.transferEntries = new IOBlock();
 		String place = stack.pop();	
 		String filePath = stack.pop();
 		String command = stack.pop();
 		String condition = stack.peek();
 		stack.clear();
 		IOEntry entry = buildEntry( command, filePath, place );
-		this.transferEntries = new IOBlock();
 		this.transferEntries.putEntry( condition, entry );
 	}
 
@@ -342,7 +344,7 @@ public class JDFSemanticActions implements SemanticActions {
 	public void action21() {
 		System.out.println("Calling 21");
 		if ( this.isJobAttrib == true ) {
-
+			System.out.println("Init block is " + initBlocks);
 			initBlocks.add(this.transferEntries);
 		} else {
 			taskBlocks.add(this.transferEntries);

@@ -77,13 +77,13 @@ VERSION
 <value>
 
 #Grammar
-<job> ::= JOB  ":" <defaultTask> #8 <taskList> #22 ;
+<job> ::= JOB  ":" <defaultTask> #8 #33 #33 <taskList> #22 ;
 <defaultTask> ::= <label> <requirements> <definitions> ;
 <label> ::= LABEL #26 ":" string #24 "\n"
 	| @ #25 ;
 <taskList> ::= TASK ":" <blocks> #9 <taskList> 
 	| @ ;
-<definitions> ::= <init> #33 <final> #33;
+<definitions> ::= <init> <final> ;
 <requirements> ::= REQUIREMENTS ":" #10 <expression> "\n" #14 
 	| @ ;
 <init> ::= INIT ":" <blocks>  
@@ -95,7 +95,7 @@ VERSION
 <inputCommand> ::= #17 <inCommand>  #26 string #18 string #18 #27 "\n" #19 #21 ;
 <inCommand> ::= PUT #18
 	| STORE #18 ;
-<final> ::= FINAL ":" <blocks> 
+<final> ::= FINAL ":" #33 <blocks> 
 	| @  ;
 <outputCommand> ::= #17 <outCommand> #26 string #18 string #18 #27 "\n" #19 #23 ;
 <outCommand> ::= GET #18 ;
