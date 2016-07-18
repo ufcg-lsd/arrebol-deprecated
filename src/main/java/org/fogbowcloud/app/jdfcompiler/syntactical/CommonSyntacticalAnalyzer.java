@@ -147,9 +147,12 @@ public class CommonSyntacticalAnalyzer implements SyntacticalAnalyzer {
 			this.executeSemanticAction();
 		int operationalMode = this.semantic.getOperationMode();
 		try {
-			if ( operationalMode == MODE_NORMAL )
+			if ( operationalMode == MODE_NORMAL ) {
+				System.out.println("caminho errado");
 				token = lexical.getToken();
+			}
 			else if ( operationalMode == MODE_READSTRING ) {
+				System.out.println("caminho errado");
 				TokenDelimiter delim = new TokenDelimiter();
 				delim.addDelimiter( '\n' );
 				delim.addDelimiter( ' ' );

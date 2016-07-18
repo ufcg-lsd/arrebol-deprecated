@@ -1,7 +1,20 @@
 job : 
 label : SimpleJob
-task : GET a b
+task : 
+task : sleep
+	   GET a b
 	   PUT b a
-	   sleep time
+	   sleep time place space | echo 2
+	   wrong
+	   PUT q a	   
 	   
-	   
+	   do something
+	   vazio
+task : 	  
+
+task : balsbaldbasl
+	   PUT up down
+	   nfglsfkdmnflsn mfksdjflknsdl fksdmnflksnld
+task : PUT a b
+       sleep 5
+task : PUT a b

@@ -77,7 +77,7 @@ VERSION
 <value>
 
 #Grammar
-<job> ::= JOB  ":" <defaultTask> #8 <taskList> #22 ;
+<job> ::= JOB  ":" <label> #8 #33 #33 <taskList> #22 ;
 <defaultTask> ::= <label> <requirements> <definitions> ;
 <label> ::= LABEL #26 ":" string #24 "\n"
 	| @ #25 ;
@@ -91,7 +91,7 @@ VERSION
 <blocks> ::=  <block> <blocks>
  	| none "\n"
 	| @  ;
-<block> ::= <inputCommand> | <outputCommand> | <remote> ;
+<block> ::= <inputCommand> | <outputCommand> | string #18 <remote> ;
 <inputCommand> ::= #17 <inCommand>  #26 string #18 string #18 #27 "\n" #19 #21 ;
 <inCommand> ::= PUT #18
 	| STORE #18 ;
@@ -99,8 +99,7 @@ VERSION
 	| @  ;
 <outputCommand> ::= #17 <outCommand> #26 string #18 string #18 #27 "\n" #19 #23 ;
 <outCommand> ::= GET #18 ;
-<remote> ::= string #18 #28 string #4 #27
- ;
+<remote> ::= string #28 string #4 #27  "\n" ;
 <expression> ::= <expression2> <and_Or> ;
 <expression2> ::= "!" #11 <expression> 
 	| NOT #11 <expression>

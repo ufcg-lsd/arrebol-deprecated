@@ -107,6 +107,7 @@ public class StringToken extends Token {
 			if ( next == '\\' ) {
 				next = this.checkSpecialChar( reader );
 			}
+			System.out.println("Next token is: " + next + " and delim "+ delimiters.contains(next));
 			buffer.append( next );
 			next = reader.readChar();
 		}

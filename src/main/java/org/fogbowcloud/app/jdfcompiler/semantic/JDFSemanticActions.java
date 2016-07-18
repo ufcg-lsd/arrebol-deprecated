@@ -30,6 +30,7 @@ import java.util.Stack;
 import org.fogbowcloud.app.jdfcompiler.CompilerMessages;
 import org.fogbowcloud.app.jdfcompiler.exception.JobSpecificationException;
 import org.fogbowcloud.app.jdfcompiler.exception.TaskSpecificationException;
+import org.fogbowcloud.app.jdfcompiler.grammar.Symbol;
 import org.fogbowcloud.app.jdfcompiler.job.IOBlock;
 import org.fogbowcloud.app.jdfcompiler.job.IOEntry;
 import org.fogbowcloud.app.jdfcompiler.job.JobSpecification;
@@ -150,15 +151,43 @@ public class JDFSemanticActions implements SemanticActions {
 	public void action4() {
 		System.out.println("Calling 4 symbol "+ actualToken.getSymbol());
 		if ( this.blockCounter == 0) {
-			RemoteBlock remBlock  = new RemoteBlock(actualToken.getSymbol());
+			String remote = stack.pop() + " " +actualToken.getSymbol();
+			RemoteBlock remBlock  = new RemoteBlock(remote);
 			System.out.println("content " +remBlock.getContent());
 			this.initBlocks.add(remBlock);
 		} else if (this.blockCounter == 1){
-			RemoteBlock remBlock  = new RemoteBlock(actualToken.getSymbol());
+			String remote = stack.pop() + " " +actualToken.getSymbol();
+			RemoteBlock remBlock  = new RemoteBlock(remote);
 			System.out.println("content " +remBlock.getContent());
 			this.finalBlocks.add(remBlock);
 		} else {
-			RemoteBlock remBlock  = new RemoteBlock(actualToken.getSymbol());
+			String remote = stack.pop() + " " +actualToken.getSymbol();
+			RemoteBlock remBlock  = new RemoteBlock(remote);
+			System.out.println("content " +remBlock.getContent());
+			this.taskBlocks.add(remBlock);
+		}
+	}
+	
+	/**
+	 * This action: Sets the actual script of the remote script. Actual can be
+	 * jobs (default) script if this.isJobAttrib == true It happens only when
+	 * the first tag "task:" was not found yet.
+	 */
+	public void action5() {
+		System.out.println("Calling 4 symbol "+ actualToken.getSymbol());
+		if ( this.blockCounter == 0) {
+			String remote = actualToken.getSymbol();
+			RemoteBlock remBlock  = new RemoteBlock(remote);
+			System.out.println("content " +remBlock.getContent());
+			this.initBlocks.add(remBlock);
+		} else if (this.blockCounter == 1){
+			String remote = actualToken.getSymbol();
+			RemoteBlock remBlock  = new RemoteBlock(remote);
+			System.out.println("content " +remBlock.getContent());
+			this.finalBlocks.add(remBlock);
+		} else {
+			String remote = actualToken.getSymbol();
+			RemoteBlock remBlock  = new RemoteBlock(remote);
 			System.out.println("content " +remBlock.getContent());
 			this.taskBlocks.add(remBlock);
 		}
@@ -290,6 +319,7 @@ public class JDFSemanticActions implements SemanticActions {
 		String filePath = stack.pop();
 		String command = stack.pop();
 		String condition = stack.peek();
+		stack.clear();
 		IOEntry entry = buildEntry( command, filePath, place );
 		this.transferEntries = new IOBlock();
 		this.transferEntries.putEntry( condition, entry );
