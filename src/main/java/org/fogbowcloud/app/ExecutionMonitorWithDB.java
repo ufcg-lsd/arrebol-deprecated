@@ -6,13 +6,13 @@ import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.model.JDFJob;
-import org.fogbowcloud.scheduler.core.model.Job;
-import org.fogbowcloud.scheduler.core.model.Job.TaskState;
-import org.fogbowcloud.scheduler.core.model.Resource;
-import org.fogbowcloud.scheduler.core.model.Task;
-import org.fogbowcloud.scheduler.core.Scheduler;
+import org.fogbowcloud.blowout.scheduler.core.model.Job;
+import org.fogbowcloud.blowout.scheduler.core.model.Job.TaskState;
+import org.fogbowcloud.blowout.scheduler.core.model.Resource;
+import org.fogbowcloud.blowout.scheduler.core.model.Task;
+import org.fogbowcloud.blowout.scheduler.core.Scheduler;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
-import org.fogbowcloud.scheduler.infrastructure.exceptions.InfrastructureException;
+import org.fogbowcloud.blowout.scheduler.infrastructure.exceptions.InfrastructureException;
 import org.mapdb.DB;
 
 public class ExecutionMonitorWithDB implements Runnable {

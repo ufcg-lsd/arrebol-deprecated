@@ -7,12 +7,12 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentMap;
 
 import org.fogbowcloud.app.model.JDFJob;
-import org.fogbowcloud.scheduler.core.Scheduler;
-import org.fogbowcloud.scheduler.core.model.Job;
-import org.fogbowcloud.scheduler.core.model.Job.TaskState;
-import org.fogbowcloud.scheduler.core.model.Specification;
-import org.fogbowcloud.scheduler.core.model.Task;
-import org.fogbowcloud.scheduler.core.model.TaskImpl;
+import org.fogbowcloud.blowout.scheduler.core.Scheduler;
+import org.fogbowcloud.blowout.scheduler.core.model.Job;
+import org.fogbowcloud.blowout.scheduler.core.model.Job.TaskState;
+import org.fogbowcloud.blowout.scheduler.core.model.Specification;
+import org.fogbowcloud.blowout.scheduler.core.model.Task;
+import org.fogbowcloud.blowout.scheduler.core.model.TaskImpl;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.junit.After;
 import org.junit.Assert;

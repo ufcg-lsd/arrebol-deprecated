@@ -1,9 +1,9 @@
 package org.fogbowcloud.app.model;
 
 import org.apache.log4j.Logger;
-import org.fogbowcloud.scheduler.core.model.*;
+import org.fogbowcloud.blowout.scheduler.core.model.*;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
-import org.fogbowcloud.scheduler.infrastructure.fogbow.FogbowRequirementsHelper;
+import org.fogbowcloud.blowout.scheduler.infrastructure.fogbow.FogbowRequirementsHelper;
 import org.ourgrid.common.specification.job.IOEntry;
 import org.ourgrid.common.specification.job.JobSpecification;
 import org.ourgrid.common.specification.job.TaskSpecification;

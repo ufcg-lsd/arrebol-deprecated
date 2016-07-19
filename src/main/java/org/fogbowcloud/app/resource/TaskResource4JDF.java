@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.fogbowcloud.scheduler.core.model.Task;
+import org.fogbowcloud.blowout.scheduler.core.model.Task;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;

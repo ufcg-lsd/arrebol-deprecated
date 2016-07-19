@@ -171,8 +171,6 @@
 	        <groupId>org.ourgrid</groupId>
 	        <artifactId>ourgrid</artifactId>
 	        <version>4.4.2</version>
-	        <scope>system</scope>
-	        <systemPath>/home/marcosancj/git/OurGrid/target/ourgrid-4.4.2.jar</systemPath>
       	</dependency>      	
       	
 		<dependency>
@@ -181,7 +179,11 @@
 		    <version>1.3.2</version>
 		</dependency>
 		
-		
+		<dependency>
+	        <groupId>sebal-scheduler</groupId>
+	        <artifactId>sebal-scheduler</artifactId>
+	        <version>0.0.1-SNAPSHOT</version>
+      	</dependency>
 		
 	</dependencies>
 </project>
