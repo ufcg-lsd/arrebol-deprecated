@@ -26,6 +26,7 @@ import org.fogbowcloud.app.jdfcompiler.CompilerMessages;
 import org.fogbowcloud.app.jdfcompiler.SpecialCharException;
 import org.fogbowcloud.app.jdfcompiler.TokenDelimiter;
 import org.fogbowcloud.app.jdfcompiler.io.CharReader;
+import org.fogbowcloud.app.jdfcompiler.syntactical.CommonSyntacticalAnalyzer;
 
 /**
  * It is a Token object that is recognized as a string at the CodesTable.
@@ -34,6 +35,9 @@ import org.fogbowcloud.app.jdfcompiler.io.CharReader;
  */
 public class StringToken extends Token {
 
+	private static transient final org.apache.log4j.Logger LOG = org.apache.log4j.Logger
+			.getLogger(StringToken.class);
+	
 	private CodesTable codesTable = CodesTable.getInstance();
 
 	/** Store all the special chars that are readed only after a "\" symbol. */
@@ -107,7 +111,7 @@ public class StringToken extends Token {
 			if ( next == '\\' ) {
 				next = this.checkSpecialChar( reader );
 			}
-			System.out.println("Next token is: " + next + " and delim "+ delimiters.contains(next));
+			LOG.debug("Next token is: " + next + " and delim "+ delimiters.contains(next));
 			buffer.append( next );
 			next = reader.readChar();
 		}

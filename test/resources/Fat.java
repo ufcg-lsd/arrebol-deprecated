@@ -52,10 +52,7 @@ public class Fat {
         }
         try{
             FileOutputStream fos = new FileOutputStream( file, true );
-            if( primo ){
-                fos.write( ( number +"\n" ).getBytes() );
-            }
-            else {
+            if (! primo) {
                 fos.write( (  min +"\n").getBytes() );
             }
             fos.close();

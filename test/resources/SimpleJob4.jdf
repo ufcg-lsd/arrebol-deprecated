@@ -2,6 +2,6 @@ job :
 label 	: SimpleJob4
 
 task :
-init 	: store mytask.sh $STORAGE/mytask-$JOB.sh
-remote 	: sh mytask-$JOB.sh mytask-$TASK.out
-final   : get mytask-$TASK.out mytask-$TASK.out
+	store mytask.sh $STORAGE/mytask-$JOB.sh
+	sh mytask-$JOB.sh mytask-$TASK.out
+	get mytask-$TASK.out mytask-$TASK.out

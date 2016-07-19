@@ -32,13 +32,13 @@ import org.fogbowcloud.app.jdfcompiler.semantic.exception.SemanticException;
 import org.fogbowcloud.app.jdfcompiler.token.Token;
 
 /**
- * @see org.ourgrid.common.specification.syntactical.SyntacticalDerivationTree Created on
- *      21/05/2004
+ * @see org.ourgrid.common.specification.syntactical.SyntacticalDerivationTree
+ *      Created on 21/05/2004
  */
 public class CommonSyntacticalAnalyzer implements SyntacticalAnalyzer {
 
 	private static transient final org.apache.log4j.Logger LOG = org.apache.log4j.Logger
-			.getLogger( CommonSyntacticalAnalyzer.class );
+			.getLogger(CommonSyntacticalAnalyzer.class);
 
 	private LexicalAnalyzer lexical;
 
@@ -60,27 +60,27 @@ public class CommonSyntacticalAnalyzer implements SyntacticalAnalyzer {
 
 	public static final int MODE_READSTRING = 2;
 
-
 	/**
 	 * The constructor.
 	 * 
-	 * @param lexical A lexical analyzer from where will be gotten the tokens
-	 *        from source.
-	 * @param grammar The grammar entity that knows validat the language
-	 *        sources.
-	 * @param semantic A semantic analyzer that will handle the execution of the
-	 *        semantic actions found as special token at grammar.
+	 * @param lexical
+	 *            A lexical analyzer from where will be gotten the tokens from
+	 *            source.
+	 * @param grammar
+	 *            The grammar entity that knows validat the language sources.
+	 * @param semantic
+	 *            A semantic analyzer that will handle the execution of the
+	 *            semantic actions found as special token at grammar.
 	 */
-	public CommonSyntacticalAnalyzer( LexicalAnalyzer lexical, Grammar grammar, SemanticAnalyzer semantic ) {
+	public CommonSyntacticalAnalyzer(LexicalAnalyzer lexical, Grammar grammar, SemanticAnalyzer semantic) {
 
 		this.lexical = lexical;
 		this.grammar = grammar;
 		this.semantic = null;
 		this.codesTable = CodesTable.getInstance();
-		this.sdt = new SyntacticalDerivationTree( grammar.getEndOfSourceSymbol(), grammar.getInitialSymbol() );
+		this.sdt = new SyntacticalDerivationTree(grammar.getEndOfSourceSymbol(), grammar.getInitialSymbol());
 		this.semantic = semantic;
 	}
-
 
 	/**
 	 * @see org.ourgrid.common.specification.syntactical.SyntacticalAnalyzer#startCompilation()
@@ -90,30 +90,29 @@ public class CommonSyntacticalAnalyzer implements SyntacticalAnalyzer {
 		try {
 			this.token = lexical.getToken();
 
-			while ( !sdt.top().equals( grammar.getEndOfSourceSymbol() ) ) {
-				if ( !sdt.top().equals( Symbol.EMPTY ) && !sdt.top().isSemanticAction() ) {
+			while (!sdt.top().equals(grammar.getEndOfSourceSymbol())) {
+				if (!sdt.top().equals(Symbol.EMPTY) && !sdt.top().isSemanticAction()) {
 					this.actualSymbol = this.getSymbolFromToken();
-					System.out.println("actual symbol: " + actualSymbol.getValue());
+					LOG.debug("actual symbol: " + actualSymbol.getValue());
 				}
 
-				if ( sdt.top().isTerminal() ) {
+				if (sdt.top().isTerminal()) {
 					// will check if the stack top and actual symbol are equals
 					checkSymbolsState();
-				} else if ( sdt.top().isSemanticAction() ) {
+				} else if (sdt.top().isSemanticAction()) {
 					executeSemanticAction();
 				} else { // sdt.top is a non terminal symbol!
 					prepareRuleToFollow();
 				}
 			}
 
-		} catch ( LexicalException lex ) {
-			throw new SyntacticalException( lex.getMessage(), lex );
-		} catch ( SemanticException sex ) {
-			throw new SyntacticalException( sex.getMessage(), sex );
+		} catch (LexicalException lex) {
+			throw new SyntacticalException(lex.getMessage(), lex);
+		} catch (SemanticException sex) {
+			throw new SyntacticalException(sex.getMessage(), sex);
 		}
 
 	}
-
 
 	/*
 	 * Checks if the terminal symbol at the stack top and the symbol from source
@@ -121,19 +120,18 @@ public class CommonSyntacticalAnalyzer implements SyntacticalAnalyzer {
 	 */
 	private void checkSymbolsState() throws SyntacticalException, SemanticException {
 
-		if ( actualSymbol.equals( sdt.top() ) ) {
+		if (actualSymbol.equals(sdt.top())) {
 			sdt.pop();
 			getNewToken();
-		} else if ( sdt.top().equals( Symbol.EMPTY ) ) {
+		} else if (sdt.top().equals(Symbol.EMPTY)) {
 			sdt.pop();
 		} else {
-			LOG.error( "The stack top and the next symbol should be equals." );
-			throw new SyntacticalException( CompilerMessages.SYNTACTICAL_COMPILATION_PROBLEM( token, sdt.top()
-					.getValue() ) );
+			LOG.error("The stack top and the next symbol should be equals.");
+			throw new SyntacticalException(
+					CompilerMessages.SYNTACTICAL_COMPILATION_PROBLEM(token, sdt.top().getValue()));
 		}
 
 	}
-
 
 	/*
 	 * It will call the functions of the lexical module checking before wich one
@@ -143,34 +141,30 @@ public class CommonSyntacticalAnalyzer implements SyntacticalAnalyzer {
 	 */
 	private void getNewToken() throws SyntacticalException, SemanticException {
 
-		while ( sdt.top().isSemanticAction() )
+		while (sdt.top().isSemanticAction())
 			this.executeSemanticAction();
 		int operationalMode = this.semantic.getOperationMode();
 		try {
-			if ( operationalMode == MODE_NORMAL ) {
-				System.out.println("caminho errado");
+			if (operationalMode == MODE_NORMAL) {
 				token = lexical.getToken();
-			}
-			else if ( operationalMode == MODE_READSTRING ) {
-				System.out.println("caminho errado");
+			} else if (operationalMode == MODE_READSTRING) {
 				TokenDelimiter delim = new TokenDelimiter();
-				delim.addDelimiter( '\n' );
-				delim.addDelimiter( ' ' );
-				delim.addDelimiter( '\t' );
-				token = lexical.getToken( delim );
-				System.out.println("Token "+ token.getSymbol());
-			} else if ( operationalMode == MODE_READLINE ) {
+				delim.addDelimiter('\n');
+				delim.addDelimiter(' ');
+				delim.addDelimiter('\t');
+				token = lexical.getToken(delim);
+				LOG.debug("Token " + token.getSymbol());
+			} else if (operationalMode == MODE_READLINE) {
 				TokenDelimiter delim = new TokenDelimiter();
-				delim.addDelimiter( '\n' );
-				System.out.println("Delimiters " +delim.toString());
-				token = lexical.getToken( delim );
-				System.out.println("Token "+ token.getSymbol());
+				delim.addDelimiter('\n');
+				LOG.debug("Delimiters " + delim.toString());
+				token = lexical.getToken(delim);
+				LOG.debug("Token " + token.getSymbol());
 			}
-		} catch ( LexicalException lex ) {
-			throw new SyntacticalException( lex.getMessage(), lex );
+		} catch (LexicalException lex) {
+			throw new SyntacticalException(lex.getMessage(), lex);
 		}
 	}
-
 
 	/*
 	 * Will search for a rule to follow based at the informations of the symbol
@@ -179,26 +173,25 @@ public class CommonSyntacticalAnalyzer implements SyntacticalAnalyzer {
 	 */
 	private void prepareRuleToFollow() throws SyntacticalException, SemanticException {
 
-		Rule toFollow = grammar.getRule( sdt.top(), actualSymbol );
-		if ( toFollow != null ) {
+		Rule toFollow = grammar.getRule(sdt.top(), actualSymbol);
+		if (toFollow != null) {
 			// will push the body of the rule at stack
 			sdt.pop();
-			sdt.pushRule( toFollow );
-		} else if ( actualSymbol.getValue().equals( "\\n" ) ) { // If did not
-																// found a rule
-																// but the
-																// actual token
-																// is a
-																// end-of-line
-																// symbol
+			sdt.pushRule(toFollow);
+		} else if (actualSymbol.getValue().equals("\\n")) { // If did not
+															// found a rule
+															// but the
+															// actual token
+															// is a
+															// end-of-line
+															// symbol
 			getNewToken();
 		} else {
-			LOG.error( "The stack top and the next symbol are non_terminal and should find a rule to follow." );
-			throw new SyntacticalException( CompilerMessages.SYNTACTICAL_COMPILATION_PROBLEM( token, sdt.top()
-					.getValue() ) );
+			LOG.error("The stack top and the next symbol are non_terminal and should find a rule to follow.");
+			throw new SyntacticalException(
+					CompilerMessages.SYNTACTICAL_COMPILATION_PROBLEM(token, sdt.top().getValue()));
 		}
 	}
-
 
 	/*
 	 * Will execute the semantic action at the top of the stack. @throws
@@ -207,9 +200,8 @@ public class CommonSyntacticalAnalyzer implements SyntacticalAnalyzer {
 	private void executeSemanticAction() throws SemanticException {
 
 		Symbol action = sdt.pop();
-		semantic.performAction( action.getValue(), token );
+		semantic.performAction(action.getValue(), token);
 	}
-
 
 	/*
 	 * Will get the right symbol from a token. It means that if it is necessary
@@ -217,16 +209,16 @@ public class CommonSyntacticalAnalyzer implements SyntacticalAnalyzer {
 	 */
 	private Symbol getSymbolFromToken() {
 
-		if ( token == null ) {
+		if (token == null) {
 			return Symbol.EOF;
 		}
 
-		Symbol toReturn = grammar.getSymbol( token.getSymbol() );
-		if ( toReturn != null ) {
-			grammar.getRule( sdt.top(), toReturn );
-			codesTable.getType( token.getSymbol() );
+		Symbol toReturn = grammar.getSymbol(token.getSymbol());
+		if (toReturn != null) {
+			grammar.getRule(sdt.top(), toReturn);
+			codesTable.getType(token.getSymbol());
 		} else {
-			toReturn = grammar.getSymbol( CodesTable.STRING );
+			toReturn = grammar.getSymbol(CodesTable.STRING);
 		}
 		return toReturn;
 	}

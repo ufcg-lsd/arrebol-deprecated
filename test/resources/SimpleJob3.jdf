@@ -2,13 +2,13 @@ job :
 label 	: SimpleJob
 
 task :
-remote 	: sleep 10
+sleep 10
 
 task :
-remote 	: sleep 14
+sleep 14
 
 task :
-remote 	: sleep 18
+sleep 18
 
 task :
-remote 	: sleep 20
+sleep 20

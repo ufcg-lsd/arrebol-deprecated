@@ -98,9 +98,9 @@ public class CommonCompiler implements Compiler {
 		} catch (FileNotFoundException e) {
 			throw new CompilerException( CompilerMessages.BAD_LANGUAGE_TYPE );
 		}
-		System.out.println("file stream" +this.grammarFileStream);
-		System.out.println("factory"+ this.factory);
-		System.out.println("sourceFile" + CommonCompiler.sourceFile);
+		LOG.debug("file stream" +this.grammarFileStream);
+		LOG.debug("factory"+ this.factory);
+		LOG.debug("sourceFile" + CommonCompiler.sourceFile);
 		CommonSemanticAnalyzer semanticAnalyzer = this.buildSemanticAnalyzer( languageType );
 		CommonSyntacticalAnalyzer syntactical = (CommonSyntacticalAnalyzer) this
 				.buildSyntacticalAnalyzer( semanticAnalyzer );

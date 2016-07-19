@@ -13,6 +13,7 @@ import org.fogbowcloud.app.jdfcompiler.job.TaskSpecification;
 import org.fogbowcloud.app.jdfcompiler.main.CommonCompiler;
 import org.fogbowcloud.app.jdfcompiler.main.CommonCompiler.FileType;
 import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
+import org.fogbowcloud.app.jdfcompiler.semantic.JDLCommand;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.fogbowcloud.scheduler.core.model.Command;
 import org.fogbowcloud.scheduler.core.model.Resource;
@@ -138,7 +139,7 @@ public class JDFTasks {
      */
     private static void parseExecutable(String jobID, TaskSpecification taskSpec, Task task) throws IllegalArgumentException {
 
-        String exec = taskSpec.getRemoteExec();
+        List<JDLCommand> exec = taskSpec.getTaskBlocks();
         if (exec.contains(";")) {
             throw new IllegalArgumentException("Task \n-------\n" + taskSpec + " \n-------\ncould not be parsed as it contains more than one executable command.");
         }
@@ -150,19 +151,7 @@ public class JDFTasks {
         task.addCommand(command);
     }
 
-    /**
-     * This method replaces environment variables defined in the JDF to its
-     * values.
-     *
-     * @param string A string representing the remote executable command of the JDF job
-     * @return A string with the environment variables replaced
-     */
-    private static String parseEnvironmentVariables(String jobID, String taskID, String string) {
-        //FIXME: do we still need playpen and and storage variables ?
-        return string.replaceAll("\\$JOB", jobID).replaceAll("\\$TASK",
-                taskID).replaceAll("\\$PLAYPEN", ".").replaceAll("\\$STORAGE", ".");
-    }
-
+    
     /**
      * This method translates the JDF sabotage check command to the
      * JDL epilogue command
@@ -193,7 +182,7 @@ public class JDFTasks {
      */
     private static void parseInputBlocks(String jobID, TaskSpecification taskSpec, Task task, String schedPath) {
 
-        List<IOEntry> initBlocks = taskSpec.getInitBlock().getEntry("");
+        List<IOEntry> initBlocks = taskSpec.getInitBlocks().getEntry("");
         if (initBlocks == null) {
             return;
         }
@@ -239,7 +228,7 @@ public class JDFTasks {
      */
     private static void parseOutputBlocks(String jobID, TaskSpecification taskSpec, Task task, String schedPath) {
 
-        List<IOEntry> finalBlocks = taskSpec.getFinalBlock().getEntry("");
+        List<IOEntry> finalBlocks = taskSpec.getFinalBlocks().getEntry("");
         if (finalBlocks == null) {
             return;
         }

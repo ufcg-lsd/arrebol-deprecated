@@ -1,5 +1,5 @@
 job:
-    label: my-simulation
+    label: SimpleJob4
     requirements: Glue2RAM >= 1024 AND Glue2CPU == 4
     init:
         put /home/fubica/common-in /tmp/common-in

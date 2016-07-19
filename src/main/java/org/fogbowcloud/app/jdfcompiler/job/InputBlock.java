@@ -23,13 +23,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.fogbowcloud.app.jdfcompiler.semantic.IOCommand;
+
 /**
  * This entity handles the input entries for a JDL compliant task.
  * 
  * @see IOEntry Created on Jul 1, 2004
  * @author Ricardo Araujo Santos - ricardo@lsd.ufcg.edu.br
  */
-public class InputBlock extends IOBlock {
+public class InputBlock extends IOCommand {
 
 	/**
 	 * Serial identification of the class. It need to be changed only if the

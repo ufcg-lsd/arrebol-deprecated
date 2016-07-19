@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  * 
  */
-package org.fogbowcloud.app.jdfcompiler.job;
+package org.fogbowcloud.app.jdfcompiler.semantic;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,14 +27,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.fogbowcloud.app.jdfcompiler.CommonUtils;
-import org.fogbowcloud.app.jdfcompiler.semantic.Block;
+import org.fogbowcloud.app.jdfcompiler.job.IOEntry;
 
 /**
  * This entity handles the input and output entries for a task.
  * 
  * @see IOEntry Created on Jul 1, 2004
  */
-public class IOBlock extends Block  implements Serializable {
+public class IOCommand extends JDLCommand  implements Serializable {
 
 	/**
 	 * Serial identification of the class. It need to be changed only if the
@@ -47,9 +47,9 @@ public class IOBlock extends Block  implements Serializable {
 	/**
 	 * An empty constructor
 	 */
-	public IOBlock() {
+	public IOCommand() {
 		super();
-		this.setBlockType(BlockType.IO);
+		this.setBlockType(JDLCommandType.IO);
 		entries = CommonUtils.createSerializableMap();
 	}
 
@@ -171,7 +171,7 @@ public class IOBlock extends Block  implements Serializable {
 			return false;
 		if ( getClass() != obj.getClass() )
 			return false;
-		final IOBlock other = (IOBlock) obj;
+		final IOCommand other = (IOCommand) obj;
 		if ( !(this.entries == null ? other.entries == null : this.entries.equals( other.entries )) )
 			return false;
 		return true;

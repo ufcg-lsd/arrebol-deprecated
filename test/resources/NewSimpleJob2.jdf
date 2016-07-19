@@ -1,9 +1,7 @@
 job : 
 label 	: SimpleJob4
-init: put x y
-      put near far
+init: sleep 5
 task :
-echo Hello World
 task :
 echo Hello World
 task :

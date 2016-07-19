@@ -1,12 +1,12 @@
 package org.fogbowcloud.app.jdfcompiler.semantic;
 
-public class RemoteBlock extends Block{
+public class RemoteBlock extends JDLCommand{
 
 	private String content;
 
 	public RemoteBlock(String content) {
 		super();
-		this.setBlockType(BlockType.REMOTE);
+		this.setBlockType(JDLCommandType.REMOTE);
 		this.content = content;
 	}
 	public String getContent() {

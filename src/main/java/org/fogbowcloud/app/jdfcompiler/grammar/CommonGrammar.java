@@ -28,6 +28,7 @@ import java.util.Stack;
 import java.util.TreeMap;
 
 import org.fogbowcloud.app.jdfcompiler.IgnoreCaseComparator;
+import org.fogbowcloud.app.jdfcompiler.syntactical.CommonSyntacticalAnalyzer;
 
 /**
  * From Project: Caymman(DSC/UFCG) Description: This class represents a LL(1)
@@ -39,6 +40,9 @@ import org.fogbowcloud.app.jdfcompiler.IgnoreCaseComparator;
  */
 
 public class CommonGrammar implements Grammar {
+	
+	private static transient final org.apache.log4j.Logger LOG = org.apache.log4j.Logger
+			.getLogger(CommonGrammar.class);
 
 	/* The struct that will contain all the rules of the grammar. */
 	private LinkedHashMap<Integer,Rule> rules;
@@ -358,7 +362,7 @@ public class CommonGrammar implements Grammar {
 		for ( int i = 0; (hasEmpty) && (i < symbols.length); i++ ) {
 			hasEmpty = false;
 			Symbol nextSymbol = symbols[i];
-			System.out.println("Current symbol: "+ nextSymbol.toString());
+			LOG.debug("Current symbol: "+ nextSymbol.toString());
 			Iterator<Symbol> firstIt = first( nextSymbol ).iterator();
 			while ( firstIt.hasNext() ) {
 				Symbol first = firstIt.next();
