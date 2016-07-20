@@ -13,16 +13,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.fogbowcloud.app.model.JDFJob;
-import org.fogbowcloud.scheduler.core.model.Job.TaskState;
-import org.fogbowcloud.scheduler.core.model.Resource;
-import org.fogbowcloud.scheduler.core.model.Task;
-import org.fogbowcloud.scheduler.core.model.TaskImpl;
-import org.fogbowcloud.app.ExecutionMonitorWithDB;
-import org.fogbowcloud.scheduler.core.Scheduler;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
-import org.fogbowcloud.scheduler.infrastructure.InfrastructureManager;
-import org.fogbowcloud.scheduler.infrastructure.exceptions.InfrastructureException;
-import org.fogbowcloud.sebal.ImageDataStore;
+import org.fogbowcloud.blowout.scheduler.core.Scheduler;
+import org.fogbowcloud.blowout.scheduler.core.model.Job.TaskState;
+import org.fogbowcloud.blowout.scheduler.core.model.Resource;
+import org.fogbowcloud.blowout.scheduler.core.model.Task;
+import org.fogbowcloud.blowout.scheduler.core.model.TaskImpl;
+import org.fogbowcloud.blowout.scheduler.infrastructure.InfrastructureManager;
+import org.fogbowcloud.blowout.scheduler.infrastructure.exceptions.InfrastructureException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +35,6 @@ public class TestExecutionMonitorWithDB {
 	public InfrastructureManager IM;
 	public Resource resource;
 	public String FAKE_TASK_ID = "FAKE_TASK_ID";
-	public ImageDataStore imageStore;
 	private CurrentThreadExecutorService executorService;
 	private DB db;
 	private HTreeMap<String, JDFJob> jobDB;
@@ -48,7 +45,6 @@ public class TestExecutionMonitorWithDB {
 		task = spy(new TaskImpl(FAKE_TASK_ID, null));
 		IM = mock(InfrastructureManager.class);
 		resource = mock(Resource.class);
-		imageStore = mock(ImageDataStore.class);
 		db = mock(DB.class);
 		jobDB = mock(HTreeMap.class);
 

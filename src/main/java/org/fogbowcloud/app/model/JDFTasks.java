@@ -1,12 +1,16 @@
 package org.fogbowcloud.app.model;
 
+import org.apache.log4j.Logger;
+import org.fogbowcloud.blowout.scheduler.core.model.*;
+import org.fogbowcloud.app.utils.AppPropertiesConstants;
+import org.fogbowcloud.blowout.scheduler.infrastructure.fogbow.FogbowRequirementsHelper;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
-import org.apache.log4j.Logger;
 import org.fogbowcloud.app.jdfcompiler.job.IOEntry;
 import org.fogbowcloud.app.jdfcompiler.job.JobSpecification;
 import org.fogbowcloud.app.jdfcompiler.job.TaskSpecification;
@@ -15,12 +19,6 @@ import org.fogbowcloud.app.jdfcompiler.main.CommonCompiler.FileType;
 import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.jdfcompiler.semantic.JDLCommand;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
-import org.fogbowcloud.scheduler.core.model.Command;
-import org.fogbowcloud.scheduler.core.model.Resource;
-import org.fogbowcloud.scheduler.core.model.Specification;
-import org.fogbowcloud.scheduler.core.model.Task;
-import org.fogbowcloud.scheduler.core.model.TaskImpl;
-import org.fogbowcloud.scheduler.infrastructure.fogbow.FogbowRequirementsHelper;
 
 public class JDFTasks {
 

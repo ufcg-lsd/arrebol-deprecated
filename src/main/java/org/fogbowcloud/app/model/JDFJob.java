@@ -1,7 +1,7 @@
 package org.fogbowcloud.app.model;
 
-import org.fogbowcloud.scheduler.core.model.Job;
-import org.fogbowcloud.scheduler.core.model.Task;
+import org.fogbowcloud.blowout.scheduler.core.model.Job;
+import org.fogbowcloud.blowout.scheduler.core.model.Task;
 
 import java.util.UUID;
 
