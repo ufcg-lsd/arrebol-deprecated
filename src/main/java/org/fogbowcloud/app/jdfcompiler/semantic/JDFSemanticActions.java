@@ -149,17 +149,17 @@ public class JDFSemanticActions implements SemanticActions {
 		LOG.debug("Calling 4 symbol "+ actualToken.getSymbol());
 		if ( this.blockCounter == 0) {
 			String remote = stack.pop() + " " +actualToken.getSymbol();
-			RemoteBlock remBlock  = new RemoteBlock(remote);
+			RemoteCommand remBlock  = new RemoteCommand(remote);
 			LOG.debug("content " +remBlock.getContent());
 			this.initBlocks.add(remBlock);
 		} else if (this.blockCounter == 1){
 			String remote = stack.pop() + " " +actualToken.getSymbol();
-			RemoteBlock remBlock  = new RemoteBlock(remote);
+			RemoteCommand remBlock  = new RemoteCommand(remote);
 			LOG.debug("content " +remBlock.getContent());
 			this.finalBlocks.add(remBlock);
 		} else {
 			String remote = stack.pop() + " " +actualToken.getSymbol();
-			RemoteBlock remBlock  = new RemoteBlock(remote);
+			RemoteCommand remBlock  = new RemoteCommand(remote);
 			LOG.debug("content " +remBlock.getContent());
 			this.taskBlocks.add(remBlock);
 		}

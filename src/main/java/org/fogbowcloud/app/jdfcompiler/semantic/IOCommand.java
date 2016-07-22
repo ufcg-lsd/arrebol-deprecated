@@ -36,13 +36,17 @@ import org.fogbowcloud.app.jdfcompiler.job.IOEntry;
  */
 public class IOCommand extends JDLCommand  implements Serializable {
 
+	public enum IOType {
+		IN, OUT
+	}
+	
 	/**
 	 * Serial identification of the class. It need to be changed only if the
 	 * class interface is changed.
 	 */
 	private static final long serialVersionUID = 33L;
 
-	Map<String,ArrayList<IOEntry>> entries;
+	IOEntry entry;
 
 	/**
 	 * An empty constructor
@@ -50,7 +54,6 @@ public class IOCommand extends JDLCommand  implements Serializable {
 	public IOCommand() {
 		super();
 		this.setBlockType(JDLCommandType.IO);
-		entries = CommonUtils.createSerializableMap();
 	}
 
 
@@ -65,14 +68,7 @@ public class IOCommand extends JDLCommand  implements Serializable {
 	 */
 	public void putEntry( String condition, IOEntry entry ) {
 
-		ArrayList<IOEntry> set;
-		if ( entries.containsKey( condition ) ) {
-			set = entries.get( condition );
-		} else {
-			set = new ArrayList<IOEntry>();
-		}
-		set.add( entry );
-		entries.put( condition, set );
+		this.entry = entry;
 	}
 
 
@@ -89,19 +85,6 @@ public class IOCommand extends JDLCommand  implements Serializable {
 
 
 	/**
-	 * Tells how many entries this I/O block has. Notice that the lenght means
-	 * how many conditions blocks where inserted and not how many commands has
-	 * been inserted.
-	 * 
-	 * @return How many entries this block has.
-	 */
-	public int length() {
-
-		return entries.size();
-	}
-
-
-	/**
 	 * Returns a collection with the entries related with a condition. To obtain
 	 * all the conditions at this block use this.getConditions.
 	 * 
@@ -110,27 +93,12 @@ public class IOCommand extends JDLCommand  implements Serializable {
 	 * @return The collection of entries related with a condition - null if the
 	 *         condition does not exist.
 	 */
-	public List<IOEntry> getEntry( String condition ) {
+	public IOEntry getEntry() {
 
-		if ( entries.containsKey( condition ) ) {
-			return entries.get( condition );
-		}
-		return null;
+		
+		return this.entry;
 
 	}
-
-
-	/**
-	 * Returns all the conditions that indexes the entry blocks.
-	 * 
-	 * @return A iterator with all the valid conditions that indexes the entries
-	 *         at this input/output block.
-	 */
-	public Iterator<String> getConditions() {
-
-		return entries.keySet().iterator();
-	}
-
 
 	/**
 	 * Returns a string representation of an IOBlock.
@@ -138,17 +106,7 @@ public class IOCommand extends JDLCommand  implements Serializable {
 	@Override
 	public String toString() {
 
-		StringBuffer message = new StringBuffer();
-		Iterator<String> it = entries.keySet().iterator();
-		while ( it.hasNext() ) {
-			String key = it.next();
-			message.append( "    Condition: [" + key + "]\n" );
-			Iterator<IOEntry> it1 = (entries.get( key )).iterator();
-			while ( it1.hasNext() ) {
-				message.append( "      IOEntry: [" + it1.next().toString() + "]\n" );
-			}
-		}
-		return message.toString();
+	return entry.toString();
 	}
 
 
@@ -157,7 +115,7 @@ public class IOCommand extends JDLCommand  implements Serializable {
 
 		final int PRIME = 31;
 		int result = 1;
-		result = PRIME * result + ((this.entries == null) ? 0 : this.entries.hashCode());
+		result = PRIME * result + ((this.entry == null) ? 0 : this.entry.hashCode());
 		return result;
 	}
 
@@ -172,34 +130,9 @@ public class IOCommand extends JDLCommand  implements Serializable {
 		if ( getClass() != obj.getClass() )
 			return false;
 		final IOCommand other = (IOCommand) obj;
-		if ( !(this.entries == null ? other.entries == null : this.entries.equals( other.entries )) )
+		if ( !(this.entry == null ? other.entry == null : this.entry.equals( other.entry )) )
 			return false;
 		return true;
-	}
-
-
-	public Map<String, IOEntry[]> getEntries() {
-		
-		Map<String, IOEntry[]> newMap = CommonUtils.createSerializableMap();
-		
-		if (this.entries != null) {
-			for (Entry<String, ArrayList<IOEntry>> entry : this.entries.entrySet()) {
-				newMap.put(entry.getKey(), getArray(entry.getValue()));
-			}
-		}	
-		return newMap;
-	}
-	
-	public void setEntries(Map<String, IOEntry[]> entries) {
-		
-		Map<String, ArrayList<IOEntry>> newMap = CommonUtils.createSerializableMap();
-		
-		if (entries != null) {
-			for (Entry<String, IOEntry[]> entry : entries.entrySet()) {
-				newMap.put(entry.getKey(),getList(entry.getValue()));
-			}
-		}
-		this.entries = newMap;
 	}
 	
 	private IOEntry[] getArray(ArrayList<IOEntry> list) {

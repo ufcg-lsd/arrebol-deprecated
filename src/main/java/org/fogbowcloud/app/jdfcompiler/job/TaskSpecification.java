@@ -81,7 +81,7 @@ public class TaskSpecification implements Serializable {
 		expression = null;
 		this.initBlocks = initBlocks;
 		this.finalBlocks = finalBlocks;
-		this.taskBlocks = (ArrayList<JDLCommand>) taskBlocks;
+		this.taskBlocks = taskBlocks;
 	}
 
 	/**
