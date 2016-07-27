@@ -61,7 +61,7 @@ public class TestArrebolController {
 	@Test
 	public void testGetJobById() {
 		String owner = "owner";
-		Job job = new JDFJob("", "", owner);
+		Job job = new JDFJob("", owner);
 		Mockito.when(this.arrebolController.getScheduler().getJobById(Mockito.anyString())).thenReturn(job);
 		String jobId = "jobId00";
 		Assert.assertEquals(job,this.arrebolController.getJobById(jobId, owner));
@@ -85,10 +85,10 @@ public class TestArrebolController {
 	public void testGetAllJobs() {
 		ArrayList<Job> jobs = new ArrayList<Job>();
 		String owner = "owner";
-		jobs.add(new JDFJob("", "", owner));
-		jobs.add(new JDFJob("", "", owner));
-		jobs.add(new JDFJob("", "", owner));
-		jobs.add(new JDFJob("", "", owner));
+		jobs.add(new JDFJob("", owner));
+		jobs.add(new JDFJob("", owner));
+		jobs.add(new JDFJob("", owner));
+		jobs.add(new JDFJob("", owner));
 		Mockito.when(this.arrebolController.getScheduler().getJobs()).thenReturn(jobs);
 		
 		Assert.assertEquals(jobs, this.arrebolController.getAllJobs(owner));
@@ -104,10 +104,10 @@ public class TestArrebolController {
 	public void testGetAllJobsWithoutAnotherUser() {
 		ArrayList<Job> jobs = new ArrayList<Job>();
 		String owner = "owner";
-		jobs.add(new JDFJob("", "", owner));
-		jobs.add(new JDFJob("", "", owner));
-		jobs.add(new JDFJob("", "", owner));
-		jobs.add(new JDFJob("", "", owner));
+		jobs.add(new JDFJob("", owner));
+		jobs.add(new JDFJob("", owner));
+		jobs.add(new JDFJob("", owner));
+		jobs.add(new JDFJob("", owner));
 		Mockito.when(this.arrebolController.getScheduler().getJobs()).thenReturn(jobs);
 		
 		Assert.assertEquals(0, this.arrebolController.getAllJobs("wrong user owner").size());
@@ -124,10 +124,11 @@ public class TestArrebolController {
 		String jobName = "jobName00";
 		ArrayList<Job> jobs = new ArrayList<Job>();
 		String owner = "owner";
-		JDFJob jdfJob = new JDFJob("", jobName, owner);
+		JDFJob jdfJob = new JDFJob("", owner);
+		jdfJob.setFriendlyName(jobName);
 		jobs.add(jdfJob);
-		jobs.add(new JDFJob("", "", owner));
-		jobs.add(new JDFJob("", "", owner));
+		jobs.add(new JDFJob("", owner));
+		jobs.add(new JDFJob("", owner));
 		Mockito.when(this.arrebolController.getScheduler().getJobs()).thenReturn(jobs);
 		
 		this.arrebolController.getJobByName(jobName, owner);
@@ -139,10 +140,11 @@ public class TestArrebolController {
 		String jobName = "jobName00";
 		ArrayList<Job> jobs = new ArrayList<Job>();
 		String owner = "owner";
-		JDFJob jdfJob = new JDFJob("", jobName, owner);
+		JDFJob jdfJob = new JDFJob("", owner);
+		jdfJob.setFriendlyName(jobName);
 		jobs.add(jdfJob);
-		jobs.add(new JDFJob("", "", owner));
-		jobs.add(new JDFJob("", "", owner));
+		jobs.add(new JDFJob("", owner));
+		jobs.add(new JDFJob("", owner));
 		Mockito.when(this.arrebolController.getScheduler().getJobs()).thenReturn(jobs);		
 		Mockito.when(this.arrebolController.getScheduler().removeJob(Mockito.eq(jdfJob.getId()))).thenReturn(jdfJob);
 		
@@ -158,10 +160,10 @@ public class TestArrebolController {
 		String jobName = "jobName00";
 		ArrayList<Job> jobs = new ArrayList<Job>();
 		String owner = "owner";
-		JDFJob jdfJob = new JDFJob("", jobName, owner);
+		JDFJob jdfJob = new JDFJob("", owner);
 		jobs.add(jdfJob);
-		jobs.add(new JDFJob("", "", owner));
-		jobs.add(new JDFJob("", "", owner));
+		jobs.add(new JDFJob("", owner));
+		jobs.add(new JDFJob("", owner));
 		Mockito.when(this.arrebolController.getScheduler().getJobs()).thenReturn(jobs);		
 		Mockito.when(this.arrebolController.getScheduler().removeJob(Mockito.eq(jdfJob.getId()))).thenReturn(jdfJob);
 		Mockito.when(this.arrebolController.getScheduler().getJobById(Mockito.eq(jdfJob.getId()))).thenReturn(jdfJob);
@@ -180,7 +182,7 @@ public class TestArrebolController {
 		
 		ArrayList<Job> jobs = new ArrayList<Job>();
 		String owner = "owner";
-		JDFJob jdfJob = new JDFJob("", "", owner);
+		JDFJob jdfJob = new JDFJob("", owner);
 		jdfJob.run(task);
 		jobs.add(jdfJob);
 		Mockito.when(this.arrebolController.getScheduler().getJobs()).thenReturn(jobs);
@@ -196,7 +198,7 @@ public class TestArrebolController {
 		
 		ArrayList<Job> jobs = new ArrayList<Job>();
 		String owner = "owner";
-		JDFJob jdfJob = new JDFJob("", "", owner);
+		JDFJob jdfJob = new JDFJob("", owner);
 		jdfJob.run(task);
 		jobs.add(jdfJob);
 		Mockito.when(this.arrebolController.getScheduler().getJobs()).thenReturn(jobs);

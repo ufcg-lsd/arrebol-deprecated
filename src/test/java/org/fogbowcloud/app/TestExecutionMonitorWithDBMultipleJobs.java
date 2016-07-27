@@ -21,7 +21,6 @@ import org.fogbowcloud.blowout.scheduler.core.model.Task;
 import org.fogbowcloud.blowout.scheduler.core.model.TaskImpl;
 import org.fogbowcloud.blowout.scheduler.infrastructure.InfrastructureManager;
 import org.fogbowcloud.blowout.scheduler.infrastructure.exceptions.InfrastructureException;
-import org.fogbowcloud.sebal.engine.sebal.ImageDataStore;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +39,6 @@ public class TestExecutionMonitorWithDBMultipleJobs {
 	public Resource resource2;
 	public String FAKE_TASK_ID = "FAKE_TASK_ID";
 	public String FAKE_TASK_ID2 = "FAKE_TASK_ID2";
-	public ImageDataStore imageStore;
 	private CurrentThreadExecutorService executorService;
 	private DB db;
 	private HTreeMap<String, JDFJob> jobMap;	
@@ -53,7 +51,6 @@ public class TestExecutionMonitorWithDBMultipleJobs {
 		IM = mock(InfrastructureManager.class);
 		resource = mock(Resource.class);
 		resource2 = mock(Resource.class);
-		imageStore = mock(ImageDataStore.class);
 		job = mock(JDFJob.class);
 		job2 = mock(JDFJob.class);
 		db = mock(DB.class);

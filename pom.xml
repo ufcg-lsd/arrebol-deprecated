@@ -168,11 +168,11 @@
 		</dependency>
 		
 		<dependency>
-	        <groupId>org.ourgrid</groupId>
-	        <artifactId>ourgrid</artifactId>
-	        <version>4.4.2</version>
-      	</dependency>      	
-      	
+			<groupId>org.glite.jdl</groupId>
+			<artifactId>glite-jdl-api</artifactId>
+			<version>1.0</version>
+		</dependency>
+		
 		<dependency>
 		    <groupId>commons-fileupload</groupId>
 		    <artifactId>commons-fileupload</artifactId>
@@ -180,8 +180,8 @@
 		</dependency>
 		
 		<dependency>
-	        <groupId>sebal-scheduler</groupId>
-	        <artifactId>sebal-scheduler</artifactId>
+	        <groupId>blowout</groupId>
+	        <artifactId>blowout</artifactId>
 	        <version>0.0.1-SNAPSHOT</version>
       	</dependency>
 		

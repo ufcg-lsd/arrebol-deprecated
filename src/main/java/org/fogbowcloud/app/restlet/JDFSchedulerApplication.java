@@ -2,12 +2,13 @@ package org.fogbowcloud.app.restlet;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.ArrebolController;
+import org.fogbowcloud.app.NameAlreadyInUseException;
+import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.resource.AuthenticationResource;
@@ -17,7 +18,6 @@ import org.fogbowcloud.app.resource.UserResource;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.fogbowcloud.blowout.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.blowout.scheduler.core.model.Task;
-import org.ourgrid.common.specification.main.CompilerException;
 import org.restlet.Application;
 import org.restlet.Component;
 import org.restlet.Restlet;
@@ -83,14 +83,8 @@ public class JDFSchedulerApplication extends Application {
 	}
 
 	public String addJob(String jdfFilePath, String schedPath, String owner)
-			throws CompilerException {
+			throws CompilerException, NameAlreadyInUseException {
 		return this.arrebolController.addJob(jdfFilePath, schedPath, owner);
-	}
-
-	public String addJob(String jdfFilePath, String schedPath,
-			String friendlyName, String owner) throws CompilerException {
-		return this.arrebolController.addJob(jdfFilePath, schedPath,
-				owner, friendlyName);
 	}
 
 	public ArrayList<JDFJob> getAllJobs(String owner) {
