@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
+import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.JDFTasks;
 import org.fogbowcloud.app.model.User;
@@ -26,7 +27,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
-import org.ourgrid.common.specification.main.CompilerException;
 
 public class ArrebolController {
 
@@ -173,17 +173,15 @@ public class ArrebolController {
 		return null;
 	}
 
-	public String addJob(String jdfFilePath, String schedPath, String owner)
-			throws CompilerException {
-		return addJob(jdfFilePath, schedPath, owner, "");
-	}
-
-	public String addJob(String jdfFilePath, String schedPath, String owner,
-			String friendlyName) throws CompilerException {
-		JDFJob job = new JDFJob(schedPath, friendlyName, owner);
+	public String addJob(String jdfFilePath, String schedPath, String owner) throws CompilerException, NameAlreadyInUseException {
+		JDFJob job = new JDFJob(schedPath, owner);
 
 		List<Task> taskList = getTasksFromJDFFile(jdfFilePath, schedPath, job);
 
+		if (getJobByName(job.getName(), owner) != null) {
+			throw new NameAlreadyInUseException("The name " + job.getName() +" is already in use for the user "+ "owner");
+		}
+		
 		for (Task task : taskList) {
 			job.addTask(task);
 		}
@@ -300,7 +298,7 @@ public class ArrebolController {
 
 	protected List<Task> getTasksFromJDFFile(String jdfFilePath,
 			String schedPath, JDFJob job) throws CompilerException {
-		List<Task> taskList = JDFTasks.getTasksFromJDFFile(job.getId(),
+		List<Task> taskList = JDFTasks.getTasksFromJDFFile(job,
 				jdfFilePath, schedPath, this.properties);
 		return taskList;
 	}

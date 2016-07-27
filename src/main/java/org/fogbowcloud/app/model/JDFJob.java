@@ -11,14 +11,13 @@ import java.util.UUID;
 public class JDFJob extends Job {
 
     private final String jobId;
-    private final String name;
+    private String name;
     private String schedPath;
     private final String owner;
 
-    public JDFJob(String schedPath, String jobName, String owner) {
+    public JDFJob(String schedPath, String owner) {
         super();
         this.schedPath = schedPath;
-        this.name = jobName;
         this.jobId = UUID.randomUUID().toString();
         this.owner = owner;
     }
@@ -118,6 +117,10 @@ public class JDFJob extends Job {
             }
         }
         return null;
+    }
+    
+    public void setFriendlyName(String name) {
+    	this.name = name;
     }
 
 }

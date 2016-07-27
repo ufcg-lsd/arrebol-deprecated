@@ -1,0 +1,14 @@
+job:
+label: myjob7
+requirements: Glue2RAM >= 1024 AND Glue2CloudComputeManagerID==servers.lsd.ufcg.edu.br
+init: store /home/igorvcs/git/sebal-scheduler/src/main/java/org/fogbowcloud/scheduler/examples/isprime.py /tmp/isprime.py
+final: get /tmp/primeresult /home/igorvcs/Dev/primeresult
+task:
+remote:  vcmxn vlxmvxmvçlxnclkvnxlvnlxkjcnlpython /tmp/isprime.py 1000 2000
+final: get /tmp/primeresult /home/igorvcs/Dev/primeresult1
+task:
+remote: python /tmp/isprime.py 2000 3000
+final: get /tmp/primeresult /home/igorvcs/Dev/primeresult2
+task:
+remote: python /tmp/isprime.py 1000 2000
+final: get /tmp/primeresult /home/igorvcs/Dev/primeresult3

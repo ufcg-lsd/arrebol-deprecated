@@ -1,21 +1,29 @@
 package org.fogbowcloud.app.model;
 
-import org.apache.log4j.Logger;
-import org.fogbowcloud.blowout.scheduler.core.model.*;
-import org.fogbowcloud.app.utils.AppPropertiesConstants;
-import org.fogbowcloud.blowout.scheduler.infrastructure.fogbow.FogbowRequirementsHelper;
-import org.ourgrid.common.specification.job.IOEntry;
-import org.ourgrid.common.specification.job.JobSpecification;
-import org.ourgrid.common.specification.job.TaskSpecification;
-import org.ourgrid.common.specification.main.CommonCompiler;
-import org.ourgrid.common.specification.main.CommonCompiler.FileType;
-import org.ourgrid.common.specification.main.CompilerException;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
+
+import org.apache.log4j.Logger;
+import org.fogbowcloud.app.jdfcompiler.job.IOEntry;
+import org.fogbowcloud.app.jdfcompiler.job.JobSpecification;
+import org.fogbowcloud.app.jdfcompiler.job.TaskSpecification;
+import org.fogbowcloud.app.jdfcompiler.main.CommonCompiler;
+import org.fogbowcloud.app.jdfcompiler.main.CommonCompiler.FileType;
+import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
+import org.fogbowcloud.app.jdfcompiler.semantic.RemoteCommand;
+import org.fogbowcloud.app.jdfcompiler.semantic.IOCommand;
+import org.fogbowcloud.app.jdfcompiler.semantic.JDLCommand;
+import org.fogbowcloud.app.jdfcompiler.semantic.JDLCommand.JDLCommandType;
+import org.fogbowcloud.app.utils.AppPropertiesConstants;
+import org.fogbowcloud.blowout.scheduler.core.model.Command;
+import org.fogbowcloud.blowout.scheduler.core.model.Resource;
+import org.fogbowcloud.blowout.scheduler.core.model.Specification;
+import org.fogbowcloud.blowout.scheduler.core.model.Task;
+import org.fogbowcloud.blowout.scheduler.core.model.TaskImpl;
+import org.fogbowcloud.blowout.scheduler.infrastructure.fogbow.FogbowRequirementsHelper;
 
 public class JDFTasks {
 
@@ -37,7 +45,7 @@ public class JDFTasks {
 
     /**
      *
-     * @param jobID
+     * @param job
      * @param jdfFilePath
      * @param schedPath
      * @param properties
@@ -45,7 +53,7 @@ public class JDFTasks {
      * @throws IllegalArgumentException
      * @throws CompilerException
      */
-    public static List<Task> getTasksFromJDFFile(String jobID, String jdfFilePath, String schedPath, Properties properties) throws CompilerException {
+    public static List<Task> getTasksFromJDFFile(JDFJob job, String jdfFilePath, String schedPath, Properties properties) throws CompilerException {
 
         ArrayList<Task> taskList = new ArrayList<Task>();
 
@@ -62,6 +70,8 @@ public class JDFTasks {
                 commonCompiler.compile(jdfFilePath, FileType.JDF);
 
                 JobSpecification jobSpec = (JobSpecification) commonCompiler.getResult().get(0);
+                
+                job.setFriendlyName(jobSpec.getLabel());
 
                 //Mapping attributes
 
@@ -100,11 +110,11 @@ public class JDFTasks {
                     task.putMetadata(TaskImpl.METADATA_LOCAL_OUTPUT_FOLDER, schedPath + properties.getProperty(LOCAL_OUTPUT_FOLDER));
                     task.putMetadata(TaskImpl.METADATA_SANDBOX, SANDBOX);
                     task.putMetadata(TaskImpl.METADATA_REMOTE_COMMAND_EXIT_PATH, properties.getProperty(REMOTE_OUTPUT_FOLDER) + "/exit");
-
-                    parseInputBlocks(jobID, taskSpec, task, schedPath);
-                    parseExecutable(jobID, taskSpec, task);
-                    parseOutputBlocks(jobID, taskSpec, task, schedPath);
-                    parseEpilogue(jobID, taskSpec, task);
+                    
+                    
+                    parseInitCommands(job.getId(), taskSpec, task, schedPath);
+                    parseTaskCommands(job.getId(), taskSpec, task, schedPath);
+                    parseFinalCommands(job.getId(), taskSpec, task, schedPath);
 
                     taskList.add(task);
                     LOGGER.debug("Task spec: " + task.getSpecification().toString());
@@ -129,82 +139,76 @@ public class JDFTasks {
      * @param task     The output expression containing the JDL job
      * @throws IllegalArgumentException
      */
-    private static void parseExecutable(String jobID, TaskSpecification taskSpec, Task task) throws IllegalArgumentException {
+    private static void parseTaskCommands(String jobId, TaskSpecification taskSpec, Task task, String schedPath) throws IllegalArgumentException {
 
-        String exec = taskSpec.getRemoteExec();
-        if (exec.contains(";")) {
-            throw new IllegalArgumentException("Task \n-------\n" + taskSpec + " \n-------\ncould not be parsed as it contains more than one executable command.");
-        }
-
-        exec = parseEnvironmentVariables(jobID, task.getId(), exec);
-
-        Command command = new Command("\"" + exec + " ; echo 0 > " + task.getMetadata(TaskImpl.METADATA_REMOTE_COMMAND_EXIT_PATH) + "\"", Command.Type.REMOTE);
-        LOGGER.debug("JobId: " + jobID + " task: " + task.getId() + " remote command: " + exec);
-        task.addCommand(command);
-    }
-
-    /**
-     * This method replaces environment variables defined in the JDF to its
-     * values.
-     *
-     * @param string A string representing the remote executable command of the JDF job
-     * @return A string with the environment variables replaced
-     */
-    private static String parseEnvironmentVariables(String jobID, String taskID, String string) {
-        //FIXME: do we still need playpen and and storage variables ?
-        return string.replaceAll("\\$JOB", jobID).replaceAll("\\$TASK",
-                taskID).replaceAll("\\$PLAYPEN", ".").replaceAll("\\$STORAGE", ".");
-    }
-
-    /**
-     * This method translates the JDF sabotage check command to the
-     * JDL epilogue command
-     *
-     * @param jobID
-     * @param taskRec The task specification {@link TaskSpecification}
-     * @param task    The output expression containing the JDL job
-     */
-    private static void parseEpilogue(String jobID, TaskSpecification taskRec, Task task) {
-
-        String sabotageCheck = taskRec.getSabotageCheck();
-        if (sabotageCheck == null || (sabotageCheck.trim().length() == 0)) {
-            return;
-        }
-        sabotageCheck = parseEnvironmentVariables(jobID, task.getId(), sabotageCheck);
-        LOGGER.debug("JobId: " + jobID + " task: " + task.getId() + " epilogue command: " + sabotageCheck);
-
-        Command command = new Command(sabotageCheck, Command.Type.EPILOGUE);
-        task.addCommand(command);
-    }
-
-    /**
-     * This method translates the Ourgrid input IOBlocks to JDL InputSandbox
-     *
-     * @param jobID
-     * @param taskSpec The task specification {@link TaskSpecification}
-     * @param task     The output expression containing the JDL job
-     */
-    private static void parseInputBlocks(String jobID, TaskSpecification taskSpec, Task task, String schedPath) {
-
-        List<IOEntry> initBlocks = taskSpec.getInitBlock().getEntry("");
+    	List<JDLCommand> initBlocks = taskSpec.getTaskBlocks();
         if (initBlocks == null) {
             return;
         }
-        for (IOEntry ioEntry : initBlocks) {
-            String sourceFile = parseEnvironmentVariables(jobID, task.getId(), ioEntry.getSourceFile());
-            String destination = parseEnvironmentVariables(jobID, task.getId(), ioEntry.getDestination());
+        for (JDLCommand jdlCommand : initBlocks) {
+        	if (jdlCommand.getBlockType().equals(JDLCommandType.IO)){
+        		addIOCommand(jobId, task,(IOCommand) jdlCommand, schedPath);
+           } else {
+        		addRemoteCommand(jobId, task, (RemoteCommand) jdlCommand, schedPath);
+        	}
+        }
+    }
+ 
+ 
+    /**
+     * This method translates the Ourgrid input IOBlocks to JDL InputSandbox
+     *
+     * @param jobId
+     * @param taskSpec The task specification {@link TaskSpecification}
+     * @param task     The output expression containing the JDL job
+     */
+    private static void parseInitCommands(String jobId, TaskSpecification taskSpec, Task task, String schedPath) {
 
-            task.addCommand(mkdirRemoteFolder(getDirectoryTree(destination)));
-            if (sourceFile.startsWith("/")) {
-                task.addCommand(stageInCommand(sourceFile, destination));
-            } else {
-                task.addCommand(stageInCommand(schedPath + sourceFile, destination));
-            }
-            LOGGER.debug("JobId: " + jobID + " task: " + task.getId() +
-                    " input command:" + stageInCommand(schedPath + sourceFile, destination).getCommand());
+        List<JDLCommand> initBlocks = taskSpec.getInitBlocks();
+        if (initBlocks == null) {
+            return;
+        }
+        for (JDLCommand jdlCommand : initBlocks) {
+        	if (jdlCommand.getBlockType().equals(JDLCommandType.IO)){
+        		addIOCommand(jobId, task,(IOCommand) jdlCommand, schedPath);
+           } else {
+        		addRemoteCommand(jobId, task, (RemoteCommand) jdlCommand, schedPath);
+        	}
         }
     }
 
+    public static void addIOCommand(String jobId, Task task, IOCommand command, String schedPath ) {
+    	 String sourceFile = command.getEntry().getSourceFile();
+         String destination = command.getEntry().getDestination();
+         String IOType = command.getEntry().getCommand();
+         if (IOType.equals("PUT") || IOType.equals("STORE")) {
+         task.addCommand(mkdirRemoteFolder(getDirectoryTree(destination)));
+         if (sourceFile.startsWith("/")) {
+         	task.addCommand(stageInCommand(sourceFile, destination));
+         } else {
+         	task.addCommand(stageInCommand(schedPath + sourceFile, destination));
+         }
+         LOGGER.debug("JobId: " + jobId + " task: " + task.getId() +
+         		" input command:" + stageInCommand(schedPath + sourceFile, destination).getCommand());
+         } else {
+        	 task.addCommand(mkdirLocalFolder(getDirectoryTree(destination)));
+             if (sourceFile.startsWith("/")) {
+             	task.addCommand(stageOutCommand(sourceFile, destination));
+             } else {
+             	task.addCommand(stageOutCommand(schedPath + sourceFile, destination));
+             }
+             LOGGER.debug("JobId: " + jobId + " task: " + task.getId() +
+             		" output command:" + stageOutCommand(schedPath + sourceFile, destination).getCommand());
+         }
+     	
+    }
+    
+    public static void addRemoteCommand(String jobId, Task task, RemoteCommand remCommand, String schedPath) {
+    	 Command command = new Command("\"" + remCommand.getContent() + " ; echo $? > " + task.getMetadata(TaskImpl.METADATA_REMOTE_COMMAND_EXIT_PATH) + "\"", Command.Type.REMOTE);
+         LOGGER.debug("JobId: " + jobId + " task: " + task.getId() + " remote command: " + remCommand.getContent());
+         task.addCommand(command);
+    }
+    
     public static String getDirectoryTree(String destination) {
         int lastDir = destination.lastIndexOf("/");
         return destination.substring(0, lastDir);
@@ -230,23 +234,18 @@ public class JDFTasks {
      * @param taskSpec The task specification {@link TaskSpecification}
      * @param task     The output expression containing the JDL job
      */
-    private static void parseOutputBlocks(String jobID, TaskSpecification taskSpec, Task task, String schedPath) {
+    private static void parseFinalCommands(String jobId, TaskSpecification taskSpec, Task task, String schedPath) {
 
-        List<IOEntry> finalBlocks = taskSpec.getFinalBlock().getEntry("");
-        if (finalBlocks == null) {
+    	List<JDLCommand> initBlocks = taskSpec.getFinalBlocks();
+        if (initBlocks == null) {
             return;
         }
-        for (IOEntry ioEntry : finalBlocks) {
-            String sourceFile = parseEnvironmentVariables(jobID, task.getId(), ioEntry.getSourceFile());
-            String destination = parseEnvironmentVariables(jobID, task.getId(), ioEntry.getDestination());
-            task.addCommand(mkdirLocalFolder(getDirectoryTree(schedPath + destination)));
-            if (destination.startsWith("/")) {
-                task.addCommand(stageOutCommand(sourceFile, destination));
-            } else {
-                task.addCommand(stageOutCommand(sourceFile, schedPath + destination));
-            }
-            LOGGER.debug("Output command:" + stageOutCommand(sourceFile, schedPath + destination).getCommand());
-
+        for (JDLCommand jdlCommand : initBlocks) {
+        	if (jdlCommand.getBlockType().equals(JDLCommandType.IO)){
+        		addIOCommand(jobId, task,(IOCommand) jdlCommand, schedPath);
+           } else {
+        		addRemoteCommand(jobId, task, (RemoteCommand) jdlCommand, schedPath);
+        	}
         }
     }
 
