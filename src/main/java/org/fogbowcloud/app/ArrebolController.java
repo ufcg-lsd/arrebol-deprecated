@@ -89,12 +89,16 @@ public class ArrebolController {
 				this.properties
 						.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_BLOCK_CREATING))
 				.booleanValue();
+		Boolean removePreviousResources = new Boolean(
+				this.properties
+						.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_REMOVE_PREVIOUS_RESOURCES))
+				.booleanValue();
 		Boolean isElastic = new Boolean(
 				properties.getProperty(AppPropertiesConstants.INFRA_IS_STATIC))
 				.booleanValue();
 
 		InfrastructureManager infraManager = getInfraManager(
-				blockWhileInitializing, isElastic);
+				blockWhileInitializing, isElastic, removePreviousResources);
 
 		ArrayList<JDFJob> legacyJobs = getLegacyJobs(jobMapDB);
 		LOGGER.debug("Properties: "
@@ -123,11 +127,12 @@ public class ArrebolController {
 	}
 
 	protected InfrastructureManager getInfraManager(
-			Boolean blockWhileInitializing, Boolean isElastic) throws Exception {
+			Boolean blockWhileInitializing, Boolean isElastic, 
+			Boolean removePreviousResources) throws Exception {
 		InfrastructureProvider infraProvider = createInfraProvaiderInstance();
 		InfrastructureManager infraManager = new InfrastructureManager(null,
 				isElastic, infraProvider, properties);
-		infraManager.start(blockWhileInitializing);
+		infraManager.start(blockWhileInitializing, removePreviousResources);
 		return infraManager;
 	}
 

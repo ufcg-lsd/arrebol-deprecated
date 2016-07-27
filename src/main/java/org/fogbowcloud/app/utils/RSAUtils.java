@@ -22,6 +22,8 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 
 import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.util.io.pem.PemObject;
@@ -243,4 +245,25 @@ public class RSAUtils {
 		pemWriter.close();
 		return writer.toString();
 	}
+	
+	public static String encryptAES(byte[] keyData, String data) throws Exception {
+		byte[] ivData = new byte[16];
+		IvParameterSpec iv = new IvParameterSpec(ivData);
+		SecretKeySpec keySpec = new SecretKeySpec(keyData, "AES");
+		Cipher aes = Cipher.getInstance("AES/CBC/PKCS5Padding");
+		aes.init(Cipher.ENCRYPT_MODE, keySpec, iv);
+		byte[] encryptBytes = aes.doFinal(data.getBytes("UTF-8"));
+		return new String(org.bouncycastle.util.encoders.Base64.encode(encryptBytes));
+	}
+
+	public static String decryptAES(byte[] keyData, String data) throws Exception {
+		byte[] ivData = new byte[16];
+		IvParameterSpec iv = new IvParameterSpec(ivData);	
+		SecretKeySpec keySpec = new SecretKeySpec(keyData, "AES");
+		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+		cipher.init(Cipher.DECRYPT_MODE, keySpec, iv);
+		byte[] decryptedBytes = cipher.doFinal(org.bouncycastle.util.encoders.Base64.decode(data.getBytes("UTF-8")));
+		return new String(decryptedBytes, "UTF8");
+	}
+	
 }

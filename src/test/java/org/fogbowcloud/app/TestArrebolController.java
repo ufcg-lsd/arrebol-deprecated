@@ -37,7 +37,7 @@ public class TestArrebolController {
 		properties.put(AppPropertiesConstants.INFRA_PROVIDER_CLASS_NAME, 
 				"org.fogbowcloud.scheduler.infrastructure.fogbow.FogbowInfrastructureProvider");
 		this.arrebolController = Mockito.spy(new ArrebolController(properties));		
-		Mockito.doReturn(null).when(this.arrebolController).getInfraManager(true, true);		
+		Mockito.doReturn(null).when(this.arrebolController).getInfraManager(true, true, true);		
 		this.arrebolController.init();
 		
 		Scheduler scheduler = Mockito.mock(Scheduler.class);

@@ -13,6 +13,7 @@ public class AppPropertiesConstants {
 
 	public static final String INFRA_INITIAL_SPECS_FILE_PATH = "infra_initial_specs_file_path";
 	public static final String INFRA_INITIAL_SPECS_BLOCK_CREATING = "infra_initial_specs_block_creating";
+	public static final String INFRA_INITIAL_SPECS_REMOVE_PREVIOUS_RESOURCES = "infra_initial_specs_remove_previous_resources";	
 
 	// __________ FOGBOW INFRASTRUCTURE CONSTANTS __________ //
 	public static final String INFRA_FOGBOW_MANAGER_BASE_URL = "infra_fogbow_manager_base_url";
@@ -36,6 +37,6 @@ public class AppPropertiesConstants {
 	//___________ APPLICATION HEADERS  ____//	
 	public static final String X_AUTH_NONCE = "X-auth-nonce";
 	public static final String X_AUTH_USER = "X-auth-username";
-	public static final String X_AUTH_HASH = "X-auth-hash";	
+	public static final String X_AUTH_HASH = "X-auth-hash";
 	
 }
