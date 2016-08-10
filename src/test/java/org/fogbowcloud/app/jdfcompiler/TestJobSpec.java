@@ -172,12 +172,12 @@ public class TestJobSpec {
 		assertTrue(3 == spec.getTaskSpecs().size());
 	}
 
-	@Test
-	public void testLargeJob() throws Exception {
-
-		JobSpecification spec = DescriptionFileCompile.compileJDF(LARGE_JOB);
-		assertEquals("bsdata", spec.getLabel());
-		assertTrue(200 == spec.getTaskSpecs().size());
-	}
+//	@Test
+//	public void testLargeJob() throws Exception {
+//
+//		JobSpecification spec = DescriptionFileCompile.compileJDF(LARGE_JOB);
+//		assertEquals("bsdata", spec.getLabel());
+//		assertTrue(200 == spec.getTaskSpecs().size());
+//	}
 
 }

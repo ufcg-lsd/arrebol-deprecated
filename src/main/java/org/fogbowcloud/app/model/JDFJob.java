@@ -10,117 +10,63 @@ import java.util.UUID;
  */
 public class JDFJob extends Job {
 
-    private final String jobId;
-    private String name;
-    private String schedPath;
-    private final String owner;
+	private final String jobId;
+	private String name;
+	private String schedPath;
+	private final String owner;
 
-    public JDFJob(String schedPath, String owner) {
-        super();
-        this.schedPath = schedPath;
-        this.jobId = UUID.randomUUID().toString();
-        this.owner = owner;
-    }
+	public JDFJob(String schedPath, String owner) {
+		super();
+		this.schedPath = schedPath;
+		this.jobId = UUID.randomUUID().toString();
+		this.owner = owner;
+	}
 
-    public String getId() {
-        return jobId;
-    }
+	public String getId() {
+		return jobId;
+	}
 
-    public String getName() {
-        return this.name;
-    }
+	public String getName() {
+		return this.name;
+	}
 
-    public String getSchedPath() {
-        return this.schedPath;
-    }
-    
-    public String getOwner(){
-    	return this.owner;
-    }    
+	public String getSchedPath() {
+		return this.schedPath;
+	}
 
-    @Override
-    public void run(Task task) {
-        tasksReady.remove(task);
-        tasksRunning.add(task);
+	public String getOwner() {
+		return this.owner;
+	}
 
-    }
+	public Task getCompletedTask(String taskId) {
+		//TODO
+		return null;
+	}
 
-    public void restart(Task task) {
-        tasksRunning.remove(task);
-        tasksReady.add(task);
-    }
+	public Task getTaskById(String taskId) {
+		//TODO
+		return null;
+	}
 
-    @Override
-    public void finish(Task task) {
-        tasksRunning.remove(task);
-        tasksCompleted.add(task);
-    }
+	public TaskState getTaskState(String taskId) {
+		//TODO
+		return null;
+	}
 
-    @Override
-    public void fail(Task task) {
-        tasksRunning.remove(task);
-        tasksFailed.add(task);
-    }
+	public void setFriendlyName(String name) {
+		this.name = name;
+	}
 
-    public Task getCompletedTask(String taskId) {
-        for (Task task : this.tasksCompleted) {
-            if (task.getId().equals(taskId)) {
-                return task;
-            }
-        }
-        return null;
-    }
+	@Override
+	public void finish(Task task) {
+		// TODO Auto-generated method stub
+		
+	}
 
-    public Task getTaskById(String taskId) {
-        for (Task task : this.tasksCompleted) {
-            if (task.getId().equals(taskId)) {
-                return task;
-            }
-        }
-        for (Task task : this.tasksFailed) {
-            if (task.getId().equals(taskId)) {
-                return task;
-            }
-        }
-        for (Task task : this.tasksRunning) {
-            if (task.getId().equals(taskId)) {
-                return task;
-            }
-        }
-        for (Task task : this.tasksReady) {
-            if (task.getId().equals(taskId)) {
-                return task;
-            }
-        }
-        return null;
-    }
-
-    public TaskState getTaskState(String taskId) {
-        for (Task task : this.tasksCompleted) {
-            if (task.getId().equals(taskId)) {
-                return TaskState.COMPLETED;
-            }
-        }
-        for (Task task : this.tasksFailed) {
-            if (task.getId().equals(taskId)) {
-                return TaskState.FAILED;
-            }
-        }
-        for (Task task : this.tasksRunning) {
-            if (task.getId().equals(taskId)) {
-                return TaskState.RUNNING;
-            }
-        }
-        for (Task task : this.tasksReady) {
-            if (task.getId().equals(taskId)) {
-                return TaskState.READY;
-            }
-        }
-        return null;
-    }
-    
-    public void setFriendlyName(String name) {
-    	this.name = name;
-    }
+	@Override
+	public void fail(Task task) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

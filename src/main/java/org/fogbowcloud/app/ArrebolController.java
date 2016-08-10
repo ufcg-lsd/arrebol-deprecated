@@ -142,9 +142,6 @@ public class ArrebolController {
 
 		for (String key : jobMapDB.keySet()) {
 			JDFJob recoveredJob = (JDFJob) jobMapDB.get(key);
-			for (Task task : recoveredJob.getByState(TaskState.RUNNING)) {
-				recoveredJob.restart(task);
-			}
 			legacyJobs.add((JDFJob) jobMapDB.get(key));
 		}
 		return legacyJobs;
@@ -185,6 +182,8 @@ public class ArrebolController {
 		for (Task task : taskList) {
 			job.addTask(task);
 		}
+		
+		LOGGER.debug("Adding job " + job.getName() + " to scheduler");
 
 		this.scheduler.addJob(job);
 		return job.getId();
@@ -268,6 +267,7 @@ public class ArrebolController {
 			return false;
 		}
 
+		LOGGER.debug("Checking nonce");
 		Integer nonceValue = Integer.valueOf(nonce);
 		if (this.nonces.contains(nonceValue)) {
 			JSONObject userJSON;

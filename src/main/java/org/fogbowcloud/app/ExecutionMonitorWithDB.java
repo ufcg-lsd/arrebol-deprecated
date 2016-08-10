@@ -10,6 +10,8 @@ import org.fogbowcloud.blowout.scheduler.core.model.Job;
 import org.fogbowcloud.blowout.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.blowout.scheduler.core.model.Resource;
 import org.fogbowcloud.blowout.scheduler.core.model.Task;
+import org.fogbowcloud.blowout.scheduler.core.model.TaskProcess;
+import org.fogbowcloud.blowout.scheduler.core.model.TaskProcessImpl;
 import org.fogbowcloud.blowout.scheduler.core.Scheduler;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.fogbowcloud.blowout.scheduler.infrastructure.exceptions.InfrastructureException;
@@ -23,31 +25,30 @@ public class ExecutionMonitorWithDB implements Runnable {
 	private DB db;
 	private ConcurrentMap<String, JDFJob> jobMap;
 
-	public ExecutionMonitorWithDB(Scheduler scheduler,DB pendingImageDownloadDB) {
-		this(scheduler, Executors.newFixedThreadPool(3),pendingImageDownloadDB);
+	public ExecutionMonitorWithDB(Scheduler scheduler, DB pendingImageDownloadDB) {
+		this(scheduler, Executors.newFixedThreadPool(3), pendingImageDownloadDB);
 	}
 
 	public ExecutionMonitorWithDB(Scheduler scheduler, ExecutorService service, DB db) {
 		this.scheduler = scheduler;
-		if(service == null){
+		if (service == null) {
 			this.service = Executors.newFixedThreadPool(3);
-		}else{
+		} else {
 			this.service = service;
 		}
 		this.db = db;
-		this.jobMap =db.getHashMap(AppPropertiesConstants.DB_MAP_NAME);
+		this.jobMap = db.getHashMap(AppPropertiesConstants.DB_MAP_NAME);
 	}
 
 	@Override
 	public void run() {
 		LOGGER.debug("Submitting monitoring tasks");
-		for (Job aJob : scheduler.getJobs()){
+		for (TaskProcess tp : scheduler.getRunningProcs()) {
+			LOGGER.debug("Process "+ tp.getProcessId() + " has state "+ tp.getStatus());
+			service.submit(new TaskExecutionChecker(tp, this.scheduler));
+		}
+		for (Job aJob : scheduler.getJobs()) {
 			JDFJob aJDFJob = (JDFJob) aJob;
-			LOGGER.debug("Submitting job: "+ aJDFJob.toString() );
-			for (Task task : aJDFJob.getByState(TaskState.RUNNING)) {
-				LOGGER.debug("Submitting taskId: "+ task.getId());
-				service.submit(new TaskExecutionChecker(task, this.scheduler, aJDFJob));
-			}
 			this.jobMap.put(aJDFJob.getId(), aJDFJob);
 			this.db.commit();
 		}
@@ -55,60 +56,27 @@ public class ExecutionMonitorWithDB implements Runnable {
 
 	class TaskExecutionChecker implements Runnable {
 
-		protected Task task; 
+		protected TaskProcess tp;
 		protected Scheduler scheduler;
 		protected Job job;
 
-		public TaskExecutionChecker(Task task, Scheduler scheduler, Job job){
-			this.task = task;
+		public TaskExecutionChecker(TaskProcess tp, Scheduler scheduler) {
+			this.tp = tp;
 			this.scheduler = scheduler;
-			this.job = job;
 		}
 
 		@Override
 		public void run() {
-			LOGGER.debug("Monitoring task: " + task.getId() + " failed: " + task.isFailed() + " completed: " + task.isFinished());
 
-			if (task.checkTimeOuted()){
-				LOGGER.debug("Task: "+ task.getId() + " timed out");
-				job.fail(task);
-				scheduler.taskFailed(task);
+			if (tp.getStatus().equals(TaskProcessImpl.State.FAILED)) {
+				scheduler.taskFailed(tp);
 				return;
 			}
 
-			if (task.isFailed()) {
-				LOGGER.debug("Task: " + task.getId() + " failed");
-				job.fail(task);
-				scheduler.taskFailed(task);
+			if (tp.getStatus().equals(TaskProcessImpl.State.FINNISHED)) {
+				scheduler.taskCompleted(tp);
 				return;
 			}
-
-			if (task.isFinished()){
-				LOGGER.debug("Task: " + task.getId() + " finished");
-				job.finish(task);
-				scheduler.taskCompleted(task);
-				return;
-			}
-
-			try {
-				if (!checkResourceConnectivity(task)){
-					if (!task.mayRetry()) {
-						job.fail(task);
-						scheduler.taskFailed(task);
-					} else {
-						task.setRetries(task.getRetries() + 1);
-					}
-				} else {
-					task.setRetries(0);
-				}
-			} catch (InfrastructureException e) {
-				LOGGER.error("Error while checking connectivity.", e);
-			}
-		}
-
-		private boolean checkResourceConnectivity(Task task) throws InfrastructureException{
-			Resource resource = scheduler.getAssociateResource(task);
-			return resource.checkConnectivity();
 		}
 	}
 }
