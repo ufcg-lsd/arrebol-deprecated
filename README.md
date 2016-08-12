@@ -17,16 +17,16 @@
 
 A job description file, or jdf for short, is a plain text file that contains a job description. Each job description file describes a single job. You can edit a jdf in the text editor of your choice. By convention, we use the .jdf extension to name all job description files.
 
-A jdf file has two types of clauses in it: the job and the task clauses. You use the first type to specify common attributes for the entire job and the other one to specify particular attributes and commands to the tasks that comprise your parallel application.
+A jdf file has two types of clauses in it: the job and the task clauses. You use the first type to specify common attributes
+and commands for the entire job and the other one to specify particular attributes and commands to the tasks that comprise your parallel application.
 
 Clause | Description
 ---- | --------------------
 job: |
 label: | A desciptive name for the job.
-task: |
-init: | Input data. The files that will be staged into the Worker.
-remote: | Code for execution, which is a command line on the target resource.
-final: | Output data. The files that will be staged out from the Worker.
+init: | Common job initiation, a list of commands to be executed first in all tasks of the job
+final: | Common job finalization, a list of commands to be executed last in all tasks of the job 
+task: | A list of commands to be executed in this particular part of the job, it is executed between init and final
 
 #### The Job clause
 
@@ -37,20 +37,30 @@ Below we present an example of a jdf, which defines a very simple job named myjo
     job:
     label:myjob1
     requirements : Glue2RAM >= 1024 AND Glue2CloudComputeManagerID==memberOne
-    task:
-    remote: mytask
+    task:  mytask
 
 As we mentioned before, all sub-clauses of a job clause are optional. If the label sub-clause does not exist in the jdf, an internal job id is used to identify it. If there is no requirements sub-clause, the Broker assumes that all worker nodes in your grid are able to run the tasks of your job.
 
 Besides label and requirements sub-clauses, you may define default descriptions for all tasks of a job. This is further explained below.
 
+#### The Init clause
+
+The Init clause is the first of the three definition clauses of a task. The ones responible for describing the behavior of a job. The Init clause is shared between all tasks of a given job and is comprised by a list of commands, which can be code to be executed remotely or two special commands for moving files the PUT and GET commands, which will be explained in a specific sections
+
+#### The Final clause
+
+As with the Init clause, the final clause is part of the definition of a task, it is also shared between all tasks, the diference being that it is executed after the task clause commands, it has the same functionality and usability of the Init clause
+
 #### The Task clause
 
-There is one task clause to describe each task of a job. The number of tasks in a job is determined by the number of task clauses in the jdf. The task clause is used to describe all the phases of a task. A task is divided in initial, remote and final phases which are described by means of init, remote and final sub-clauses, respectively.
+There is one task clause to describe each task of a job. The number of tasks in a job is determined by the number of task clauses in the jdf. The task clause is used to describe the main behavior of a task. That said, the remain of it's behavior is identical to the Init and Final clauses
 
-- **Init sub-clause**: is used to define which files will be transferred from the user's machine to the worker node before the execution of the task.
-- **Remote sub-clause**: is used to specify which command line will be invoked in the worker node.
-- **Final sub-clause**: defines which files will be transferred from the worker node to the user's mchine, after the execution of the task.
+#### Special operators PUT and GET
+This two commands are used to copy files from and to the VM that will run your task. the syntax is as follows: .
+```
+ PUT localfile remotefile - where the localfile is visible to the scheduler that will run the job
+ GET remotefile localfile - where the localfile is writable to the scheduler that will run the job 
+```
 
 ### Running a job via the Arrebol CLI
 
