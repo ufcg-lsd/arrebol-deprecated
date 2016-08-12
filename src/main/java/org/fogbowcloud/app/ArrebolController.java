@@ -253,7 +253,7 @@ public class ArrebolController {
 	public TaskState getTaskState(String taskId, String owner) {
 		for (Job job : getAllJobs(owner)) {
 			JDFJob jdfJob = (JDFJob) job;
-			TaskState taskState = jdfJob.getTaskState(taskId);
+			TaskState taskState = scheduler.inferTaskState(getTaskById(taskId, owner));
 			if (taskState != null) {
 				return taskState;
 			}

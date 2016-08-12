@@ -111,7 +111,6 @@ public class JobResource extends ServerResource {
 			jTask.put(STATE, application.getTaskState(task.getId(), owner));
 			jobTasks.put(jTask);
 		}
-
 		jsonJob.put(JOB_TASKS, jobTasks);
 		return new StringRepresentation(jsonJob.toString(), MediaType.TEXT_PLAIN);
 	}
