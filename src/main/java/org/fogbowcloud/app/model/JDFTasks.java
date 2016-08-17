@@ -181,7 +181,7 @@ public class JDFTasks {
     	 String sourceFile = command.getEntry().getSourceFile();
          String destination = command.getEntry().getDestination();
          String IOType = command.getEntry().getCommand();
-         if (IOType.equals("PUT") || IOType.equals("STORE")) {
+         if (IOType.toUpperCase().equals("PUT") || IOType.toUpperCase().equals("STORE")) {
          task.addCommand(mkdirRemoteFolder(getDirectoryTree(destination)));
          if (sourceFile.startsWith("/")) {
          	task.addCommand(stageInCommand(sourceFile, destination));
@@ -204,7 +204,7 @@ public class JDFTasks {
     }
     
     public static void addRemoteCommand(String jobId, Task task, RemoteCommand remCommand, String schedPath) {
-    	 Command command = new Command("\"" + remCommand.getContent() + " ; echo $? > " + task.getMetadata(TaskImpl.METADATA_REMOTE_COMMAND_EXIT_PATH) + "\"", Command.Type.REMOTE);
+    	 Command command = new Command("\"" + remCommand.getContent() +"\"", Command.Type.REMOTE);
          LOGGER.debug("JobId: " + jobId + " task: " + task.getId() + " remote command: " + remCommand.getContent());
          task.addCommand(command);
     }
@@ -215,16 +215,14 @@ public class JDFTasks {
     }
 
     private static Command mkdirRemoteFolder(String folder) {
-        String mkdirCommand = "ssh " + SSH_SCP_PRECOMMAND + " -p $" + Resource.ENV_SSH_PORT + " -i $"
-                + Resource.ENV_PRIVATE_KEY_FILE + " $" + Resource.ENV_SSH_USER + "@" + "$" + Resource.ENV_HOST
-                + " mkdir -p " + folder;
-        return new Command(mkdirCommand, Command.Type.PROLOGUE);
+        String mkdirCommand = "mkdir -p " + folder;
+        return new Command(mkdirCommand, Command.Type.REMOTE);
     }
 
     private static Command stageInCommand(String localFile, String remoteFile) {
         String scpCommand = "scp " + SSH_SCP_PRECOMMAND + " -P $" + Resource.ENV_SSH_PORT + " -i $" + Resource.ENV_PRIVATE_KEY_FILE + " " + localFile + " $"
                 + Resource.ENV_SSH_USER + "@" + "$" + Resource.ENV_HOST + ":" + remoteFile;
-        return new Command(scpCommand, Command.Type.PROLOGUE);
+        return new Command(scpCommand, Command.Type.LOCAL);
     }
 
     /**
@@ -252,12 +250,12 @@ public class JDFTasks {
     private static Command stageOutCommand(String remoteFile, String localFile) {
         String scpCommand = "scp " + SSH_SCP_PRECOMMAND + " -P $" + Resource.ENV_SSH_PORT + " -i $" + Resource.ENV_PRIVATE_KEY_FILE + " $"
                 + Resource.ENV_SSH_USER + "@" + "$" + Resource.ENV_HOST + ":" + remoteFile + " " + localFile;
-        return new Command(scpCommand, Command.Type.EPILOGUE);
+        return new Command(scpCommand, Command.Type.LOCAL);
     }
 
     private static Command mkdirLocalFolder(String folder) {
         String mkdirCommand = "mkdir -p " + folder;
-        return new Command(mkdirCommand, Command.Type.PROLOGUE);
+        return new Command(mkdirCommand, Command.Type.LOCAL);
     }
 
 }

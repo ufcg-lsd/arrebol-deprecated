@@ -35,7 +35,13 @@ public class TestArrebolController {
 		properties.put(AppPropertiesConstants.REST_SERVER_PORT, "4444");
 		properties.put(AppPropertiesConstants.EXECUTION_MONITOR_PERIOD, "60000");
 		properties.put(AppPropertiesConstants.INFRA_PROVIDER_CLASS_NAME, 
-				"org.fogbowcloud.scheduler.infrastructure.fogbow.FogbowInfrastructureProvider");
+				"org.fogbowcloud.blowout.scheduler.infrastructure.fogbow.FogbowInfrastructureProvider");
+		properties.put(AppPropertiesConstants.INFRA_FOGBOW_TOKEN_UPDATE_PLUGIN, "org.fogbowcloud.blowout.infrastructure.plugin.KeystoneTokenUpdatePlugin");
+		properties.put(AppPropertiesConstants.INFRA_FOGBOW_TOKEN_PUBLIC_KEY_FILEPATH, "/tmp/keystone_cert");
+		properties.put(AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT, "300000000");
+		properties.put(AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME, "30000");
+		properties.put(AppPropertiesConstants.INFRA_ORDER_SERVICE_TIME, "100000");
+		properties.put(AppPropertiesConstants.INFRA_RESOURCE_SERVICE_TIME, "100000");
 		this.arrebolController = Mockito.spy(new ArrebolController(properties));		
 		Mockito.doReturn(null).when(this.arrebolController).getInfraManager(true, true, true);		
 		this.arrebolController.init();
@@ -183,7 +189,7 @@ public class TestArrebolController {
 		ArrayList<Job> jobs = new ArrayList<Job>();
 		String owner = "owner";
 		JDFJob jdfJob = new JDFJob("", owner);
-		jdfJob.run(task);
+//		jdfJob.run(task);
 		jobs.add(jdfJob);
 		Mockito.when(this.arrebolController.getScheduler().getJobs()).thenReturn(jobs);
 		
@@ -199,7 +205,7 @@ public class TestArrebolController {
 		ArrayList<Job> jobs = new ArrayList<Job>();
 		String owner = "owner";
 		JDFJob jdfJob = new JDFJob("", owner);
-		jdfJob.run(task);
+//		jdfJob.run(task);
 		jobs.add(jdfJob);
 		Mockito.when(this.arrebolController.getScheduler().getJobs()).thenReturn(jobs);
 		

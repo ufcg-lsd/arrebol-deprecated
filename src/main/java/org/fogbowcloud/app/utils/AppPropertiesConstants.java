@@ -38,5 +38,6 @@ public class AppPropertiesConstants {
 	public static final String X_AUTH_NONCE = "X-auth-nonce";
 	public static final String X_AUTH_USER = "X-auth-username";
 	public static final String X_AUTH_HASH = "X-auth-hash";
+	public static final String INFRA_FOGBOW_TOKEN_UPDATE_PLUGIN = "infra_fogbow_token_update_plugin";
 	
 }

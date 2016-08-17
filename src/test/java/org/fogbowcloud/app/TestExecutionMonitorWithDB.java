@@ -14,11 +14,14 @@ import java.util.List;
 
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
+import org.fogbowcloud.blowout.scheduler.core.ExecutionMonitor;
 import org.fogbowcloud.blowout.scheduler.core.Scheduler;
 import org.fogbowcloud.blowout.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.blowout.scheduler.core.model.Resource;
 import org.fogbowcloud.blowout.scheduler.core.model.Task;
 import org.fogbowcloud.blowout.scheduler.core.model.TaskImpl;
+import org.fogbowcloud.blowout.scheduler.core.model.TaskProcess;
+import org.fogbowcloud.blowout.scheduler.core.model.TaskProcessImpl;
 import org.fogbowcloud.blowout.scheduler.infrastructure.InfrastructureManager;
 import org.fogbowcloud.blowout.scheduler.infrastructure.exceptions.InfrastructureException;
 import org.junit.Assert;
@@ -54,201 +57,54 @@ public class TestExecutionMonitorWithDB {
 	}
 
 	@Test
-	public void testExecutionMonitorWithDB() throws InfrastructureException, InterruptedException{
+	public void testExecutionMonitor() throws InfrastructureException, InterruptedException {
 		doReturn(jobDB).when(db).getHashMap(AppPropertiesConstants.DB_MAP_NAME);
 		doNothing().when(db).commit();
-		ExecutionMonitorWithDB ExecutionMonitorWithDB = new ExecutionMonitorWithDB(scheduler, executorService, db);
-		List<Task> runningTasks = new ArrayList<Task>();
-		List<JDFJob> jobList = new ArrayList<JDFJob>();
-
-		jobList.add(job);
-		runningTasks.add(task);
-		doReturn(runningTasks).when(job).getByState(TaskState.RUNNING);
-		doReturn(resource).when(scheduler).getAssociateResource(task);
-		doReturn(true).when(resource).checkConnectivity();
-		doReturn(true).when(task).isFinished();
-		doReturn(false).when(task).isFailed();
-		doReturn(false).when(task).checkTimeOuted();
-		doReturn(jobList).when(scheduler).getJobs();
-		doNothing().when(scheduler).taskCompleted(task);
-		doNothing().when(job).finish(task);
-		doReturn("FAKE_JOB_ID").when(job).getId();
 		doReturn(job).when(jobDB).put(eq("FAKE_JOB_ID"), eq(job));
-
-		ExecutionMonitorWithDB.run();
+		ExecutionMonitor executionMonitor = new ExecutionMonitor(scheduler, executorService, job);
+		TaskProcess tp = mock(TaskProcess.class);
+		List<TaskProcess> processes = new ArrayList<TaskProcess>();
+		processes.add(tp);
+		doReturn(processes).when(scheduler).getAllProcs();
+		doReturn(TaskProcessImpl.State.FINNISHED).when(tp).getStatus();
+		doNothing().when(scheduler).taskCompleted(tp);
+		executionMonitor.run();
 		Thread.sleep(500);
-		verify(task, times(2)).isFinished();
-		verify(job).finish(task);
+		verify(tp, times(2)).getStatus();
 	}
 
 	@Test
-	public void testExecutionMonitorWithDBTaskFails() throws InterruptedException{
+	public void testExecutionMonitorTaskFails() throws InterruptedException {
 		doReturn(jobDB).when(db).getHashMap(AppPropertiesConstants.DB_MAP_NAME);
 		doNothing().when(db).commit();
-		
-		ExecutionMonitorWithDB ExecutionMonitorWithDB = new ExecutionMonitorWithDB(scheduler, executorService,db);
-		List<Task> runningTasks = new ArrayList<Task>();
-		runningTasks.add(task);
-		List<JDFJob> jobList = new ArrayList<JDFJob>();
-
-		jobList.add(job);
-		doReturn(jobList).when(scheduler).getJobs();
-		doReturn(runningTasks).when(job).getByState(TaskState.RUNNING);
-		doReturn(resource).when(scheduler).getAssociateResource(task);
-		doReturn(true).when(resource).checkConnectivity();
-		doReturn(true).when(task).isFinished();
-		doReturn(true).when(task).isFailed();
-		doReturn(false).when(task).checkTimeOuted();
-
-		doNothing().when(scheduler).taskCompleted(task);
+		doReturn(job).when(jobDB).put(eq("FAKE_JOB_ID"), eq(job));
+		ExecutionMonitor executionMonitor = new ExecutionMonitor(scheduler, executorService, job);
+		TaskProcess tp = mock(TaskProcess.class);
+		List<TaskProcess> processes = new ArrayList<TaskProcess>();
+		processes.add(tp);
+		doReturn(processes).when(scheduler).getAllProcs();
+		doReturn(TaskProcessImpl.State.FAILED).when(tp).getStatus();
+		doNothing().when(scheduler).taskCompleted(tp);
 		doNothing().when(job).finish(task);
-		doReturn("FAKE_JOB_ID").when(job).getId();
-		doReturn(job).when(jobDB).put(eq("FAKE_JOB_ID"), eq(job));
-		ExecutionMonitorWithDB.run();
+		executionMonitor.run();
 		Thread.sleep(500);
-		verify(task, times(2)).isFailed();
-		verify(job).fail(task);
+		verify(tp).getStatus();
 	}
 
 	@Test
-	public void testConnectionFails() throws InfrastructureException, InterruptedException {
+	public void testExecutionIsNotOver() throws InfrastructureException, InterruptedException {
 		doReturn(jobDB).when(db).getHashMap(AppPropertiesConstants.DB_MAP_NAME);
 		doNothing().when(db).commit();
-		ExecutionMonitorWithDB ExecutionMonitorWithDB = new ExecutionMonitorWithDB(scheduler, executorService,db);
-		List<Task> runningTasks = new ArrayList<Task>();
-		runningTasks.add(task);
-		List<JDFJob> jobList = new ArrayList<JDFJob>();
-
-		jobList.add(job);
-		doReturn(jobList).when(scheduler).getJobs();
-		doReturn(FAKE_TASK_ID).when(task).getId();
-		doReturn(runningTasks).when(job).getByState(TaskState.RUNNING);
-		doReturn(resource).when(scheduler).getAssociateResource(task);
-		doReturn(false).when(resource).checkConnectivity();
-		doNothing().when(scheduler).taskFailed(task);
-		doNothing().when(job).fail(task);
-		doReturn("FAKE_JOB_ID").when(job).getId();
 		doReturn(job).when(jobDB).put(eq("FAKE_JOB_ID"), eq(job));
-
-		ExecutionMonitorWithDB.run();
-		verify(job).fail(task);
-		verify(scheduler).taskFailed(task);
-	}
-
-	@Test
-	public void testExecutionIsNotOver() throws InfrastructureException, InterruptedException{
-		doReturn(jobDB).when(db).getHashMap(AppPropertiesConstants.DB_MAP_NAME);
-		doNothing().when(db).commit();
-		
-		ExecutionMonitorWithDB ExecutionMonitorWithDB = new ExecutionMonitorWithDB(scheduler, executorService,db);
-		List<Task> runningTasks = new ArrayList<Task>();
-		runningTasks.add(task);
-		List<JDFJob> jobList = new ArrayList<JDFJob>();
-
-		jobList.add(job);
-		doReturn(jobList).when(scheduler).getJobs();
-		doReturn(FAKE_TASK_ID).when(task).getId();
-		doReturn(runningTasks).when(job).getByState(TaskState.RUNNING);
-		doReturn(resource).when(scheduler).getAssociateResource(task);
-		doReturn(true).when(resource).checkConnectivity();
-		doReturn(false).when(task).isFinished();
-		doReturn(false).when(task).checkTimeOuted();
-		doNothing().when(scheduler).taskCompleted(task);
-		doReturn("FAKE_JOB_ID").when(job).getId();
-		doReturn(job).when(jobDB).put(eq("FAKE_JOB_ID"), eq(job));
-		ExecutionMonitorWithDB.run();
-		verify(task, times(2)).isFinished();
-		verify(job, never()).finish(task);;
-		verify(scheduler).getAssociateResource(task);
-		verify(scheduler, never()).taskCompleted(task);
-	}
-
-	@Test
-	public void testExecutionTimedOut() throws InfrastructureException, InterruptedException{
-		doReturn(jobDB).when(db).getHashMap(AppPropertiesConstants.DB_MAP_NAME);
-		doNothing().when(db).commit();
-		
-		ExecutionMonitorWithDB ExecutionMonitorWithDB = new ExecutionMonitorWithDB(scheduler, executorService,db);
-		List<Task> runningTasks = new ArrayList<Task>();
-		runningTasks.add(task);
-		List<JDFJob> jobList = new ArrayList<JDFJob>();
-
-		jobList.add(job);
-		doReturn(jobList).when(scheduler).getJobs();
-		doReturn(FAKE_TASK_ID).when(task).getId();
-		doReturn(runningTasks).when(job).getByState(TaskState.RUNNING);
-		doReturn(true).when(resource).checkConnectivity();
-		doReturn(false).when(task).isFinished();
-		doReturn(true).when(task).checkTimeOuted();
-		doNothing().when(scheduler).taskFailed(task);
-
-		doReturn("FAKE_JOB_ID").when(job).getId();
-		doReturn(job).when(jobDB).put(eq("FAKE_JOB_ID"), eq(job));
-		ExecutionMonitorWithDB.run();
-		verify(task).checkTimeOuted();
-		verify(job, never()).finish(task);;
-		verify(scheduler, never()).taskCompleted(task);
-		verify(job).fail(task);
-		verify(scheduler).taskFailed(task);
-	}
-
-	@Test
-	public void testTaskRetry() throws InfrastructureException, InterruptedException{
-		doReturn(jobDB).when(db).getHashMap(AppPropertiesConstants.DB_MAP_NAME);
-		doNothing().when(db).commit();
-		
-		ExecutionMonitorWithDB ExecutionMonitorWithDB = new ExecutionMonitorWithDB(scheduler, executorService,db);
-		List<Task> runningTasks = new ArrayList<Task>();
-		runningTasks.add(task);
-		List<JDFJob> jobList = new ArrayList<JDFJob>();
-
-		jobList.add(job);
-		doReturn(jobList).when(scheduler).getJobs();
-		doReturn(FAKE_TASK_ID).when(task).getId();
-		task.putMetadata(TaskImpl.METADATA_MAX_RESOURCE_CONN_RETRIES, "5");
-		doReturn(runningTasks).when(job).getByState(TaskState.RUNNING);
-		doReturn(resource).when(scheduler).getAssociateResource(task);
-		doReturn(false).when(resource).checkConnectivity();
-		doReturn(false).when(task).isFinished();
-		doReturn(false).when(task).checkTimeOuted();
-		doReturn("FAKE_JOB_ID").when(job).getId();
-		doReturn(job).when(jobDB).put(eq("FAKE_JOB_ID"), eq(job));
-		//first retry
-		ExecutionMonitorWithDB.run();
-		verify(task).checkTimeOuted();
-		verify(job, never()).finish(task);;
-		verify(scheduler).getAssociateResource(task);
-		verify(scheduler, never()).taskCompleted(task);
-		verify(resource).checkConnectivity();
-		Assert.assertEquals(1, task.getRetries());
-
-		//second retry
-		ExecutionMonitorWithDB.run();
-		verify(task, times(2)).checkTimeOuted();
-		verify(job, never()).finish(task);;
-		verify(scheduler, times(2)).getAssociateResource(task);
-		verify(scheduler, never()).taskCompleted(task);
-		verify(resource, times(2)).checkConnectivity();
-		Assert.assertEquals(2, task.getRetries());
-
-		//third retry
-		ExecutionMonitorWithDB.run();
-		verify(task, times(3)).checkTimeOuted();
-		verify(job, never()).finish(task);;
-		verify(scheduler, times(3)).getAssociateResource(task);
-		verify(scheduler, never()).taskCompleted(task);
-		verify(resource, times(3)).checkConnectivity();
-		Assert.assertEquals(3, task.getRetries());
-
-		//setting retry to 0 again
-		doReturn(true).when(resource).checkConnectivity();
-		ExecutionMonitorWithDB.run();
-		verify(task, times(4)).checkTimeOuted();
-		verify(job, never()).finish(task);;
-		verify(scheduler, times(4)).getAssociateResource(task);
-		verify(scheduler, never()).taskCompleted(task);
-		verify(resource, times(4)).checkConnectivity();
-		Assert.assertEquals(0, task.getRetries());
+		ExecutionMonitor executionMonitor = new ExecutionMonitor(scheduler, executorService, job);
+		TaskProcess tp = mock(TaskProcess.class);
+		doReturn(TaskProcessImpl.State.RUNNING).when(tp).getStatus();
+		List<TaskProcess> processes = new ArrayList<TaskProcess>();
+		processes.add(tp);
+		doReturn(processes).when(scheduler).getAllProcs();
+		executionMonitor.run();
+		verify(tp, times(2)).getStatus();
+		verify(scheduler, never()).taskCompleted(tp);
 	}
 
 }
