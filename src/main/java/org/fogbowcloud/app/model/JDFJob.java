@@ -10,6 +10,10 @@ import java.util.UUID;
  */
 public class JDFJob extends Job {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7780896231796955706L;
 	private final String jobId;
 	private String name;
 	private String schedPath;
@@ -45,7 +49,7 @@ public class JDFJob extends Job {
 
 	public Task getTaskById(String taskId) {
 		//TODO
-		return null;
+		return this.taskList.get(taskId);
 	}
 
 	public TaskState getTaskState(String taskId) {

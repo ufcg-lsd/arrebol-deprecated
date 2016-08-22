@@ -7,7 +7,6 @@ import java.util.Properties;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
-import org.fogbowcloud.app.jdfcompiler.job.IOEntry;
 import org.fogbowcloud.app.jdfcompiler.job.JobSpecification;
 import org.fogbowcloud.app.jdfcompiler.job.TaskSpecification;
 import org.fogbowcloud.app.jdfcompiler.main.CommonCompiler;

@@ -97,7 +97,6 @@ public class TestJobResource {
 	
 	@Test
 	public void testGetJobs() throws Exception {
-		String jobName = "jobName00";
 		HttpGet get = new HttpGet(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
 		String owner = ResourceTestUtil.DEFAULT_OWNER;
 		get.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));	

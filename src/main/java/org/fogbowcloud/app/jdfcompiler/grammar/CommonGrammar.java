@@ -28,7 +28,6 @@ import java.util.Stack;
 import java.util.TreeMap;
 
 import org.fogbowcloud.app.jdfcompiler.IgnoreCaseComparator;
-import org.fogbowcloud.app.jdfcompiler.syntactical.CommonSyntacticalAnalyzer;
 
 /**
  * From Project: Caymman(DSC/UFCG) Description: This class represents a LL(1)

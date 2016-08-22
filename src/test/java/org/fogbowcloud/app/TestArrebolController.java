@@ -7,20 +7,20 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentMap;
 
 import org.fogbowcloud.app.model.JDFJob;
+import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.fogbowcloud.blowout.scheduler.core.Scheduler;
 import org.fogbowcloud.blowout.scheduler.core.model.Job;
 import org.fogbowcloud.blowout.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.blowout.scheduler.core.model.Specification;
 import org.fogbowcloud.blowout.scheduler.core.model.Task;
 import org.fogbowcloud.blowout.scheduler.core.model.TaskImpl;
-import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mapdb.DB;
-import org.mockito.Mockito;
 
+import org.mockito.Mockito;
 public class TestArrebolController {
 	
 	private ArrebolController arrebolController;
@@ -163,7 +163,6 @@ public class TestArrebolController {
 	
 	@Test
 	public void testStopJobWithId() {
-		String jobName = "jobName00";
 		ArrayList<Job> jobs = new ArrayList<Job>();
 		String owner = "owner";
 		JDFJob jdfJob = new JDFJob("", owner);
@@ -189,6 +188,7 @@ public class TestArrebolController {
 		ArrayList<Job> jobs = new ArrayList<Job>();
 		String owner = "owner";
 		JDFJob jdfJob = new JDFJob("", owner);
+		jdfJob.addTask(task);
 //		jdfJob.run(task);
 		jobs.add(jdfJob);
 		Mockito.when(this.arrebolController.getScheduler().getJobs()).thenReturn(jobs);
@@ -201,14 +201,14 @@ public class TestArrebolController {
 	public void testGetTaskState() {
 		String taskId = "taskId00";
 		Task task = new TaskImpl(taskId, new Specification("image", "username", "publicKey", "privateKeyFilePath", "", ""));
-		
 		ArrayList<Job> jobs = new ArrayList<Job>();
 		String owner = "owner";
 		JDFJob jdfJob = new JDFJob("", owner);
 //		jdfJob.run(task);
+		jdfJob.addTask(task);
 		jobs.add(jdfJob);
 		Mockito.when(this.arrebolController.getScheduler().getJobs()).thenReturn(jobs);
-		
+		Mockito.when(this.arrebolController.getScheduler().inferTaskState(task)).thenReturn(TaskState.RUNNING);
 		Assert.assertEquals(jobs, this.arrebolController.getAllJobs(owner));				
 		Assert.assertEquals(TaskState.RUNNING, this.arrebolController.getTaskState(taskId, owner));
 	}

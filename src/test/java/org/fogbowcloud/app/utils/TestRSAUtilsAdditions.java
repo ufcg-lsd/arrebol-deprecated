@@ -38,7 +38,6 @@ public class TestRSAUtilsAdditions {
 	
 	@Test
 	public void TestSavePrivateKey() throws GeneralSecurityException, IOException {
-		String testString = "testString";
 		
 		KeyPair pair = RSAUtils.generateKeyPair();
 		
@@ -53,7 +52,6 @@ public class TestRSAUtilsAdditions {
 	
 	@Test
 	public void TestSavePublicKey() throws GeneralSecurityException, IOException {
-		String testString = "testString";
 		
 		KeyPair pair = RSAUtils.generateKeyPair();
 		

@@ -141,7 +141,6 @@ public class ArrebolController {
 		ArrayList<JDFJob> legacyJobs = new ArrayList<JDFJob>();
 
 		for (String key : jobMapDB.keySet()) {
-			JDFJob recoveredJob = (JDFJob) jobMapDB.get(key);
 			legacyJobs.add((JDFJob) jobMapDB.get(key));
 		}
 		return legacyJobs;
@@ -251,13 +250,10 @@ public class ArrebolController {
 	}
 
 	public TaskState getTaskState(String taskId, String owner) {
-		for (Job job : getAllJobs(owner)) {
-			JDFJob jdfJob = (JDFJob) job;
 			TaskState taskState = scheduler.inferTaskState(getTaskById(taskId, owner));
 			if (taskState != null) {
 				return taskState;
 			}
-		}
 		return null;
 	}
 

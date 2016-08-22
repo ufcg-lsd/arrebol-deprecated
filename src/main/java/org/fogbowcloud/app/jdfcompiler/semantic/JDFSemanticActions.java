@@ -29,8 +29,6 @@ import java.util.Stack;
 
 import org.fogbowcloud.app.jdfcompiler.CompilerMessages;
 import org.fogbowcloud.app.jdfcompiler.exception.JobSpecificationException;
-import org.fogbowcloud.app.jdfcompiler.exception.TaskSpecificationException;
-import org.fogbowcloud.app.jdfcompiler.grammar.Symbol;
 import org.fogbowcloud.app.jdfcompiler.job.IOEntry;
 import org.fogbowcloud.app.jdfcompiler.job.JobSpecification;
 import org.fogbowcloud.app.jdfcompiler.job.TaskSpecification;

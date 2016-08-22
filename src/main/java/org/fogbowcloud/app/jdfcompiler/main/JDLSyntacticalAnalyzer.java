@@ -89,6 +89,7 @@ public class JDLSyntacticalAnalyzer extends ClassAdSyntacticalAnalyzerStream{
 			builder.append( input.nextLine() );
 		}
 		changeSystemErrToStream();
+		input.close();
 		return builder.toString();
 	}
 

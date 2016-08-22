@@ -20,7 +20,6 @@
 package org.fogbowcloud.app.jdfcompiler.job;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.fogbowcloud.app.jdfcompiler.semantic.JDLCommand;

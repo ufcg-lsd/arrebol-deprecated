@@ -26,7 +26,6 @@ import org.fogbowcloud.app.jdfcompiler.CompilerMessages;
 import org.fogbowcloud.app.jdfcompiler.SpecialCharException;
 import org.fogbowcloud.app.jdfcompiler.TokenDelimiter;
 import org.fogbowcloud.app.jdfcompiler.io.CharReader;
-import org.fogbowcloud.app.jdfcompiler.syntactical.CommonSyntacticalAnalyzer;
 
 /**
  * It is a Token object that is recognized as a string at the CodesTable.

@@ -20,13 +20,6 @@
 package org.fogbowcloud.app.jdfcompiler.semantic;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.fogbowcloud.app.jdfcompiler.CommonUtils;
 import org.fogbowcloud.app.jdfcompiler.job.IOEntry;
 
 /**
@@ -134,29 +127,4 @@ public class IOCommand extends JDLCommand  implements Serializable {
 			return false;
 		return true;
 	}
-	
-	private IOEntry[] getArray(ArrayList<IOEntry> list) {
-		
-		IOEntry[] array = new IOEntry[list.size()];
-		
-		int i = 0;
-		for (IOEntry entry : list) {
-			array[i] = entry;
-			i++;
-		}
-		
-		return array;
-	}
-	
-	private ArrayList<IOEntry> getList(IOEntry[] array) {
-		
-		ArrayList<IOEntry> list = new ArrayList<IOEntry>();
-		
-		for (IOEntry entry : array) {
-			list.add(entry);
-		}
-		
-		return list;
-	}
-
 }

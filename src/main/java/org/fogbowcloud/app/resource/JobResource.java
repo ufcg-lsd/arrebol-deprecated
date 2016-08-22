@@ -15,7 +15,6 @@ import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.fogbowcloud.app.utils.ServerResourceUtils;
-import org.fogbowcloud.blowout.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.blowout.scheduler.core.model.Task;
 import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;

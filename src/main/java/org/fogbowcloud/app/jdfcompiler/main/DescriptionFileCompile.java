@@ -24,7 +24,6 @@ import java.util.List;
 import org.fogbowcloud.app.jdfcompiler.CompilerMessages;
 import org.fogbowcloud.app.jdfcompiler.job.JobSpecification;
 import org.fogbowcloud.app.jdfcompiler.main.CommonCompiler.FileType;
-import org.fogbowcloud.app.jdfcompiler.worker.WorkerSpecification;
 
 /**
  * Strategy to compile description files.
