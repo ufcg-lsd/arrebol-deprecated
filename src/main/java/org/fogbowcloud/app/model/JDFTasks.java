@@ -219,7 +219,7 @@ public class JDFTasks {
     }
 
     private static Command stageInCommand(String localFile, String remoteFile) {
-        String scpCommand = "scp " + SSH_SCP_PRECOMMAND + " -P $" + Resource.ENV_SSH_PORT + " -i $" + Resource.ENV_PRIVATE_KEY_FILE + " " + localFile + " $"
+        String scpCommand = "su $UUID ; " + "scp " + SSH_SCP_PRECOMMAND + " -P $" + Resource.ENV_SSH_PORT + " -i $" + Resource.ENV_PRIVATE_KEY_FILE + " " + localFile + " $"
                 + Resource.ENV_SSH_USER + "@" + "$" + Resource.ENV_HOST + ":" + remoteFile;
         return new Command(scpCommand, Command.Type.LOCAL);
     }
@@ -247,13 +247,13 @@ public class JDFTasks {
     }
 
     private static Command stageOutCommand(String remoteFile, String localFile) {
-        String scpCommand = "scp " + SSH_SCP_PRECOMMAND + " -P $" + Resource.ENV_SSH_PORT + " -i $" + Resource.ENV_PRIVATE_KEY_FILE + " $"
+        String scpCommand = "su $UUID ; " +  "scp " + SSH_SCP_PRECOMMAND + " -P $" + Resource.ENV_SSH_PORT + " -i $" + Resource.ENV_PRIVATE_KEY_FILE + " $"
                 + Resource.ENV_SSH_USER + "@" + "$" + Resource.ENV_HOST + ":" + remoteFile + " " + localFile;
         return new Command(scpCommand, Command.Type.LOCAL);
     }
 
     private static Command mkdirLocalFolder(String folder) {
-        String mkdirCommand = "mkdir -p " + folder;
+        String mkdirCommand = "su $UserID ; " + "mkdir -p " + folder;
         return new Command(mkdirCommand, Command.Type.LOCAL);
     }
 
