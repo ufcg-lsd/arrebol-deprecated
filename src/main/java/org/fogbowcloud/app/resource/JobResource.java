@@ -128,6 +128,7 @@ public class JobResource extends ServerResource {
 		fieldMap.put(AppPropertiesConstants.X_AUTH_USER, null);
 		fieldMap.put(AppPropertiesConstants.X_AUTH_NONCE, null);
 		fieldMap.put(AppPropertiesConstants.X_AUTH_HASH, null);
+		fieldMap.put(AppPropertiesConstants.X_CREDENTIALS, null);
 		ServerResourceUtils.loadFields(entity, fieldMap, new HashMap<String, File>());
 
 		String jdf = fieldMap.get(JDF_FILE_PATH);
@@ -142,6 +143,7 @@ public class JobResource extends ServerResource {
 		headers.add(AppPropertiesConstants.X_AUTH_NONCE, fieldMap.get(AppPropertiesConstants.X_AUTH_NONCE));
 		headers.add(AppPropertiesConstants.X_AUTH_USER, fieldMap.get(AppPropertiesConstants.X_AUTH_USER));
 		headers.add(AppPropertiesConstants.X_AUTH_HASH, fieldMap.get(AppPropertiesConstants.X_AUTH_HASH));
+		headers.add(AppPropertiesConstants.X_CREDENTIALS, fieldMap.get(AppPropertiesConstants.X_CREDENTIALS));
 		String owner = ResourceUtil.authenticateUser(application, headers);
 		String jdfAbsolutePath = fieldMap.get(JDF_FILE_PATH);
 		try {

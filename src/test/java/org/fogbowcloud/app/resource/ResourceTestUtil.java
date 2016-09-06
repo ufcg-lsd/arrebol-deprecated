@@ -3,13 +3,13 @@ package org.fogbowcloud.app.resource;
 import java.util.Properties;
 
 import org.fogbowcloud.app.ArrebolController;
+import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.mockito.Mockito;
 
-import org.fogbowcloud.app.model.User;
-
 public class ResourceTestUtil {
+	public static final String WRONG_CRED = "wrong cred";
 	public static final String DEFAULT_SERVER_PORT = "30023";
 	public static final String DEFAULT_PREFIX_URL = "http://localhost:" + DEFAULT_SERVER_PORT;
 	public static final String DEFAULT_OWNER = "default_owner";
@@ -30,9 +30,13 @@ public class ResourceTestUtil {
 		properties.put(AppPropertiesConstants.REST_SERVER_PORT, DEFAULT_SERVER_PORT);
 		Mockito.when(this.arrebolController.getProperties()).thenReturn(properties);
 		User userMock = Mockito.mock(User.class);
+		
+		Mockito.doReturn(ResourceTestUtil.DEFAULT_OWNER).when(userMock).getUsername();
 
-		Mockito.when(this.arrebolController.authUser(Mockito.anyString())).thenReturn(userMock);
-
+		Mockito.when(this.arrebolController.authUser(null)).thenReturn(userMock);
+		
+		Mockito.when(this.arrebolController.authUser(WRONG_CRED)).thenReturn(null);
+		
 		this.jdfSchedulerApplication = new JDFSchedulerApplication(this.arrebolController);
 	}
 

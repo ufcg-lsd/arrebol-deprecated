@@ -67,6 +67,7 @@ public class TestJobResource {
 	public void testGetJobUnathorized() throws Exception {
 		HttpGet get = new HttpGet(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX + "/" + "jobId");
 		get.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, "wrong owner"));
+		get.addHeader(new BasicHeader(AppPropertiesConstants.X_CREDENTIALS, ResourceTestUtil.WRONG_CRED));
 		
 		HttpClient client = HttpClients.createMinimal();
 		HttpResponse response = client.execute(get);
@@ -144,6 +145,8 @@ public class TestJobResource {
 		delete.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, "owner"));
 		
 		User userMock = Mockito.mock(User.class);
+		
+		Mockito.doReturn(ResourceTestUtil.DEFAULT_OWNER).when(userMock).getUsername();
 		
 		Mockito.when(this.resourceTestUtil.getArrebolController().authUser( Mockito.anyString())).thenReturn(userMock);			
 		

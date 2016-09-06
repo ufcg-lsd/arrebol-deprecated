@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 import org.apache.commons.httpclient.HttpStatus;
+import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.restlet.resource.ResourceException;
@@ -14,13 +15,12 @@ public class ResourceUtil {
 	public static String authenticateUser(JDFSchedulerApplication application,
 			@SuppressWarnings("rawtypes") Series headers) throws IOException, GeneralSecurityException {        
         String credentials = headers.getFirstValue(AppPropertiesConstants.X_CREDENTIALS);
-         
-        String owner = application.authUser(credentials).getUsername(); 
-        if (owner == null) {
+        User user = application.authUser(credentials);
+        if (user == null) {
         
         	throw new ResourceException(HttpStatus.SC_UNAUTHORIZED);
         }
-        return owner;
+        return user.getUsername();
 	}
     
 	public static String authenticateUserOnPost(
