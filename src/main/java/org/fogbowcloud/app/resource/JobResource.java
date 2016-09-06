@@ -59,6 +59,8 @@ public class JobResource extends ServerResource {
 		LOGGER.info("Getting Jobs...");
 		String jobId = (String) getRequest().getAttributes().get(JOBPATH);
 		LOGGER.debug("JobId is " + jobId);
+		
+		
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 		JSONObject jsonJob = new JSONObject();
 

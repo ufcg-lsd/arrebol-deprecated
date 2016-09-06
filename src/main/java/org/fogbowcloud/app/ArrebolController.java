@@ -14,6 +14,7 @@ import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.JDFTasks;
 import org.fogbowcloud.app.model.User;
+import org.fogbowcloud.app.model.UserImpl;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.fogbowcloud.app.utils.AuthUtils;
 import org.fogbowcloud.blowout.scheduler.core.ManagerTimer;
@@ -33,8 +34,7 @@ public class ArrebolController {
 	private static final int DEFAULT_SCHEDULER_INTERVAL = 30000;
 	private static final int DEFAULT_EXECUTION_MONITOR_INTERVAL = 30000;
 
-	public static final Logger LOGGER = Logger
-			.getLogger(ArrebolController.class);
+	public static final Logger LOGGER = Logger.getLogger(ArrebolController.class);
 
 	private DB jobDB;
 	private DB usersDB;
@@ -44,10 +44,8 @@ public class ArrebolController {
 	private ConcurrentMap<String, JDFJob> jobMap;
 	private ConcurrentMap<String, String> userList;
 
-	private static ManagerTimer executionMonitorTimer = new ManagerTimer(
-			Executors.newScheduledThreadPool(1));
-	private static ManagerTimer schedulerTimer = new ManagerTimer(
-			Executors.newScheduledThreadPool(1));
+	private static ManagerTimer executionMonitorTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
+	private static ManagerTimer schedulerTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
 
 	public ArrebolController(Properties properties) throws Exception {
 		this.properties = properties;
@@ -74,70 +72,52 @@ public class ArrebolController {
 	}
 
 	public void init() throws Exception {
-		final File pendingImageDownloadFile = new File(
-				AppPropertiesConstants.DB_FILE_NAME);
+		final File pendingImageDownloadFile = new File(AppPropertiesConstants.DB_FILE_NAME);
 		this.jobDB = DBMaker.newFileDB(pendingImageDownloadFile).make();
 		this.jobDB.checkShouldCreate(AppPropertiesConstants.DB_MAP_NAME);
-		ConcurrentMap<String, JDFJob> jobMapDB = this.jobDB
-				.getHashMap(AppPropertiesConstants.DB_MAP_NAME);
+		ConcurrentMap<String, JDFJob> jobMapDB = this.jobDB.getHashMap(AppPropertiesConstants.DB_MAP_NAME);
 
 		final File usersFile = new File(AppPropertiesConstants.DB_FILE_USERS);
 		this.usersDB = DBMaker.newFileDB(usersFile).make();
 		this.usersDB.checkShouldCreate(AppPropertiesConstants.DB_MAP_USERS);
 
 		Boolean blockWhileInitializing = new Boolean(
-				this.properties
-						.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_BLOCK_CREATING))
-				.booleanValue();
+				this.properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_BLOCK_CREATING)).booleanValue();
 		Boolean removePreviousResources = new Boolean(
-				this.properties
-						.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_REMOVE_PREVIOUS_RESOURCES))
-				.booleanValue();
-		Boolean isElastic = new Boolean(
-				properties.getProperty(AppPropertiesConstants.INFRA_IS_STATIC))
-				.booleanValue();
+				this.properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_REMOVE_PREVIOUS_RESOURCES))
+						.booleanValue();
+		Boolean isElastic = new Boolean(properties.getProperty(AppPropertiesConstants.INFRA_IS_STATIC)).booleanValue();
 
-		InfrastructureManager infraManager = getInfraManager(
-				blockWhileInitializing, isElastic, removePreviousResources);
+		InfrastructureManager infraManager = getInfraManager(blockWhileInitializing, isElastic,
+				removePreviousResources);
 
 		ArrayList<JDFJob> legacyJobs = getLegacyJobs(jobMapDB);
-		LOGGER.debug("Properties: "
-				+ properties
-						.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
+		LOGGER.debug("Properties: " + properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
 
-		this.scheduler = new Scheduler(infraManager,
-				legacyJobs.toArray(new JDFJob[legacyJobs.size()]));
+		this.scheduler = new Scheduler(infraManager, legacyJobs.toArray(new JDFJob[legacyJobs.size()]));
 		LOGGER.debug("Application to be started on port: "
-				+ properties
-						.getProperty(AppPropertiesConstants.REST_SERVER_PORT));
-		ExecutionMonitorWithDB executionMonitor = new ExecutionMonitorWithDB(
-				this.scheduler, this.jobDB);
+				+ properties.getProperty(AppPropertiesConstants.REST_SERVER_PORT));
+		ExecutionMonitorWithDB executionMonitor = new ExecutionMonitorWithDB(this.scheduler, this.jobDB);
 
 		this.jobMap = this.jobDB.getHashMap(AppPropertiesConstants.DB_MAP_NAME);
 		this.userList = usersDB.getHashMap(AppPropertiesConstants.DB_MAP_USERS);
 		this.nonces = new ArrayList<Integer>();
 
 		LOGGER.debug("Starting Scheduler and Execution Monitor, execution monitor period: "
-				+ properties
-						.getProperty(AppPropertiesConstants.EXECUTION_MONITOR_PERIOD));
-		schedulerTimer.scheduleAtFixedRate(this.scheduler, 0,
-				DEFAULT_SCHEDULER_INTERVAL);
-		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0,
-				DEFAULT_EXECUTION_MONITOR_INTERVAL);
+				+ properties.getProperty(AppPropertiesConstants.EXECUTION_MONITOR_PERIOD));
+		schedulerTimer.scheduleAtFixedRate(this.scheduler, 0, DEFAULT_SCHEDULER_INTERVAL);
+		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0, DEFAULT_EXECUTION_MONITOR_INTERVAL);
 	}
 
-	protected InfrastructureManager getInfraManager(
-			Boolean blockWhileInitializing, Boolean isElastic, 
+	protected InfrastructureManager getInfraManager(Boolean blockWhileInitializing, Boolean isElastic,
 			Boolean removePreviousResources) throws Exception {
 		InfrastructureProvider infraProvider = createInfraProvaiderInstance();
-		InfrastructureManager infraManager = new InfrastructureManager(null,
-				isElastic, infraProvider, properties);
+		InfrastructureManager infraManager = new InfrastructureManager(null, isElastic, infraProvider, properties);
 		infraManager.start(blockWhileInitializing, removePreviousResources);
 		return infraManager;
 	}
 
-	private ArrayList<JDFJob> getLegacyJobs(
-			ConcurrentMap<String, JDFJob> jobMapDB) {
+	private ArrayList<JDFJob> getLegacyJobs(ConcurrentMap<String, JDFJob> jobMapDB) {
 		ArrayList<JDFJob> legacyJobs = new ArrayList<JDFJob>();
 
 		for (String key : jobMapDB.keySet()) {
@@ -146,16 +126,12 @@ public class ArrebolController {
 		return legacyJobs;
 	}
 
-	private InfrastructureProvider createInfraProvaiderInstance()
-			throws Exception {
-		String providerClassName = this.properties
-				.getProperty(AppPropertiesConstants.INFRA_PROVIDER_CLASS_NAME);
+	private InfrastructureProvider createInfraProvaiderInstance() throws Exception {
+		String providerClassName = this.properties.getProperty(AppPropertiesConstants.INFRA_PROVIDER_CLASS_NAME);
 		Class<?> forName = Class.forName(providerClassName);
-		Object clazz = forName.getConstructor(Properties.class).newInstance(
-				properties);
+		Object clazz = forName.getConstructor(Properties.class).newInstance(properties);
 		if (!(clazz instanceof InfrastructureProvider)) {
-			throw new Exception(
-					"Provider Class Name is not a InfrastructureProvider implementation");
+			throw new Exception("Provider Class Name is not a InfrastructureProvider implementation");
 		}
 
 		return (InfrastructureProvider) clazz;
@@ -169,19 +145,21 @@ public class ArrebolController {
 		return null;
 	}
 
-	public String addJob(String jdfFilePath, String schedPath, String owner) throws CompilerException, NameAlreadyInUseException {
+	public String addJob(String jdfFilePath, String schedPath, String owner)
+			throws CompilerException, NameAlreadyInUseException {
 		JDFJob job = new JDFJob(schedPath, owner);
 
 		List<Task> taskList = getTasksFromJDFFile(jdfFilePath, schedPath, job);
 
 		if (getJobByName(job.getName(), owner) != null) {
-			throw new NameAlreadyInUseException("The name " + job.getName() +" is already in use for the user "+ "owner");
+			throw new NameAlreadyInUseException(
+					"The name " + job.getName() + " is already in use for the user " + "owner");
 		}
-		
+
 		for (Task task : taskList) {
 			job.addTask(task);
 		}
-		
+
 		LOGGER.debug("Adding job " + job.getName() + " to scheduler");
 
 		this.scheduler.addJob(job);
@@ -250,40 +228,42 @@ public class ArrebolController {
 	}
 
 	public TaskState getTaskState(String taskId, String owner) {
-			TaskState taskState = scheduler.inferTaskState(getTaskById(taskId, owner));
-			if (taskState != null) {
-				return taskState;
-			}
+		TaskState taskState = scheduler.inferTaskState(getTaskById(taskId, owner));
+		if (taskState != null) {
+			return taskState;
+		}
 		return null;
 	}
 
-	public boolean authUser(String username, String hash, String nonce)
-			throws IOException, GeneralSecurityException {
-		if (username == null || hash == null || nonce == null) {
-			return false;
+	public User authUser(String credentials) throws IOException, GeneralSecurityException {
+		if (credentials == null) {
+			return null;
 		}
+		try {
+			JSONObject cred = new JSONObject(credentials);
 
-		LOGGER.debug("Checking nonce");
-		Integer nonceValue = Integer.valueOf(nonce);
-		if (this.nonces.contains(nonceValue)) {
-			JSONObject userJSON;
-			try {
-				String userJSONString = userList.get(username);
-				if (userJSONString == null) {
-					return false;
-				}
-				userJSON = new JSONObject(userJSONString);
-			} catch (JSONException e) {
-				return false;
+			LOGGER.debug("Checking nonce");
+			// Integer nonceValue = Integer.valueOf(nonce);
+			// if (this.nonces.contains(nonceValue)) {
+
+			String userJSONString = userList.get(cred.getString("username"));
+			if (userJSONString == null) {
+				return null;
 			}
-			User user = User.fromJSON(userJSON);
-			if (AuthUtils.checkUserSignature(hash, user, nonceValue)) {
-				nonces.remove(nonceValue);
-				return true;
-			}
+			cred.put("userJson", userJSONString);
+			return (new AuthUtils()).authenticateUser(cred.toString());
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		nonces.remove(nonceValue);
-		return false;
+		return null;
+		// User user = User.fromJSON(userJSON);
+		// }
+		// nonces.remove(nonceValue);
+		// return true;
+		// }
+		// }
+		// nonces.remove(nonceValue);
 	}
 
 	public int getNonce() {
@@ -292,10 +272,9 @@ public class ArrebolController {
 		return nonce;
 	}
 
-	protected List<Task> getTasksFromJDFFile(String jdfFilePath,
-			String schedPath, JDFJob job) throws CompilerException {
-		List<Task> taskList = JDFTasks.getTasksFromJDFFile(job,
-				jdfFilePath, schedPath, this.properties);
+	protected List<Task> getTasksFromJDFFile(String jdfFilePath, String schedPath, JDFJob job)
+			throws CompilerException {
+		List<Task> taskList = JDFTasks.getTasksFromJDFFile(job, jdfFilePath, schedPath, this.properties);
 		return taskList;
 	}
 
@@ -306,7 +285,7 @@ public class ArrebolController {
 			return null;
 		}
 		try {
-			user = User.fromJSON(new JSONObject(userJSONString));
+			user = UserImpl.fromJSON(new JSONObject(userJSONString));
 		} catch (JSONException e) {
 			LOGGER.debug("Could not retrieve the user from database.", e);
 		}
@@ -315,8 +294,8 @@ public class ArrebolController {
 
 	public User addUser(String username, String publicKey) {
 		try {
-			User user = new User(username, publicKey);
-			this.userList.put(username, user.toJSON().toString());
+			User user = new UserImpl(username, publicKey);
+			this.userList.put(username, ((UserImpl) user).toJSON().toString());
 			this.usersDB.commit();
 			return user;
 		} catch (Exception e) {

@@ -13,22 +13,22 @@ public class ResourceUtil {
 
 	public static String authenticateUser(JDFSchedulerApplication application,
 			@SuppressWarnings("rawtypes") Series headers) throws IOException, GeneralSecurityException {        
-        String nonce = headers.getFirstValue(AppPropertiesConstants.X_AUTH_NONCE);
-        String user = headers.getFirstValue(AppPropertiesConstants.X_AUTH_USER);
-        String hash = headers.getFirstValue(AppPropertiesConstants.X_AUTH_HASH);
+        String credentials = headers.getFirstValue(AppPropertiesConstants.X_CREDENTIALS);
          
-        if (!application.authUser(user, hash, nonce)) {
+        String owner = application.authUser(credentials).getUsername(); 
+        if (owner == null) {
+        
         	throw new ResourceException(HttpStatus.SC_UNAUTHORIZED);
         }
-        return user;
+        return owner;
 	}
     
 	public static String authenticateUserOnPost(
 			JDFSchedulerApplication application, String nonce, String user,
 			String hash) throws IOException, GeneralSecurityException {
-    	if (!application.authUser(user, hash, nonce)) {
-        	throw new ResourceException(HttpStatus.SC_UNAUTHORIZED);
-        }
+//    	if (!application.authUser(user, hash, nonce)) {
+//        	throw new ResourceException(HttpStatus.SC_UNAUTHORIZED);
+//        }
         return user;
     }
 	
