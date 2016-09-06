@@ -49,7 +49,7 @@ public class JDFJob extends Job {
 
 	public Task getTaskById(String taskId) {
 		//TODO
-		return this.taskList.get(taskId);
+		return this.getTaskList().get(taskId);
 	}
 
 	public TaskState getTaskState(String taskId) {
