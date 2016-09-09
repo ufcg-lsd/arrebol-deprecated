@@ -16,6 +16,7 @@ import org.fogbowcloud.app.model.JDFTasks;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.model.UserImpl;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
+import org.fogbowcloud.app.utils.ArrebolAuthenticator;
 import org.fogbowcloud.app.utils.AuthUtils;
 import org.fogbowcloud.blowout.scheduler.core.ManagerTimer;
 import org.fogbowcloud.blowout.scheduler.core.Scheduler;
@@ -43,12 +44,14 @@ public class ArrebolController {
 	private Properties properties;
 	private ConcurrentMap<String, JDFJob> jobMap;
 	private ConcurrentMap<String, String> userList;
+	private ArrebolAuthenticator auth;
 
 	private static ManagerTimer executionMonitorTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
 	private static ManagerTimer schedulerTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
 
 	public ArrebolController(Properties properties) throws Exception {
 		this.properties = properties;
+		this.auth = createAuthenticatorPluginInstance();
 	}
 
 	public Properties getProperties() {
@@ -135,6 +138,17 @@ public class ArrebolController {
 		}
 
 		return (InfrastructureProvider) clazz;
+	}
+	
+	private ArrebolAuthenticator createAuthenticatorPluginInstance() throws Exception {
+		String providerClassName = this.properties.getProperty(AppPropertiesConstants.AUTHENTICATION_PLUGIN);
+		Class<?> forName = Class.forName(providerClassName);
+		Object clazz = forName.getConstructor().newInstance();
+		if (!(clazz instanceof ArrebolAuthenticator)) {
+			throw new Exception("Authenticator Class Name is not a ArrebolAuthenticator implementation");
+		}
+
+		return (ArrebolAuthenticator) clazz;
 	}
 
 	public JDFJob getJobById(String jobId, String owner) {
@@ -251,7 +265,7 @@ public class ArrebolController {
 				return null;
 			}
 			cred.put("userJson", userJSONString);
-			return (new AuthUtils()).authenticateUser(cred.toString());
+			return this.auth.authenticateUser(cred.toString());
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
