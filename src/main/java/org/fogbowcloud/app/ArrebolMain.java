@@ -14,7 +14,7 @@ public class ArrebolMain {
 	/**
 	 * This method receives a JDF file as input and requests the mapping of its
 	 * attributes to JDL attributes, generating a JDL file at the end
-	 * 
+	 *
 	 * @param args
 	 * @throws Exception
 	 */
@@ -41,7 +41,7 @@ public class ArrebolMain {
 		JDFSchedulerApplication app = new JDFSchedulerApplication(new ArrebolController(properties));
 		app.startServer();
 	}
-	
+
 	private static boolean checkProperties(Properties properties) {
 		if (!properties.containsKey(AppPropertiesConstants.INFRA_PROVIDER_CLASS_NAME)) {
 			LOGGER.error("Required property " + AppPropertiesConstants.INFRA_PROVIDER_CLASS_NAME + " was not set");
@@ -103,15 +103,14 @@ public class ArrebolMain {
 			LOGGER.error("Required property " + AppPropertiesConstants.AUTHENTICATION_PLUGIN+ " was not set");
 			return false;
 		}
-		
-		
+
 		if (properties.containsKey(org.fogbowcloud.blowout.scheduler.core.util.
 				AppPropertiesConstants.INFRA_FOGBOW_TOKEN_UPDATE_PLUGIN)) {
-			
+
 			String tokenUpdatePluginClass = properties.getProperty(
 					org.fogbowcloud.blowout.scheduler.core.util
 					.AppPropertiesConstants.INFRA_FOGBOW_TOKEN_UPDATE_PLUGIN);
-			
+
 			// Checking for required properties of Keystone Token Update Plugin
 			if (tokenUpdatePluginClass.equals("org.fogbowcloud.blowout.infrastructure.plugin.KeystoneTokenUpdatePlugin")) {
 				if (!properties.containsKey("fogbow.keystone.username")) {
@@ -119,7 +118,7 @@ public class ArrebolMain {
 					return false;
 				}
 			}
-			
+
 			// Checking for required properties of NAF Token Update Plugin
 			if (tokenUpdatePluginClass.equals("org.fogbowcloud.blowout.infrastructure.plugin.NAFTokenUpdatePlugin")) {
 				if (!properties.containsKey(org.fogbowcloud.blowout.scheduler.core.util
@@ -128,28 +127,28 @@ public class ArrebolMain {
 							.AppPropertiesConstants.NAF_IDENTITY_PRIVATE_KEY + " was not set");
 					return false;
 				}
-				
+
 				if (!properties.containsKey(org.fogbowcloud.blowout.scheduler.core.util
 						.AppPropertiesConstants.NAF_IDENTITY_PUBLIC_KEY)) {
 					LOGGER.error("Required property " + org.fogbowcloud.blowout.scheduler.core.util
 							.AppPropertiesConstants.NAF_IDENTITY_PUBLIC_KEY + " was not set");
 					return false;
 				}
-				
+
 				if (!properties.containsKey(org.fogbowcloud.blowout.scheduler.core.util
 						.AppPropertiesConstants.NAF_IDENTITY_TOKEN_GENERATOR_URL)) {
 					LOGGER.error("Required property " + org.fogbowcloud.blowout.scheduler.core.util
 							.AppPropertiesConstants.NAF_IDENTITY_TOKEN_GENERATOR_URL + " was not set");
 					return false;
 				}
-				
+
 				if (!properties.containsKey(org.fogbowcloud.blowout.scheduler.core.util
 						.AppPropertiesConstants.NAF_IDENTITY_TOKEN_USERNAME)) {
 					LOGGER.error("Required property " + org.fogbowcloud.blowout.scheduler.core.util
 							.AppPropertiesConstants.NAF_IDENTITY_TOKEN_USERNAME + " was not set");
 					return false;
 				}
-				
+
 				if (!properties.containsKey(org.fogbowcloud.blowout.scheduler.core.util
 						.AppPropertiesConstants.NAF_IDENTITY_TOKEN_PASSWORD)) {
 					LOGGER.error("Required property " + org.fogbowcloud.blowout.scheduler.core.util
@@ -157,13 +156,13 @@ public class ArrebolMain {
 					return false;
 				}
 			}
-			
+
 		} else {
 			LOGGER.error("Required property " + org.fogbowcloud.blowout.scheduler.core.util.
 					AppPropertiesConstants.INFRA_FOGBOW_TOKEN_UPDATE_PLUGIN + " was not set");
 			return false;
 		}
-		
+
 
 		LOGGER.debug("All properties are set");
 		return true;
