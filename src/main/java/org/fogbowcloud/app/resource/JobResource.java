@@ -123,11 +123,7 @@ public class JobResource extends ServerResource {
 			throw new ResourceException(HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE);
 		}
 		Map<String, String> fieldMap = new HashMap<String, String>();
-		fieldMap.put(SCHED_PATH, null);
 		fieldMap.put(JDF_FILE_PATH, null);
-		fieldMap.put(AppPropertiesConstants.X_AUTH_USER, null);
-		fieldMap.put(AppPropertiesConstants.X_AUTH_NONCE, null);
-		fieldMap.put(AppPropertiesConstants.X_AUTH_HASH, null);
 		fieldMap.put(AppPropertiesConstants.X_CREDENTIALS, null);
 		ServerResourceUtils.loadFields(entity, fieldMap, new HashMap<String, File>());
 
@@ -140,9 +136,6 @@ public class JobResource extends ServerResource {
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 		@SuppressWarnings("rawtypes")
 		Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
-		headers.add(AppPropertiesConstants.X_AUTH_NONCE, fieldMap.get(AppPropertiesConstants.X_AUTH_NONCE));
-		headers.add(AppPropertiesConstants.X_AUTH_USER, fieldMap.get(AppPropertiesConstants.X_AUTH_USER));
-		headers.add(AppPropertiesConstants.X_AUTH_HASH, fieldMap.get(AppPropertiesConstants.X_AUTH_HASH));
 		headers.add(AppPropertiesConstants.X_CREDENTIALS, fieldMap.get(AppPropertiesConstants.X_CREDENTIALS));
 		String owner = ResourceUtil.authenticateUser(application, headers);
 		String jdfAbsolutePath = fieldMap.get(JDF_FILE_PATH);

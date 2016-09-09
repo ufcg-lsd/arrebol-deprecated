@@ -42,7 +42,7 @@ public class TestArrebolController {
 		properties.put(AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME, "30000");
 		properties.put(AppPropertiesConstants.INFRA_ORDER_SERVICE_TIME, "100000");
 		properties.put(AppPropertiesConstants.INFRA_RESOURCE_SERVICE_TIME, "100000");
-		properties.put(AppPropertiesConstants.AUTHENTICATION_PLUGIN, "org.fogbowcloud.app.utils.AuthUtils");
+		properties.put(AppPropertiesConstants.AUTHENTICATION_PLUGIN, "org.fogbowcloud.app.utils.CommonAuthenticator");
 		this.arrebolController = Mockito.spy(new ArrebolController(properties));		
 		Mockito.doReturn(null).when(this.arrebolController).getInfraManager(true, true, true);		
 		this.arrebolController.init();
