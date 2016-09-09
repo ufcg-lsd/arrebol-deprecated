@@ -3,6 +3,7 @@ package org.fogbowcloud.app.utils;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Properties;
 import java.util.Random;
 
 import org.fogbowcloud.app.model.User;
@@ -10,8 +11,14 @@ import org.fogbowcloud.app.model.UserImpl;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class AuthUtils implements ArrebolAuthenticator {
+public class CommonAuthenticator implements ArrebolAuthenticator {
 
+	Properties properties;
+	
+	public CommonAuthenticator(Properties properties) {
+		this.properties = properties;
+	}
+	
 	public static int getNonce() {
 		return new Random().nextInt(999999);
 	}

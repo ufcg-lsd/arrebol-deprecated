@@ -17,7 +17,7 @@ import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.model.UserImpl;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.fogbowcloud.app.utils.ArrebolAuthenticator;
-import org.fogbowcloud.app.utils.AuthUtils;
+import org.fogbowcloud.app.utils.CommonAuthenticator;
 import org.fogbowcloud.blowout.scheduler.core.ManagerTimer;
 import org.fogbowcloud.blowout.scheduler.core.Scheduler;
 import org.fogbowcloud.blowout.scheduler.core.model.Job;
@@ -143,7 +143,7 @@ public class ArrebolController {
 	private ArrebolAuthenticator createAuthenticatorPluginInstance() throws Exception {
 		String providerClassName = this.properties.getProperty(AppPropertiesConstants.AUTHENTICATION_PLUGIN);
 		Class<?> forName = Class.forName(providerClassName);
-		Object clazz = forName.getConstructor().newInstance();
+		Object clazz = forName.getConstructor(Properties.class).newInstance(this.properties);
 		if (!(clazz instanceof ArrebolAuthenticator)) {
 			throw new Exception("Authenticator Class Name is not a ArrebolAuthenticator implementation");
 		}
@@ -253,24 +253,13 @@ public class ArrebolController {
 		if (credentials == null) {
 			return null;
 		}
-		try {
-			JSONObject cred = new JSONObject(credentials);
 
 			LOGGER.debug("Checking nonce");
 			// Integer nonceValue = Integer.valueOf(nonce);
 			// if (this.nonces.contains(nonceValue)) {
 
-			String userJSONString = userList.get(cred.getString("username"));
-			if (userJSONString == null) {
-				return null;
-			}
-			cred.put("userJson", userJSONString);
-			return this.auth.authenticateUser(cred.toString());
-		} catch (JSONException e) {
+			return this.auth.authenticateUser(credentials);
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
 		// User user = User.fromJSON(userJSON);
 		// }
 		// nonces.remove(nonceValue);
@@ -281,7 +270,7 @@ public class ArrebolController {
 	}
 
 	public int getNonce() {
-		int nonce = AuthUtils.getNonce();
+		int nonce = CommonAuthenticator.getNonce();
 		this.nonces.add(nonce);
 		return nonce;
 	}
