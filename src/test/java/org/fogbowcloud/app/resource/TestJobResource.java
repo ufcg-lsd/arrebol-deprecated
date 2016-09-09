@@ -21,6 +21,7 @@ import org.apache.http.util.EntityUtils;
 import org.fogbowcloud.app.NameAlreadyInUseException;
 import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
+import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.json.JSONArray;
@@ -66,6 +67,7 @@ public class TestJobResource {
 	public void testGetJobUnathorized() throws Exception {
 		HttpGet get = new HttpGet(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX + "/" + "jobId");
 		get.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, "wrong owner"));
+		get.addHeader(new BasicHeader(AppPropertiesConstants.X_CREDENTIALS, ResourceTestUtil.WRONG_CRED));
 		
 		HttpClient client = HttpClients.createMinimal();
 		HttpResponse response = client.execute(get);
@@ -142,8 +144,11 @@ public class TestJobResource {
 				ResourceTestUtil.JOB_RESOURCE_SUFIX + "/" + jobId);	
 		delete.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, "owner"));
 		
-		Mockito.when(this.resourceTestUtil.getArrebolController().authUser(Mockito.anyString()
-				, Mockito.anyString(), Mockito.anyString())).thenReturn(new Boolean(true));			
+		User userMock = Mockito.mock(User.class);
+		
+		Mockito.doReturn(ResourceTestUtil.DEFAULT_OWNER).when(userMock).getUsername();
+		
+		Mockito.when(this.resourceTestUtil.getArrebolController().authUser( Mockito.anyString())).thenReturn(userMock);			
 		
 		HttpResponse response = HttpClients.createMinimal().execute(delete);
 		
@@ -155,6 +160,10 @@ public class TestJobResource {
 		String owner = ResourceTestUtil.DEFAULT_OWNER;
 		HttpPost post = new HttpPost(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
 		post.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));
+		
+		JSONObject cred = new JSONObject();
+		cred.put("userJson", ResourceTestUtil.DEFAULT_OWNER);
+		cred.put("password", "Hash");
 		
 		String jobName = "jobName00";
 		JDFJob job = new JDFJob("schedPath", owner);

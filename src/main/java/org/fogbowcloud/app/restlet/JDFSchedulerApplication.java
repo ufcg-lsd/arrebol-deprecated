@@ -11,6 +11,7 @@ import org.fogbowcloud.app.NameAlreadyInUseException;
 import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.User;
+import org.fogbowcloud.app.model.UserImpl;
 import org.fogbowcloud.app.resource.AuthenticationResource;
 import org.fogbowcloud.app.resource.JobResource;
 import org.fogbowcloud.app.resource.TaskResource4JDF;
@@ -111,9 +112,9 @@ public class JDFSchedulerApplication extends Application {
 		return this.arrebolController.getNonce();
 	}
 
-	public boolean authUser(String username, String hash, String nonce)
+	public User authUser(String credentials)
 			throws IOException, GeneralSecurityException {
-		return this.arrebolController.authUser(username, hash, nonce);
+		return this.arrebolController.authUser(credentials);
 	}
 
 	public User getUser(String username) {
