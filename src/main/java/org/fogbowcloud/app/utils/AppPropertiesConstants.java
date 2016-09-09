@@ -40,5 +40,6 @@ public class AppPropertiesConstants {
 	public static final String X_AUTH_HASH = "X-auth-hash";
 	public static final String X_CREDENTIALS = "X-auth-credentials";
 	public static final String INFRA_FOGBOW_TOKEN_UPDATE_PLUGIN = "infra_fogbow_token_update_plugin";
+	public static final String AUTHENTICATION_PLUGIN = "authentication_plugin";
 	
 }

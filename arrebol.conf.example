@@ -1,2 +1,6 @@
 rest_server_port=44444
 # scheduler_conf_path=/home/username/git/arrebol/sched.conf.example
+
+authentication_plugin=org.fogbowcloud.app.utils.LDAPAuthenticator
+arrebol.ldap.auth.url=ldap://ldap.lsd.ufcg.edu.br:389
+arrebol.ldap.base=dc=lsd,dc=ufcg,dc=edu,dc=br
