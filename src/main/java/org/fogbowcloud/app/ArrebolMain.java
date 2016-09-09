@@ -99,10 +99,66 @@ public class ArrebolMain {
 			LOGGER.error("Required property " + AppPropertiesConstants.LOCAL_OUTPUT_FOLDER + " was not set");
 			return false;
 		}
-		if (!properties.containsKey("fogbow.keystone.username")) {
-			LOGGER.error("Required property " + "fogbow.keystone.username" + " was not set");
+		
+		if (properties.containsKey(org.fogbowcloud.blowout.scheduler.core.util.
+				AppPropertiesConstants.INFRA_FOGBOW_TOKEN_UPDATE_PLUGIN)) {
+			
+			String tokenUpdatePluginClass = properties.getProperty(
+					org.fogbowcloud.blowout.scheduler.core.util
+					.AppPropertiesConstants.INFRA_FOGBOW_TOKEN_UPDATE_PLUGIN);
+			
+			// Checking for required properties of Keystone Token Update Plugin
+			if (tokenUpdatePluginClass.equals("org.fogbowcloud.blowout.infrastructure.plugin.KeystoneTokenUpdatePlugin")) {
+				if (!properties.containsKey("fogbow.keystone.username")) {
+					LOGGER.error("Required property " + "fogbow.keystone.username" + " was not set");
+					return false;
+				}
+			}
+			
+			// Checking for required properties of NAF Token Update Plugin
+			if (tokenUpdatePluginClass.equals("org.fogbowcloud.blowout.infrastructure.plugin.NAFTokenUpdatePlugin")) {
+				if (!properties.containsKey(org.fogbowcloud.blowout.scheduler.core.util
+						.AppPropertiesConstants.NAF_IDENTITY_PRIVATE_KEY)) {
+					LOGGER.error("Required property " + org.fogbowcloud.blowout.scheduler.core.util
+							.AppPropertiesConstants.NAF_IDENTITY_PRIVATE_KEY + " was not set");
+					return false;
+				}
+				
+				if (!properties.containsKey(org.fogbowcloud.blowout.scheduler.core.util
+						.AppPropertiesConstants.NAF_IDENTITY_PUBLIC_KEY)) {
+					LOGGER.error("Required property " + org.fogbowcloud.blowout.scheduler.core.util
+							.AppPropertiesConstants.NAF_IDENTITY_PUBLIC_KEY + " was not set");
+					return false;
+				}
+				
+				if (!properties.containsKey(org.fogbowcloud.blowout.scheduler.core.util
+						.AppPropertiesConstants.NAF_IDENTITY_TOKEN_GENERATOR_URL)) {
+					LOGGER.error("Required property " + org.fogbowcloud.blowout.scheduler.core.util
+							.AppPropertiesConstants.NAF_IDENTITY_TOKEN_GENERATOR_URL + " was not set");
+					return false;
+				}
+				
+				if (!properties.containsKey(org.fogbowcloud.blowout.scheduler.core.util
+						.AppPropertiesConstants.NAF_IDENTITY_TOKEN_USERNAME)) {
+					LOGGER.error("Required property " + org.fogbowcloud.blowout.scheduler.core.util
+							.AppPropertiesConstants.NAF_IDENTITY_TOKEN_USERNAME + " was not set");
+					return false;
+				}
+				
+				if (!properties.containsKey(org.fogbowcloud.blowout.scheduler.core.util
+						.AppPropertiesConstants.NAF_IDENTITY_TOKEN_PASSWORD)) {
+					LOGGER.error("Required property " + org.fogbowcloud.blowout.scheduler.core.util
+							.AppPropertiesConstants.NAF_IDENTITY_TOKEN_PASSWORD + " was not set");
+					return false;
+				}
+			}
+			
+		} else {
+			LOGGER.error("Required property " + org.fogbowcloud.blowout.scheduler.core.util.
+					AppPropertiesConstants.INFRA_FOGBOW_TOKEN_UPDATE_PLUGIN + " was not set");
 			return false;
 		}
+		
 
 		LOGGER.debug("All properties are set");
 		return true;
