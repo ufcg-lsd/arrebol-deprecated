@@ -161,9 +161,6 @@ public class TestJobResource {
 		HttpPost post = new HttpPost(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
 		post.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));
 		
-		JSONObject cred = new JSONObject();
-		cred.put("userJson", ResourceTestUtil.DEFAULT_OWNER);
-		cred.put("password", "Hash");
 		
 		String jobName = "jobName00";
 		JDFJob job = new JDFJob("schedPath", owner);
@@ -172,8 +169,7 @@ public class TestJobResource {
 		String schedPath = "schedPath";
 		String friendlyName = "friendly";
 		String jobId = "jobId00";
-		Mockito.when(resourceTestUtil.getArrebolController().addJob(Mockito.eq(jdfFilePath), Mockito.eq(
-				schedPath), Mockito.eq(owner))).thenReturn(jobId);
+		Mockito.when(resourceTestUtil.getArrebolController().addJob(Mockito.eq(jdfFilePath), Mockito.eq(schedPath), Mockito.eq(owner))).thenReturn(jobId);
 		
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.addTextBody(JobResource.SCHED_PATH, schedPath, ContentType.TEXT_PLAIN);

@@ -14,7 +14,6 @@ Parser = LL
 #Tokens
 JOB
 LABEL
-SCHEDPATH
 REQUIREMENTS
 TASK
 INIT
@@ -52,7 +51,6 @@ VERSION
 <job>
 <defaultTask>
 <label>
-<schedpath>
 <taskList>
 <definitions>
 <requirements>
@@ -78,11 +76,9 @@ VERSION
 
 #Grammar
 <job> ::= JOB  ":" <defaultTask> #8 #33 #33 <taskList> #22 ;
-<defaultTask> ::= <label> <schedpath> <requirements> <definitions> ;
+<defaultTask> ::= <label> <requirements> <definitions> ;
 <label> ::= LABEL #26 ":" string #24 "\n"
 	| @ #25 ;
-<schedpath> ::= SCHEDPATH #26 ":" string #29 "\n"
-	| @ #34 ;
 <taskList> ::= TASK ":" <Commands> #9 <taskList> 
 	| @ ;
 <definitions> ::= <init> <final> ;

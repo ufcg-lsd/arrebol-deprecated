@@ -163,7 +163,7 @@ public class ArrebolController {
 			throws CompilerException, NameAlreadyInUseException {
 		JDFJob job = new JDFJob(schedPath, owner);
 
-		List<Task> taskList = getTasksFromJDFFile(jdfFilePath, schedPath, job);
+		List<Task> taskList = getTasksFromJDFFile(jdfFilePath, job);
 
 		if (getJobByName(job.getName(), owner) != null) {
 			throw new NameAlreadyInUseException(
@@ -275,9 +275,9 @@ public class ArrebolController {
 		return nonce;
 	}
 
-	protected List<Task> getTasksFromJDFFile(String jdfFilePath, String schedPath, JDFJob job)
+	protected List<Task> getTasksFromJDFFile(String jdfFilePath, JDFJob job)
 			throws CompilerException {
-		List<Task> taskList = JDFTasks.getTasksFromJDFFile(job, jdfFilePath, schedPath, this.properties);
+		List<Task> taskList = JDFTasks.getTasksFromJDFFile(job, jdfFilePath, this.properties);
 		return taskList;
 	}
 
@@ -304,6 +304,10 @@ public class ArrebolController {
 		} catch (Exception e) {
 			throw new RuntimeException("Could not add user", e);
 		}
+	}
+
+	public String getAuthenticatorName() {
+		return this.auth.getAuthenticatorName();
 	}
 
 }

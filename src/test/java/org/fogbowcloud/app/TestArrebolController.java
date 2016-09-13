@@ -78,7 +78,7 @@ public class TestArrebolController {
 	public void testAddJob() throws Exception {
 		List<Task> tasks = new ArrayList<Task>();		
 		Mockito.doReturn(tasks).when(this.arrebolController).getTasksFromJDFFile(Mockito.anyString(), 
-				Mockito.anyString(), Mockito.any(JDFJob.class));	
+				Mockito.any(JDFJob.class));	
 		
 		String jdfFilePath = "";
 		String schedPath = "";

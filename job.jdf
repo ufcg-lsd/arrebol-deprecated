@@ -1,5 +1,6 @@
 job:
-label: myjob7
+label: myjob9
+schedpath: /home/igorvcs
 requirements: Glue2RAM >= 1024
 init: put /home/igorvcs/isprimecode/isprime.py /tmp/isprime.py
 final: get /tmp/primeresult /home/igorvcs/Dev/primeresult

@@ -125,6 +125,7 @@ public class JobResource extends ServerResource {
 		Map<String, String> fieldMap = new HashMap<String, String>();
 		fieldMap.put(JDF_FILE_PATH, null);
 		fieldMap.put(AppPropertiesConstants.X_CREDENTIALS, null);
+		fieldMap.put(SCHED_PATH, null);
 		ServerResourceUtils.loadFields(entity, fieldMap, new HashMap<String, File>());
 
 		String jdf = fieldMap.get(JDF_FILE_PATH);

@@ -394,6 +394,14 @@ public class JDFSemanticActions implements SemanticActions {
 	}
 
 
+	/**
+	 * This action: sets the schedpath on the JobSpecification
+	 */
+	public void action29() {
+		LOG.debug("Calling 29");
+		theJob.setSchedPath(this.actualToken.getSymbol());
+		mode = CommonSyntacticalAnalyzer.MODE_NORMAL;
+	}
 
 	/**
 	 * This action: Puts the value string for a attribute at the top of the
@@ -442,6 +450,10 @@ public class JDFSemanticActions implements SemanticActions {
 		this.blockCounter++;
 	}
 
+	public void action34() {
+		LOG.debug("Calling 34");
+		this.theJob.setSchedPath("");
+	}
 
 	// /////////// AUXILIAR METHODS /////////////////////
 

@@ -12,6 +12,7 @@ import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.model.UserImpl;
+import org.fogbowcloud.app.resource.NonceResource;
 import org.fogbowcloud.app.resource.AuthenticationResource;
 import org.fogbowcloud.app.resource.JobResource;
 import org.fogbowcloud.app.resource.TaskResource4JDF;
@@ -73,7 +74,8 @@ public class JDFSchedulerApplication extends Application {
 		router.attach("/arrebol/task/{taskId}", TaskResource4JDF.class);
 		router.attach("/arrebol/task/{taskId}/{varName}",
 				TaskResource4JDF.class);
-		router.attach("/arrebol/nonce", AuthenticationResource.class);
+		router.attach("/arrebol/nonce", NonceResource.class);
+		router.attach("/arrebol/authenticator", AuthenticationResource.class);
 		router.attach("/arrebol/user", UserResource.class);
 
 		return router;
@@ -123,5 +125,10 @@ public class JDFSchedulerApplication extends Application {
 
 	public User addUser(String username, String publicKey) {
 		return this.arrebolController.addUser(username, publicKey);
+	}
+
+	public String getAuthenticatorName() {
+		
+		return this.arrebolController.getAuthenticatorName();
 	}
 }
