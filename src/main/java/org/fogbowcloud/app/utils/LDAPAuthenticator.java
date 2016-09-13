@@ -25,6 +25,7 @@ import org.json.JSONObject;
 public class LDAPAuthenticator implements ArrebolAuthenticator {
 	
 
+	private static final String LDAP_AUTH = "ldapauth";
 	public static final String CRED_AUTH_URL = "authUrl";
 	public static final String CRED_LDAP_BASE = "base";
 	public static final String CRED_LDAP_ENCRYPT = "encrypt";
@@ -64,6 +65,7 @@ public class LDAPAuthenticator implements ArrebolAuthenticator {
 			cred = new JSONObject(credentials);
 			username = cred.getString(CRED_USERNAME);
 			password = cred.getString(CRED_PASSWORD);
+			LOGGER.debug("username: " + username +" password: "+ password);
 			User user = new LDAPUser(ldapAuthenticate(username, password));
 			return user;
 		} catch (Exception e) {
@@ -172,6 +174,11 @@ public class LDAPAuthenticator implements ArrebolAuthenticator {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public String getAuthenticatorName() {
+		return LDAP_AUTH;
 	}
 	
 }

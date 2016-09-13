@@ -13,6 +13,7 @@ import org.json.JSONObject;
 
 public class CommonAuthenticator implements ArrebolAuthenticator {
 
+	private static final String COMMON_AUTH = "commonauth";
 	Properties properties;
 	
 	public CommonAuthenticator(Properties properties) {
@@ -74,5 +75,10 @@ public class CommonAuthenticator implements ArrebolAuthenticator {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	@Override
+	public String getAuthenticatorName() {
+		return COMMON_AUTH;
 	}
 }

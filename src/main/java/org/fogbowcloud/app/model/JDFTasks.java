@@ -52,7 +52,7 @@ public class JDFTasks {
      * @throws IllegalArgumentException
      * @throws CompilerException
      */
-    public static List<Task> getTasksFromJDFFile(JDFJob job, String jdfFilePath, String schedPath, Properties properties) throws CompilerException {
+    public static List<Task> getTasksFromJDFFile(JDFJob job, String jdfFilePath, Properties properties) throws CompilerException {
 
         ArrayList<Task> taskList = new ArrayList<Task>();
 
@@ -72,6 +72,9 @@ public class JDFTasks {
                 
                 job.setFriendlyName(jobSpec.getLabel());
 
+                String schedPath = jobSpec.getSchedPath();
+
+                
                 //Mapping attributes
 
                 //FIXME: what does this block do?
@@ -100,7 +103,6 @@ public class JDFTasks {
                 }
 
                 spec.addRequirement(FogbowRequirementsHelper.METADATA_FOGBOW_REQUEST_TYPE, "one-time");
-
                 int taskID = 0;
                 for (TaskSpecification taskSpec : jobSpec.getTaskSpecs()) {
 

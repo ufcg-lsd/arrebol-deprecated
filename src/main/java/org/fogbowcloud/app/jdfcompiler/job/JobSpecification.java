@@ -51,6 +51,8 @@ public class JobSpecification implements Serializable {
 	
 	private String requirements;
 	
+	private String schedPath = "";
+	
 	/** Describes the user preferences to be checked against the resources' annotations. */
 	private Map<String,String> annotations;
 	
@@ -216,6 +218,9 @@ public class JobSpecification implements Serializable {
 		return this.label;
 	}
 
+	public String getSchedPath() {
+		return this.schedPath;
+	}
 
 	public void setSourceDirPath( String sourceParentDir ) {
 
@@ -273,5 +278,10 @@ public class JobSpecification implements Serializable {
 
 	public void setSourceParentDir(String sourceParentDir) {
 		this.sourceParentDir = sourceParentDir;
+	}
+
+
+	public void setSchedPath(String symbol) {
+		this.schedPath = symbol;
 	}
 }
