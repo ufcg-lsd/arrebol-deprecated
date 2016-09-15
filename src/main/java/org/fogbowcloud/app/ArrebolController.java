@@ -6,6 +6,7 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 
@@ -14,10 +15,9 @@ import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.JDFTasks;
 import org.fogbowcloud.app.model.User;
-import org.fogbowcloud.app.model.UserImpl;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
-import org.fogbowcloud.app.utils.ArrebolAuthenticator;
-import org.fogbowcloud.app.utils.CommonAuthenticator;
+import org.fogbowcloud.app.utils.authenticator.ArrebolAuthenticator;
+import org.fogbowcloud.app.utils.authenticator.Credential;
 import org.fogbowcloud.blowout.scheduler.core.ManagerTimer;
 import org.fogbowcloud.blowout.scheduler.core.Scheduler;
 import org.fogbowcloud.blowout.scheduler.core.model.Job;
@@ -38,12 +38,10 @@ public class ArrebolController {
 	public static final Logger LOGGER = Logger.getLogger(ArrebolController.class);
 
 	private DB jobDB;
-	private DB usersDB;
 	private Scheduler scheduler;
-	private List<Integer> nonces;
 	private Properties properties;
+	private List<Integer> nonces;
 	private ConcurrentMap<String, JDFJob> jobMap;
-	private ConcurrentMap<String, String> userList;
 	private ArrebolAuthenticator auth;
 
 	private static ManagerTimer executionMonitorTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
@@ -51,7 +49,6 @@ public class ArrebolController {
 
 	public ArrebolController(Properties properties) throws Exception {
 		this.properties = properties;
-		this.auth = createAuthenticatorPluginInstance();
 	}
 
 	public Properties getProperties() {
@@ -75,14 +72,12 @@ public class ArrebolController {
 	}
 
 	public void init() throws Exception {
+		this.auth = createAuthenticatorPluginInstance();
+		
 		final File pendingImageDownloadFile = new File(AppPropertiesConstants.DB_FILE_NAME);
 		this.jobDB = DBMaker.newFileDB(pendingImageDownloadFile).make();
 		this.jobDB.checkShouldCreate(AppPropertiesConstants.DB_MAP_NAME);
 		ConcurrentMap<String, JDFJob> jobMapDB = this.jobDB.getHashMap(AppPropertiesConstants.DB_MAP_NAME);
-
-		final File usersFile = new File(AppPropertiesConstants.DB_FILE_USERS);
-		this.usersDB = DBMaker.newFileDB(usersFile).make();
-		this.usersDB.checkShouldCreate(AppPropertiesConstants.DB_MAP_USERS);
 
 		Boolean blockWhileInitializing = new Boolean(
 				this.properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_BLOCK_CREATING)).booleanValue();
@@ -103,7 +98,6 @@ public class ArrebolController {
 		ExecutionMonitorWithDB executionMonitor = new ExecutionMonitorWithDB(this.scheduler, this.jobDB);
 
 		this.jobMap = this.jobDB.getHashMap(AppPropertiesConstants.DB_MAP_NAME);
-		this.userList = usersDB.getHashMap(AppPropertiesConstants.DB_MAP_USERS);
 		this.nonces = new ArrayList<Integer>();
 
 		LOGGER.debug("Starting Scheduler and Execution Monitor, execution monitor period: "
@@ -253,24 +247,25 @@ public class ArrebolController {
 		if (credentials == null) {
 			return null;
 		}
-
-			LOGGER.debug("Checking nonce");
-			// Integer nonceValue = Integer.valueOf(nonce);
-			// if (this.nonces.contains(nonceValue)) {
-
-			return this.auth.authenticateUser(credentials);
-			// TODO Auto-generated catch block
-		// User user = User.fromJSON(userJSON);
-		// }
-		// nonces.remove(nonceValue);
-		// return true;
-		// }
-		// }
-		// nonces.remove(nonceValue);
+		
+		Credential credential = null;
+		try {
+			credential = Credential.fromJSON(new JSONObject(credentials));
+		} catch (JSONException e) {
+			LOGGER.error("Invalid credentials format", e);
+			return null;
+		}
+		
+		LOGGER.debug("Checking nonce");
+		if (credential != null && this.nonces.contains(credential.getNonce())) {
+			return this.auth.authenticateUser(credential);
+		}
+		nonces.remove(credential.getNonce());
+		return null;
 	}
 
 	public int getNonce() {
-		int nonce = CommonAuthenticator.getNonce();
+		int nonce = new Random().nextInt(999999);
 		this.nonces.add(nonce);
 		return nonce;
 	}
@@ -282,25 +277,12 @@ public class ArrebolController {
 	}
 
 	public User getUser(String username) {
-		User user = null;
-		String userJSONString = this.userList.get(username);
-		if (userJSONString == null || userJSONString.isEmpty()) {
-			return null;
-		}
-		try {
-			user = UserImpl.fromJSON(new JSONObject(userJSONString));
-		} catch (JSONException e) {
-			LOGGER.debug("Could not retrieve the user from database.", e);
-		}
-		return user;
+		return this.auth.getUserByUsername(username);
 	}
 
 	public User addUser(String username, String publicKey) {
 		try {
-			User user = new UserImpl(username, publicKey);
-			this.userList.put(username, ((UserImpl) user).toJSON().toString());
-			this.usersDB.commit();
-			return user;
+			return this.auth.addUser(username, publicKey);
 		} catch (Exception e) {
 			throw new RuntimeException("Could not add user", e);
 		}
