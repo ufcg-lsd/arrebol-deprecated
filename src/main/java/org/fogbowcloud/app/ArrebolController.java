@@ -153,13 +153,13 @@ public class ArrebolController {
 		return null;
 	}
 
-	public String addJob(String jdfFilePath, String schedPath, String owner)
+	public String addJob(String jdfFilePath, String schedPath, User owner)
 			throws CompilerException, NameAlreadyInUseException {
-		JDFJob job = new JDFJob(schedPath, owner);
-
+		JDFJob job = new JDFJob(schedPath, owner.getUsername());
+		job.setUUID(owner.getUUID());
 		List<Task> taskList = getTasksFromJDFFile(jdfFilePath, job);
 
-		if (getJobByName(job.getName(), owner) != null) {
+		if (getJobByName(job.getName(), owner.getUsername()) != null) {
 			throw new NameAlreadyInUseException(
 					"The name " + job.getName() + " is already in use for the user " + "owner");
 		}

@@ -169,7 +169,7 @@ public class TestJobResource {
 		String schedPath = "schedPath";
 		String friendlyName = "friendly";
 		String jobId = "jobId00";
-		Mockito.when(resourceTestUtil.getArrebolController().addJob(Mockito.eq(jdfFilePath), Mockito.eq(schedPath), Mockito.eq(owner))).thenReturn(jobId);
+		Mockito.when(resourceTestUtil.getArrebolController().addJob(Mockito.eq(jdfFilePath), Mockito.eq(schedPath), Mockito.any(User.class))).thenReturn(jobId);
 		
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.addTextBody(JobResource.SCHED_PATH, schedPath, ContentType.TEXT_PLAIN);
@@ -201,7 +201,7 @@ public class TestJobResource {
 		String friendlyName = "friendly";
 		String jobId = "jobId00";
 		Mockito.when(resourceTestUtil.getArrebolController().addJob(Mockito.eq(jdfFilePath), Mockito.eq(
-				schedPath),Mockito.eq(owner))).thenReturn(jobId);
+				schedPath),Mockito.any(User.class))).thenReturn(jobId);
 		
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.addTextBody(JobResource.SCHED_PATH, schedPath, ContentType.TEXT_PLAIN);
@@ -222,7 +222,7 @@ public class TestJobResource {
 		
 		JDFJob job = new JDFJob("", owner);
 		job.setFriendlyName("friendlyName");
-		Mockito.when(resourceTestUtil.getArrebolController().addJob(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenThrow(new NameAlreadyInUseException("in user"));
+		Mockito.when(resourceTestUtil.getArrebolController().addJob(Mockito.anyString(), Mockito.anyString(), Mockito.any(User.class))).thenThrow(new NameAlreadyInUseException("in user"));
 		String jdfFilePath = "jdfFilePath";
 		String schedPath = "schedPath";
 		
@@ -251,7 +251,7 @@ public class TestJobResource {
 		String schedPath = "schedPath";
 		String friendlyName = "friendly";
 		Mockito.when(resourceTestUtil.getArrebolController().addJob(Mockito.eq(jdfFilePath), Mockito.eq(
-				schedPath), Mockito.eq(owner))).thenThrow(new CompilerException(""));
+				schedPath), Mockito.any(User.class))).thenThrow(new CompilerException(""));
 		
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.addTextBody(JobResource.SCHED_PATH, schedPath, ContentType.TEXT_PLAIN);

@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.fogbowcloud.app.NameAlreadyInUseException;
 import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
+import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.fogbowcloud.app.utils.ServerResourceUtils;
@@ -67,11 +68,11 @@ public class JobResource extends ServerResource {
 		JSONArray jobs = new JSONArray();
 
 		@SuppressWarnings("rawtypes")
-		String owner = ResourceUtil.authenticateUser(application,
+		User owner = ResourceUtil.authenticateUser(application,
 				(Series) getRequestAttributes().get("org.restlet.http.headers"));
 
 		if (jobId == null) {
-			for (JDFJob job : application.getAllJobs(owner)) {
+			for (JDFJob job : application.getAllJobs(owner.getUsername())) {
 				JSONObject jJob = new JSONObject();
 				if (job.getName() != null) {
 					jJob.put("id", job.getId());
@@ -92,9 +93,9 @@ public class JobResource extends ServerResource {
 			return result;
 		}
 
-		JDFJob job = application.getJobById(jobId, owner);
+		JDFJob job = application.getJobById(jobId, owner.getUsername());
 		if (job == null) {
-			job = application.getJobByName(jobId, owner);
+			job = application.getJobByName(jobId, owner.getUsername());
 			if (job == null) {
 				throw new ResourceException(404);
 			}
@@ -109,7 +110,7 @@ public class JobResource extends ServerResource {
 		for (Task task : job.getTasks().values()) {
 			JSONObject jTask = new JSONObject();
 			jTask.put(TASK_ID, task.getId());
-			jTask.put(STATE, application.getTaskState(task.getId(), owner));
+			jTask.put(STATE, application.getTaskState(task.getId(), owner.getUsername()));
 			jobTasks.put(jTask);
 		}
 		jsonJob.put(JOB_TASKS, jobTasks);
@@ -138,7 +139,7 @@ public class JobResource extends ServerResource {
 		@SuppressWarnings("rawtypes")
 		Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
 		headers.add(AppPropertiesConstants.X_CREDENTIALS, fieldMap.get(AppPropertiesConstants.X_CREDENTIALS));
-		String owner = ResourceUtil.authenticateUser(application, headers);
+		User owner = ResourceUtil.authenticateUser(application, headers);
 		String jdfAbsolutePath = fieldMap.get(JDF_FILE_PATH);
 		try {
 			String jobId;
@@ -163,14 +164,14 @@ public class JobResource extends ServerResource {
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 
 		@SuppressWarnings("rawtypes")
-		String owner = ResourceUtil.authenticateUser(application,
+		User owner = ResourceUtil.authenticateUser(application,
 				(Series) getRequestAttributes().get("org.restlet.http.headers"));
 
 		String JDFString = (String) getRequest().getAttributes().get(JOBPATH);
 
 		LOGGER.debug("Got JDF File: " + JDFString);
 
-		String jobId = application.stopJob(JDFString, owner);
+		String jobId = application.stopJob(JDFString, owner.getUsername());
 
 		if (jobId == null) {
 			throw new ResourceException(404);

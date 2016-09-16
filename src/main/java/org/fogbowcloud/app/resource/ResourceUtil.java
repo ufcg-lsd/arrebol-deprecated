@@ -13,7 +13,7 @@ import org.restlet.util.Series;
 
 public class ResourceUtil {
 
-	public static String authenticateUser(JDFSchedulerApplication application,
+	public static User authenticateUser(JDFSchedulerApplication application,
 			@SuppressWarnings("rawtypes") Series headers) throws IOException, GeneralSecurityException {
         String credentials = headers.getFirstValue(AppPropertiesConstants.X_CREDENTIALS);
         User user = application.authUser(credentials);
@@ -21,7 +21,7 @@ public class ResourceUtil {
         
         	throw new ResourceException(HttpStatus.SC_UNAUTHORIZED);
         }
-        return user.getUsername();
+        return user;
 	}
     
 	public static String authenticateUserOnPost(
