@@ -4,6 +4,8 @@ public class LDAPUser implements User{
 
 	private String user;
 	
+	private String UUID;
+	
 	public void setUser(String user) {
 		this.user = user;
 	}
@@ -15,6 +17,11 @@ public class LDAPUser implements User{
 	@Override
 	public String getUsername() {
 		return this.user;
+	}
+
+	@Override
+	public String getUUID() {
+		return this.UUID;
 	}
 
 }

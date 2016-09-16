@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.fogbowcloud.blowout.scheduler.core.model.Task;
+import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;
@@ -33,10 +34,10 @@ public class TaskResource4JDF extends ServerResource {
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 		
         @SuppressWarnings("rawtypes")
-		String owner = ResourceUtil.authenticateUser(application, (Series)getRequestAttributes()
+		User owner = ResourceUtil.authenticateUser(application, (Series)getRequestAttributes()
 				.get("org.restlet.http.headers"));		
 		
-		Task task = application.getTaskById(taskId, owner);
+		Task task = application.getTaskById(taskId, owner.getUsername());
 		LOGGER.debug("TaskId " + taskId + " is of task " + task);
 		if (task == null) {
 			throw new ResourceException(404, new Exception("Task id not found"));
@@ -45,7 +46,7 @@ public class TaskResource4JDF extends ServerResource {
 		JSONObject jsonTask = new JSONObject();
 
 		jsonTask.put("metadata", task.getAllMetadata());
-		jsonTask.put("state", application.getTaskState(taskId, owner).toString());
+		jsonTask.put("state", application.getTaskState(taskId, owner.getUsername()).toString());
 		return new StringRepresentation(jsonTask.toString(), MediaType.TEXT_PLAIN);
 	}
 }

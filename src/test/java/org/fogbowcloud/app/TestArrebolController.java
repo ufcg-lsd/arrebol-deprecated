@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentMap;
+import org.fogbowcloud.app.model.User;
 
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
@@ -20,6 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mapdb.DB;
 import org.mockito.Mockito;
+
 public class TestArrebolController {
 	
 	private ArrebolController arrebolController;
@@ -82,7 +84,8 @@ public class TestArrebolController {
 		String jdfFilePath = "";
 		String schedPath = "";
 		String friendlyName = "";
-		this.arrebolController.addJob(jdfFilePath, schedPath, friendlyName);
+		User user = Mockito.mock(User.class);
+		this.arrebolController.addJob(jdfFilePath, schedPath, user);
 		
 		Mockito.verify(this.arrebolController.getScheduler(), Mockito.times(1)).addJob(Mockito.any(Job.class));
 	}
