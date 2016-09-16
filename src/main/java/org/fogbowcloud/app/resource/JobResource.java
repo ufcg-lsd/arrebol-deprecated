@@ -30,29 +30,20 @@ import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONObject;
 
 public class JobResource extends ServerResource {
+	private static final Logger LOGGER = Logger.getLogger(JobResource.class);
+	
 	public static final String JOB_LIST = "Jobs";
-
 	private static final String JOB_TASKS = "Tasks";
-
 	private static final String JOB_ID = "id";
-
 	private static final String JOB_FRIENDLY = "name";
-
 	private static final String STATE = "state";
-
 	private static final String TASK_ID = "taskid";
-
 	private static final String JOBPATH = "jobpath";
-
 	public static final String FRIENDLY = "friendly";
-
 	public static final String SCHED_PATH = "schedpath";
-
 	public static final String JDF_FILE_PATH = "jdffilepath";
 
-	private static final Logger LOGGER = Logger.getLogger(JobResource.class);
-
-	JSONArray jobTasks = new JSONArray();
+	private JSONArray jobTasks = new JSONArray();
 
 	@Get
 	public Representation fetch() throws Exception {

@@ -5,9 +5,9 @@
 print_menu() {
 	echo "Usage: $0 COMMAND [OPTIONS]"
 	echo "Commands are GET, POST, STOP or GETUI"
-	echo "GET | GET [job_id || friendly_name] -u | --username ldap username -p | --password ldap password"
-	echo "POST jdffilepath [s | --schedpath path] -u | --username ldap username -p | --password ldap password"
-	echo "STOP [job_id || friendly_name] -u | --username ldap username -p | --password ldap password"
+	echo "GET | GET [job_id || friendly_name] -u | --username username"
+	echo "POST jdffilepath [s | --schedpath path] -u | --username username"
+	echo "STOP [job_id || friendly_name] -u | --username username"
 	echo "CREATEUSER -u | --username username"
 	exit 1
 }
@@ -19,11 +19,11 @@ do_get() {
 	$authenticator
 	if [ $# -eq 2 ]
 	then
-		response=$(curl -G -H "X-auth-credentials: { username: '$username', password: '$password' }" "$host/arrebol/job" 2> /dev/null)
+		response=$(curl -G -H "X-auth-credentials: { username: '$username', password: '$password', nonce: '$nonce' }" "$host/arrebol/job" 2> /dev/null)
 		echo $response
 	elif [ $# -eq 3 ]
 	then
-        	response=$(curl -G -H "X-auth-credentials: { username: '$username', password: '$password' }" "$host/arrebol/job/$1" 2> /dev/null)
+        	response=$(curl -G -H "X-auth-credentials: { username: '$username', password: '$password', nonce: '$nonce' }" "$host/arrebol/job/$1" 2> /dev/null)
         	echo $response
 	else
 		print_menu
@@ -44,7 +44,6 @@ inputCertificate() {
 commonauth() {
 	echo -n Path to public key
 	read privateKeyFile
-	nonce=$(curl -G "$host/arrebol/nonce" 2> /dev/null)
 	password=$(echo -n $username$nonce | openssl dgst -sha1 -binary -sign $privateKeyFile | base64 | awk 'BEGIN{ORS="*";} {print}')
 }
 
@@ -82,7 +81,7 @@ do_post() {
         	define_parameters $@
 		authenticator=$(curl -G "$host/arrebol/authenticator" 2> /dev/null)
 		$authenticator
-		base_curl_cmd="curl -X POST --form jdffilepath=${jdffilepath} --form X-auth-credentials={username:'$username',password:'$password'}"
+		base_curl_cmd="curl -X POST --form jdffilepath=${jdffilepath} --form X-auth-credentials={username:'$username',password:'$password',nonce:'$nonce'}"
 		if [[ $schedpath ]]
 		then
 			base_curl_cmd="${base_curl_cmd} --form schedpath=${schedpath}"
@@ -102,7 +101,7 @@ do_stop() {
 		define_parameters $@
 		authenticator=$(curl -G "$host/arrebol/authenticator" 2> /dev/null)
 		$authenticator
-        	response=$(curl -X DELETE -H "X-auth-credentials: { username: '$username', password: '$password' }" "$host/arrebol/job/$1" 2> /dev/null)
+        	response=$(curl -X DELETE -H "X-auth-credentials: { username: '$username', password: '$password', nonce: '$nonce' }" "$host/arrebol/job/$1" 2> /dev/null)
                 echo $response
         else
 		print_menu
