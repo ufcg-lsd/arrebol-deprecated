@@ -15,7 +15,8 @@ print_menu() {
 do_get() {
 
 	define_parameters $@
-	inputPassword
+	authenticator=$(curl -G "$host/arrebol/authenticator" 2> /dev/null)	
+	$authenticator
 	if [ $# -eq 2 ]
 	then
 		response=$(curl -G -H "X-auth-credentials: { username: '$username', password: '$password' }" "$host/arrebol/job" 2> /dev/null)
@@ -40,7 +41,14 @@ inputCertificate() {
 	password=$(cat $location)
 }
 
-inputPassword() {
+commonauth() {
+	echo -n Path to public key
+	read privateKeyFile
+	nonce=$(curl -G "$host/arrebol/nonce" 2> /dev/null)
+	password=$(echo -n $username$nonce | openssl dgst -sha1 -binary -sign $privateKeyFile | base64 | awk 'BEGIN{ORS="*";} {print}')
+}
+
+ldapauth() {
 	echo -n Password: 
 	read -s password
 	echo
@@ -72,7 +80,8 @@ do_post() {
 	then
 		shift
         	define_parameters $@
-		inputPassword
+		authenticator=$(curl -G "$host/arrebol/authenticator" 2> /dev/null)
+		$authenticator
 		base_curl_cmd="curl -X POST --form jdffilepath=${jdffilepath} --form X-auth-credentials={username:'$username',password:'$password'}"
 		if [[ $schedpath ]]
 		then
@@ -91,7 +100,8 @@ do_stop() {
 	if [ $# -eq 5 ]
 	then
 		define_parameters $@
-		inputPassword
+		authenticator=$(curl -G "$host/arrebol/authenticator" 2> /dev/null)
+		$authenticator
         	response=$(curl -X DELETE -H "X-auth-credentials: { username: '$username', password: '$password' }" "$host/arrebol/job/$1" 2> /dev/null)
                 echo $response
         else
