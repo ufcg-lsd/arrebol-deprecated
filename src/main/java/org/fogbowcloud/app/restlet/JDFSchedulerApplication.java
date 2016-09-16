@@ -85,7 +85,7 @@ public class JDFSchedulerApplication extends Application {
 		return this.arrebolController.getJobById(jobId, owner);
 	}
 
-	public String addJob(String jdfFilePath, String schedPath, String owner)
+	public String addJob(String jdfFilePath, String schedPath, User owner)
 			throws CompilerException, NameAlreadyInUseException {
 		return this.arrebolController.addJob(jdfFilePath, schedPath, owner);
 	}

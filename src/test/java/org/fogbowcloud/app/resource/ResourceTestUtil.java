@@ -13,6 +13,7 @@ public class ResourceTestUtil {
 	public static final String DEFAULT_SERVER_PORT = "30023";
 	public static final String DEFAULT_PREFIX_URL = "http://localhost:" + DEFAULT_SERVER_PORT;
 	public static final String DEFAULT_OWNER = "default_owner";
+	
 
 	public static final String JOB_RESOURCE_SUFIX = "/arrebol/job";
 	public static final String JOB_ENDPOINT_SUFIX = "/arrebol/job/ui";

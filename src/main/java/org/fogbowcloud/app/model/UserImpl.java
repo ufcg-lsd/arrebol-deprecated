@@ -5,6 +5,7 @@ import org.json.JSONObject;
 
 public class UserImpl implements User {
 
+	private static final String DEFAULT_USER = "1111";
 	private String username;
 	private String publicKey;
 	private boolean active;
@@ -50,5 +51,11 @@ public class UserImpl implements User {
 	public static UserImpl fromJSON(JSONObject userJSON) {
 		return new UserImpl(userJSON.optString("username"),
 				userJSON.optString("publicKey"));
+	}
+
+	@Override
+	public String getUUID() {
+		
+		return DEFAULT_USER;
 	}
 }
