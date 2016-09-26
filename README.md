@@ -24,6 +24,7 @@ Clause | Description
 ---- | --------------------
 job: |
 label: | A desciptive name for the job.
+sched: | a common root directory to be used by all tasks
 init: | Common job initiation, a list of commands to be executed first in all tasks of the job
 final: | Common job finalization, a list of commands to be executed last in all tasks of the job 
 task: | A list of commands to be executed in this particular part of the job, it is executed between init and final
@@ -32,6 +33,8 @@ task: | A list of commands to be executed in this particular part of the job, it
 
 A job clause contains a (possibly empty) list of sub-clauses. For instance, the requirements sub-clause encompasses the list of requirements that need to be fulfilled by a worker node, so that it can be selected to run tasks of the job, while the label sub-clause associates a name to the job. This sub-clause is useful for tracking the execution of the job and also to associate the name of the output files to the job that has generated it.
 
+The sched subclauses sets a new directory as a "root" to all directories mentioned on other clauses, enabling you to use paths relative to this directory
+
 Below we present an example of a jdf, which defines a very simple job named myjob1. It requires worker nodes to run in the cloud of the federation member named **memberOne**. Also, the worker nodes must have the mem attribute set to a number greater or equal to 1024 and .
 
     job:
@@ -39,7 +42,7 @@ Below we present an example of a jdf, which defines a very simple job named myjo
     requirements : Glue2RAM >= 1024 AND Glue2CloudComputeManagerID==memberOne
     task:  mytask
 
-As we mentioned before, all sub-clauses of a job clause are optional. If the label sub-clause does not exist in the jdf, an internal job id is used to identify it. If there is no requirements sub-clause, the Broker assumes that all worker nodes in your grid are able to run the tasks of your job.
+As we mentioned before, all sub-clauses of a job clause are optional. If the label sub-clause does not exist in the jdf, an internal job id is used to identify it. If there is no requirements sub-clause, the Broker assumes that all worker nodes in your grid are able to run the tasks of your job. If there is no sched subclause, all paths are seen as absolute
 
 Besides label and requirements sub-clauses, you may define default descriptions for all tasks of a job. This is further explained below.
 
