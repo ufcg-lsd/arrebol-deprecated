@@ -117,3 +117,28 @@ To start the **Submission Service**, run the script:
 ```bash
 bash bin/start-arrebol-service
 ```
+
+###Batch Jobs
+
+Batch jobs is a way to generate big repetitive jobs in a quick way, to make use to it to have to create two files: 
+
+The blueprint file specifies the placeholders:
+            
+            put $1 /tmp/$1
+            cmd < /tmp/$1 > /tmp/out-$2
+            get /tmp/out-$2 out-$2
+
+it is the basic structure of each task you wish to run
+
+The parameter sweep file defines values to replace the placeholders:
+
+            pathtofirstfileontask1 pathtosecondfileondtask1
+            pathtofirstfileontask2 pathtosecondfileondtask2
+            
+After that just run:
+
+```bash
+python bin/batch_arrebol jdf_blueprint_path param_sweep_pat > jobfilename.jdf
+```
+
+Then run the resulting file as usual
