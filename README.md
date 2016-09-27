@@ -125,15 +125,28 @@ Batch jobs is a way to generate big repetitive jobs in a quick way, to make use 
 The blueprint file specifies the placeholders:
             
             put $1 /tmp/$1
-            cmd < /tmp/$1 > /tmp/out-$2
+            python mysimulation.py < /tmp/$1 > /tmp/out-$2
             get /tmp/out-$2 out-$2
 
 it is the basic structure of each task you wish to run
 
 The parameter sweep file defines values to replace the placeholders:
 
-            pathtofirstfileontask1 pathtosecondfileondtask1
-            pathtofirstfileontask2 pathtosecondfileondtask2
+            simulationentries1 outputfile1
+            simulationentries2 outputfile2
+            
+The generated file will look like this:
+      
+            job:
+            task:
+            put simulationentries1 /tmp/simulationentries1
+            python mysimulation.py < /tmp/simulationentries1 > /tmp/out-outputfile1
+            get /tmp/out-outputfile1 out-outputfile1
+            task:
+            put simulationentries2 /tmp/simulationentries2
+            python mysimulation.py < /tmp/simulationentries2 > /tmp/out-outputfile2
+            get /tmp/out-outputfile2 out-outputfile2
+            
             
 After that just run:
 
