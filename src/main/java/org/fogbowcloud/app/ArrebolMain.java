@@ -100,25 +100,41 @@ public class ArrebolMain {
 			return false;
 		}
 		if (!properties.containsKey(AppPropertiesConstants.AUTHENTICATION_PLUGIN)) {
+
 			LOGGER.error("Required property " + AppPropertiesConstants.AUTHENTICATION_PLUGIN+ " was not set");
 			return false;
+		} else {
+			String authenticationPlugin = properties.getProperty(AppPropertiesConstants.AUTHENTICATION_PLUGIN);
+			if (authenticationPlugin.equals("org.fogbowcloud.app.utils.LDAPAuthenticator")) {
+				if (!properties.containsKey(AppPropertiesConstants.LDAP_AUTHENTICATION_URL)) {
+					LOGGER.error(
+							"Required property " + AppPropertiesConstants.LDAP_AUTHENTICATION_URL + " was not set");
+					return false;
+				}
+				if (!properties.containsKey(AppPropertiesConstants.LDAP_AUTHENTICATION_BASE)) {
+					LOGGER.error(
+							"Required property " + AppPropertiesConstants.LDAP_AUTHENTICATION_BASE + " was not set");
+					return false;
+				}
+			}
 		}
-
-		if (properties.containsKey(org.fogbowcloud.blowout.scheduler.core.util.
-				AppPropertiesConstants.INFRA_FOGBOW_TOKEN_UPDATE_PLUGIN)) {
+		if (properties.containsKey(
+				org.fogbowcloud.blowout.scheduler.core.util.AppPropertiesConstants.INFRA_FOGBOW_TOKEN_UPDATE_PLUGIN)) {
 
 			String tokenUpdatePluginClass = properties.getProperty(
-					org.fogbowcloud.blowout.scheduler.core.util
-					.AppPropertiesConstants.INFRA_FOGBOW_TOKEN_UPDATE_PLUGIN);
+					org.fogbowcloud.blowout.scheduler.core.util.AppPropertiesConstants.INFRA_FOGBOW_TOKEN_UPDATE_PLUGIN);
 
-			// Checking for required properties of Keystone Token Update Plugin
-			if (tokenUpdatePluginClass.equals("org.fogbowcloud.blowout.infrastructure.plugin.KeystoneTokenUpdatePlugin")) {
+			// Checking for required properties of Keystone Token Update
+			// Plugin
+			if (tokenUpdatePluginClass
+					.equals("org.fogbowcloud.blowout.infrastructure.plugin.KeystoneTokenUpdatePlugin")) {
 				if (!properties.containsKey("fogbow.keystone.username")) {
 					LOGGER.error("Required property " + "fogbow.keystone.username" + " was not set");
 					return false;
 				}
 			}
 
+						
 			// Checking for required properties of NAF Token Update Plugin
 			if (tokenUpdatePluginClass.equals("org.fogbowcloud.blowout.infrastructure.plugin.NAFTokenUpdatePlugin")) {
 				if (!properties.containsKey(org.fogbowcloud.blowout.scheduler.core.util
@@ -158,14 +174,12 @@ public class ArrebolMain {
 			}
 
 		} else {
-			LOGGER.error("Required property " + org.fogbowcloud.blowout.scheduler.core.util.
-					AppPropertiesConstants.INFRA_FOGBOW_TOKEN_UPDATE_PLUGIN + " was not set");
+			LOGGER.error("Required property "
+					+ org.fogbowcloud.blowout.scheduler.core.util.AppPropertiesConstants.INFRA_FOGBOW_TOKEN_UPDATE_PLUGIN
+					+ " was not set");
 			return false;
 		}
-
-
 		LOGGER.debug("All properties are set");
 		return true;
 	}
-
 }
