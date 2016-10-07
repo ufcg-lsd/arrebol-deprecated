@@ -1,6 +1,6 @@
 #!/bin/bash
-
-. arrebol.properties
+DIRNAME=`dirname $0`
+. $DIRNAME/arrebol.properties
 
 print_menu() {
 	echo "Usage: $0 COMMAND [OPTIONS]"
