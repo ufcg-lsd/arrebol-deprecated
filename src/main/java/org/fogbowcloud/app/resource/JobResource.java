@@ -16,6 +16,7 @@ import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.app.utils.AppPropertiesConstants;
 import org.fogbowcloud.app.utils.ServerResourceUtils;
+import org.fogbowcloud.blowout.scheduler.core.model.Job.TaskState;
 import org.fogbowcloud.blowout.scheduler.core.model.Task;
 import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;
@@ -101,7 +102,8 @@ public class JobResource extends ServerResource {
 		for (Task task : job.getTasks().values()) {
 			JSONObject jTask = new JSONObject();
 			jTask.put(TASK_ID, task.getId());
-			jTask.put(STATE, application.getTaskState(task.getId(), owner.getUsername()));
+			TaskState ts = application.getTaskState(task.getId(), owner.getUsername());
+			jTask.put(STATE, ts != null ? ts.getValue() : "UNDEFINED");
 			jobTasks.put(jTask);
 		}
 		jsonJob.put(JOB_TASKS, jobTasks);
