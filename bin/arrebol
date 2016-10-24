@@ -78,7 +78,12 @@ do_post() {
         if [ -f $jdffilepath ]
 	then
 		shift
-        	define_parameters $@
+        define_parameters $@
+		if [[ "$jdffilepath" != /* ]];
+		then
+			echo "$jdffilepath file path is relative, adding $PWD to the path"
+			jdffilepath="$PWD/$jdffilepath"
+		fi
 		authenticator=$(curl -G "$host/arrebol/authenticator" 2> /dev/null)
 		$authenticator
 		base_curl_cmd="curl -X POST --form jdffilepath=${jdffilepath} --form X-auth-credentials={username:'$username',password:'$password',nonce:'$nonce'}"
