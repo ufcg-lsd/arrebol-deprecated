@@ -38,7 +38,7 @@ The sched subclauses sets a new directory as a "root" to all directories mention
 Below we present an example of a jdf, which defines a very simple job named myjob1. It requires worker nodes to run in the cloud of the federation member named **memberOne**. Also, the worker nodes must have the mem attribute set to a number greater or equal to 1024 and .
 
     job:
-    label:myjob1
+    label: myjob1
     requirements : Glue2RAM >= 1024 AND Glue2CloudComputeManagerID==memberOne
     task:  mytask
 

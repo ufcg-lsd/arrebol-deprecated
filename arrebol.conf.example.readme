@@ -1,2 +1,0 @@
-rest_server_port=44444
-scheduler_conf_path=/home/username/git/arrebol/sched.conf.example
