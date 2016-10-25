@@ -17,6 +17,9 @@ public class TestJobSpec {
 
 	public static final String EXSIMPLE_JOB = RESOURCE_DIR + File.separator + "simplejob.jdf";
 
+	public static final String EXSIMPLE_JOB_REQ = RESOURCE_DIR + File.separator + "simplejobreq.jdf";
+
+	
 	public static final String EXSIMPLEST_JOB = RESOURCE_DIR + File.separator + "simplestjob.jdf";
 
 	public static final String EXSIMPLE_JOB2 = RESOURCE_DIR + File.separator + File.separator + "simplejob2.jdf";
@@ -192,4 +195,13 @@ public class TestJobSpec {
 //		assertTrue(200 == spec.getTaskSpecs().size());
 //	}
 
+	@Test
+	public void testExSimpleJobWithRequirements() throws Exception {
+
+		JobSpecification spec = DescriptionFileCompile.compileJDF(EXSIMPLE_JOB_REQ);
+		assertEquals("SimpleJobReq", spec.getLabel());
+		assertTrue(1 == spec.getTaskSpecs().size());
+
+	}
+	
 }

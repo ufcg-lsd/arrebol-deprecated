@@ -70,12 +70,7 @@ VERSION
 <outputCommand>
 <outCommand>
 <remoteCommand>
-<expression>
-<expression2>
-<and_Or>
-<expr>
-<expr2>
-<value>
+
 
 #Grammar
 <job> ::= JOB  ":" <defaultTask> #8 #33 #33 <taskList> #22 ;
@@ -87,7 +82,7 @@ VERSION
 <taskList> ::= TASK ":" <Commands> #9 <taskList> 
 	| @ ;
 <definitions> ::= <init> <final> ;
-<requirements> ::= REQUIREMENTS ":" #10 <expression> "\n" #14 
+<requirements> ::= REQUIREMENTS ":" #28 string #14 "\n"   
 	| @ ;
 <init> ::= INIT ":" <Commands>  
 	| @  ;
@@ -129,4 +124,3 @@ VERSION
 	| @ ;
 <value> ::= string #11 
 	| """ #11 string #11 """ #11 ;
-

@@ -237,7 +237,8 @@ public class JDFSemanticActions implements SemanticActions {
 	 */
 	public void action14() {
 		LOG.debug("Calling 14");
-		this.theJob.setRequirements( condition.trim() );
+		this.theJob.setRequirements( this.actualToken.getSymbol());
+		mode = CommonSyntacticalAnalyzer.MODE_NORMAL;
 	}
 
 
