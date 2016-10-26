@@ -30,10 +30,13 @@ import org.mapdb.DBMaker;
 
 public class ArrebolController {
 
+	//FIXME: get from conf
 	private static final int DEFAULT_EXECUTION_MONITOR_INTERVAL = 30000;
 
+	//FIXME: private
 	public static final Logger LOGGER = Logger.getLogger(ArrebolController.class);
 
+	//FIXME: final
 	private DB jobDB;
 	private BlowoutController blowoutController;
 	private Properties properties;
@@ -48,6 +51,7 @@ public class ArrebolController {
 		this.properties = properties;
 	}
 
+	//FIXME: protected
 	public Properties getProperties() {
 		return properties;
 	}
@@ -55,14 +59,17 @@ public class ArrebolController {
 	protected DB getJobDB() {
 		return jobDB;
 	}
-
+	//FIXME: private
+	//FIXME: replace by a proper DB
 	protected ConcurrentMap<String, JDFJob> getJobMap() {
 		return jobMap;
 	}
 
 	public void init() throws Exception {
+		//FIXME: add as constructor param?
 		this.auth = createAuthenticatorPluginInstance();
 		
+		//FIXME: replace by a proper
 		final File pendingImageDownloadFile = new File(PropertiesConstants.DB_FILE_NAME);
 		this.jobDB = DBMaker.newFileDB(pendingImageDownloadFile).make();
 		this.jobDB.checkShouldCreate(PropertiesConstants.DB_MAP_NAME);
