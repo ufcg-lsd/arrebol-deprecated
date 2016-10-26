@@ -117,6 +117,7 @@ public class JobResource extends ServerResource {
 		if (entity != null && !MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
 			throw new ResourceException(HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE);
 		}
+
 		Map<String, String> fieldMap = new HashMap<String, String>();
 		fieldMap.put(JDF_FILE_PATH, null);
 		fieldMap.put(PropertiesConstants.X_CREDENTIALS, null);

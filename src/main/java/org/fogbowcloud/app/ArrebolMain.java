@@ -41,6 +41,8 @@ public class ArrebolMain {
 		app.startServer();
 	}
 
+	//TODO: Maybe this method should be separate in some utils classes, one to each plugin in use
+	// Each plugin must responsible to check the value of its properties
 	private static boolean checkProperties(Properties properties) {
 		
 		//TODO validate the properties
