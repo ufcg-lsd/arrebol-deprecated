@@ -462,9 +462,10 @@ public class JDFSemanticActions implements SemanticActions {
 	 */
 	private void nullTaskEntries() {
 
-		inputEntries = null;
-		remoteScript = null;
-		outputEntries = null;
+		//inputEntries = null;
+		//remoteScript = null;
+		//outputEntries = null;
+		this.taskBlocks = new ArrayList<JDLCommand>();
 	}
 
 
