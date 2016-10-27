@@ -19,7 +19,7 @@ import com.amazonaws.util.json.JSONObject;
 
 public class TaskResource4JDF extends ServerResource {
 	private static final Logger LOGGER = Logger.getLogger(TaskResource4JDF.class);
-
+//FIXME: it seems there is dead code in this class
 	List<String> validVariables = new ArrayList<String>();
 
 	@Get

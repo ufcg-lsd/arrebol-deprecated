@@ -2,7 +2,8 @@ package org.fogbowcloud.app.model;
 
 public interface User {
 	
-	public String getUsername();
-	
-	public String getUUID();
+	String getUsername();
+
+	//FIXME: do we really need it?
+	String getUUID();
 }

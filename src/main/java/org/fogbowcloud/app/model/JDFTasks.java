@@ -274,5 +274,4 @@ public class JDFTasks {
 		String mkdirCommand = "su $UserID ; " + "mkdir -p " + folder;
 		return new Command(mkdirCommand, Command.Type.LOCAL);
 	}
-
 }

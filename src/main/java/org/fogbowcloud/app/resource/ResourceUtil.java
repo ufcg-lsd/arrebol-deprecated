@@ -22,7 +22,7 @@ public class ResourceUtil {
         }
         return user;
 	}
-    
+    //FIXME: do we need this method?
 	public static String authenticateUserOnPost(
 			JDFSchedulerApplication application, String nonce, String user,
 			String hash) throws IOException, GeneralSecurityException {

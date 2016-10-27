@@ -33,6 +33,9 @@ import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONObject;
 
 public class JobResource extends ServerResource {
+
+	//FIXME: it seems we can make it simpler
+
 	private static final Logger LOGGER = Logger.getLogger(JobResource.class);
 	
 	public static final String JOB_LIST = "Jobs";

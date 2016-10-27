@@ -9,9 +9,10 @@ import org.fogbowcloud.blowout.core.model.Task;
  */
 public class JDFJob extends Job {
 
-	/**
-	 * 
-	 */
+	//FIXME: do we need this implementation?
+	//FIXME: maybe, we should have name and id in the default Job abstraction.
+	// Also, i think we do not need schedpath here
+
 	private static final long serialVersionUID = 7780896231796955706L;
 	private final String jobId;
 	private String name;
