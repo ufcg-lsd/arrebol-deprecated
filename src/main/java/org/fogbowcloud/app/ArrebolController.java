@@ -73,8 +73,8 @@ public class ArrebolController {
 		//FIXME: add as constructor param?
 		this.auth = createAuthenticatorPluginInstance();
 		//FIXME: replace by a proper
-		final File pendingImageDownloadFile = new File(PropertiesConstants.DB_FILE_NAME);
-		this.jobDB = DBMaker.newFileDB(pendingImageDownloadFile).make();
+		final File jobDBFile = new File(PropertiesConstants.DB_FILE_NAME);
+		this.jobDB = DBMaker.newFileDB(jobDBFile).make();
 		this.jobDB.checkShouldCreate(PropertiesConstants.DB_MAP_NAME);
 		ConcurrentMap<String, JDFJob> jobMapDB = this.jobDB.getHashMap(PropertiesConstants.DB_MAP_NAME);
 
