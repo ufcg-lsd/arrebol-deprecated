@@ -18,7 +18,6 @@ import org.fogbowcloud.app.utils.PropertiesConstants;
 import org.fogbowcloud.app.utils.ServerResourceUtils;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskState;
-import org.fogbowcloud.blowout.core.util.AppPropertiesConstants;
 import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;

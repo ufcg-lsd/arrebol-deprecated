@@ -15,7 +15,6 @@ import org.apache.log4j.Logger;
 import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.JDFTasks;
-import org.fogbowcloud.app.model.Job;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.utils.PropertiesConstants;
 import org.fogbowcloud.app.utils.authenticator.ArrebolAuthenticator;
@@ -114,6 +113,7 @@ public class ArrebolController {
 
 	private void saveJob(JDFJob job) {
 		// hook to DB implementation
+
 	}
 
 	private ArrayList<JDFJob> getLegacyJobs(ConcurrentMap<String, JDFJob> jobMapDB) {
