@@ -71,7 +71,6 @@ public class TestArrebolController {
 		String friendlyName = "";
 		User user = Mockito.mock(User.class);
 		BlowoutController controller = mock(BlowoutController.class);
-		DB jobDB = this.arrebolController.getJobDB();
 		ConcurrentMap<String, JDFJob> jobMap = mock(HTreeMap.class);
 		arrebolController.setBlowoutController(controller);
 		this.arrebolController.setJobMap(jobMap);
@@ -83,7 +82,7 @@ public class TestArrebolController {
 
 	@Test
 	public void testGetAllJobs() {
-		ArrayList<Job> jobs = new ArrayList<Job>();
+		ArrayList<JDFJob> jobs = new ArrayList<JDFJob>();
 		String owner = "owner";
 		jobs.add(new JDFJob("", owner));
 		jobs.add(new JDFJob("", owner));
@@ -91,7 +90,6 @@ public class TestArrebolController {
 		jobs.add(new JDFJob("", owner));
 
 		BlowoutController controller = mock(BlowoutController.class);
-		DB jobDB = this.arrebolController.getJobDB();
 		ConcurrentMap<String, JDFJob> jobMap = mock(HTreeMap.class);
 		arrebolController.setBlowoutController(controller);
 		this.arrebolController.setJobMap(jobMap);
@@ -105,7 +103,7 @@ public class TestArrebolController {
 
 	@Test
 	public void testGetAllJobsWithoutAnotherUser() {
-		ArrayList<Job> jobs = new ArrayList<Job>();
+		ArrayList<JDFJob> jobs = new ArrayList<JDFJob>();
 		String owner = "owner";
 		jobs.add(new JDFJob("", owner));
 		jobs.add(new JDFJob("", owner));
@@ -113,7 +111,6 @@ public class TestArrebolController {
 		jobs.add(new JDFJob("", owner));
 		// Mockito.when(this.arrebolController.getScheduler().getJobs()).thenReturn(jobs);
 		BlowoutController controller = mock(BlowoutController.class);
-		DB jobDB = this.arrebolController.getJobDB();
 		ConcurrentMap<String, JDFJob> jobMap = mock(HTreeMap.class);
 		arrebolController.setBlowoutController(controller);
 		this.arrebolController.setJobMap(jobMap);
@@ -126,7 +123,7 @@ public class TestArrebolController {
 	@Test
 	public void testGetJobByName() {
 		String jobName = "jobName00";
-		ArrayList<Job> jobs = new ArrayList<Job>();
+		ArrayList<JDFJob> jobs = new ArrayList<JDFJob>();
 		String owner = "owner";
 		JDFJob jdfJob = new JDFJob("", owner);
 		jdfJob.setFriendlyName(jobName);
@@ -134,7 +131,6 @@ public class TestArrebolController {
 		jobs.add(new JDFJob("", owner));
 		jobs.add(new JDFJob("", owner));
 		BlowoutController controller = mock(BlowoutController.class);
-		DB jobDB = this.arrebolController.getJobDB();
 		ConcurrentMap<String, JDFJob> jobMap = mock(HTreeMap.class);
 		arrebolController.setBlowoutController(controller);
 		this.arrebolController.setJobMap(jobMap);
@@ -147,7 +143,7 @@ public class TestArrebolController {
 	@Test
 	public void testStopJob() {
 		String jobName = "jobName00";
-		ArrayList<Job> jobs = new ArrayList<Job>();
+		ArrayList<JDFJob> jobs = new ArrayList<JDFJob>();
 		String owner = "owner";
 		JDFJob jdfJob = new JDFJob("", owner);
 		jdfJob.setFriendlyName(jobName);
@@ -171,7 +167,7 @@ public class TestArrebolController {
 
 	@Test
 	public void testStopJobWithId() {
-		ArrayList<Job> jobs = new ArrayList<Job>();
+		ArrayList<JDFJob> jobs = new ArrayList<JDFJob>();
 		String owner = "owner";
 		JDFJob jdfJob = new JDFJob("", owner);
 		jobs.add(jdfJob);
@@ -200,7 +196,7 @@ public class TestArrebolController {
 		Task task = new TaskImpl(taskId,
 				new Specification("image", "username", "publicKey", "privateKeyFilePath", "", ""));
 
-		ArrayList<Job> jobs = new ArrayList<Job>();
+		ArrayList<JDFJob> jobs = new ArrayList<JDFJob>();
 		String owner = "owner";
 		JDFJob jdfJob = new JDFJob("", owner);
 		jdfJob.addTask(task);
