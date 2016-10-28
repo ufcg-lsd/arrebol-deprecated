@@ -93,10 +93,16 @@ public class JDFJob extends Job {
 			for (Entry<String, Task> entry : taskList.entrySet()) {
 				tasks.put(entry.getValue().toJSON());
 			}
+			job.put("tasks", tasks);
+			return job;
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOGGER.debug("Error while trying to create a JSONObject from JDFJob", e);
+			return null;
 		}
+	}
+
+	public static JDFJob fromJSON(JSONObject job) {
+		
 		return null;
 	}
 

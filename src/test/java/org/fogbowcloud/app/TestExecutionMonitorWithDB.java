@@ -23,6 +23,7 @@ import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskImpl;
 import org.fogbowcloud.blowout.infrastructure.exception.InfrastructureException;
 import org.fogbowcloud.blowout.infrastructure.manager.InfrastructureManager;
+import org.fogbowcloud.blowout.core.model.TaskProcess;
 import org.junit.Before;
 import org.junit.Test;
 import org.mapdb.DB;
@@ -77,6 +78,17 @@ public class TestExecutionMonitorWithDB {
 		monitor.run();
 		verify(blowout).cleanTask(task);
 		verify(arrebol).moveTaskToFinished(task);
+		doReturn(job).when(jobDB).put(eq("FAKE_JOB_ID"), eq(job));
+		ExecutionMonitor executionMonitor = new ExecutionMonitor(scheduler, executorService, job);
+		TaskProcess tp = mock(TaskProcess.class);
+		List<TaskProcess> processes = new ArrayList<TaskProcess>();
+		processes.add(tp);
+		doReturn(processes).when(scheduler).getRunningProcs();
+		doReturn(TaskState.FINNISHED).when(tp).getStatus();
+		doNothing().when(scheduler).taskCompleted(tp);
+		executionMonitor.run();
+		Thread.sleep(500);
+		verify(tp, times(2)).getStatus();
 	}
 
 	@Test
@@ -97,6 +109,18 @@ public class TestExecutionMonitorWithDB {
 		verify(blowout, never()).cleanTask(task);
 		verify(arrebol, never()).moveTaskToFinished(task);
 		
+		doReturn(job).when(jobDB).put(eq("FAKE_JOB_ID"), eq(job));
+		ExecutionMonitor executionMonitor = new ExecutionMonitor(scheduler, executorService, job);
+		TaskProcess tp = mock(TaskProcess.class);
+		List<TaskProcess> processes = new ArrayList<TaskProcess>();
+		processes.add(tp);
+		doReturn(processes).when(scheduler).getRunningProcs();
+		doReturn(TaskState.FAILED).when(tp).getStatus();
+		doNothing().when(scheduler).taskCompleted(tp);
+		doNothing().when(job).finish(task);
+		executionMonitor.run();
+		Thread.sleep(500);
+		verify(tp).getStatus();
 	}
 
 	@Test
@@ -115,6 +139,16 @@ public class TestExecutionMonitorWithDB {
 		monitor.run();
 		verify(blowout, never()).cleanTask(task);
 		verify(arrebol, never()).moveTaskToFinished(task);
+		doReturn(job).when(jobDB).put(eq("FAKE_JOB_ID"), eq(job));
+		ExecutionMonitor executionMonitor = new ExecutionMonitor(scheduler, executorService, job);
+		TaskProcess tp = mock(TaskProcess.class);
+		doReturn(TaskState.RUNNING).when(tp).getStatus();
+		List<TaskProcess> processes = new ArrayList<TaskProcess>();
+		processes.add(tp);
+		doReturn(processes).when(scheduler).getRunningProcs();
+		executionMonitor.run();
+		verify(tp, times(2)).getStatus();
+		verify(scheduler, never()).taskCompleted(tp);
 	}
 
 }
