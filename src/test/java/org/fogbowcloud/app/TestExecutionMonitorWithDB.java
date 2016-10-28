@@ -67,7 +67,7 @@ public class TestExecutionMonitorWithDB {
 		
 		List<Task> tasks = new ArrayList<Task>();
 		tasks.add(task);
-		doReturn(tasks).when(job).getTasks();
+		doReturn(tasks).when(job).getTaskList();
 		doReturn(TaskState.COMPLETED).when(blowout).getTaskState(FAKE_TASK_ID);
 		doNothing().when(blowout).cleanTask(task);
 		doNothing().when(arrebol).moveTaskToFinished(task);
@@ -90,7 +90,7 @@ public class TestExecutionMonitorWithDB {
 		
 		List<Task> tasks = new ArrayList<Task>();
 		tasks.add(task);
-		doReturn(tasks).when(job).getTasks();
+		doReturn(tasks).when(job).getTaskList();
 		doReturn(TaskState.FAILED).when(blowout).getTaskState(FAKE_TASK_ID);
 		jdfJobs.add(job);
 		monitor.run();
@@ -109,7 +109,7 @@ public class TestExecutionMonitorWithDB {
 		
 		List<Task> tasks = new ArrayList<Task>();
 		tasks.add(task);
-		doReturn(tasks).when(job).getTasks();
+		doReturn(tasks).when(job).getTaskList();
 		doReturn(TaskState.RUNNING).when(blowout).getTaskState(FAKE_TASK_ID);
 		jdfJobs.add(job);
 		monitor.run();

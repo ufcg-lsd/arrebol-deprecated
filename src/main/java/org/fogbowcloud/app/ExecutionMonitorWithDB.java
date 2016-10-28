@@ -44,7 +44,7 @@ public class ExecutionMonitorWithDB implements Runnable {
 	public void run() {
 		LOGGER.debug("Submitting monitoring tasks");
 
-		for (Job aJob : jobMap.values()) {
+		for (JDFJob aJob : jobMap.values()) {
 			JDFJob aJDFJob = (JDFJob) aJob;
 			this.jobMap.put(aJDFJob.getId(), aJDFJob);
 			this.db.commit();

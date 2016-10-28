@@ -1,8 +1,15 @@
 package org.fogbowcloud.app.model;
 
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
+import org.fogbowcloud.blowout.core.model.Job;
 import org.fogbowcloud.blowout.core.model.Task;
+import org.fogbowcloud.blowout.core.model.TaskState;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * It add the job name, job name and sched path to the {@link Job} abstraction.
@@ -71,6 +78,26 @@ public class JDFJob extends Job {
 	public void fail(Task task) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public JSONObject toJSON() {
+		try {
+			JSONObject job = new JSONObject();
+			job.put("jobId", this.getId());
+			job.put("name", this.getName());
+			job.put("schedPath", this.getSchedPath());
+			job.put("owner", this.getId());
+			job.put("uuid", this.getUUID());
+			JSONArray tasks = new JSONArray();
+			Map<String, Task> taskList = this.getTaskList();
+			for (Entry<String, Task> entry : taskList.entrySet()) {
+				tasks.put(entry.getValue().toJSON());
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 }

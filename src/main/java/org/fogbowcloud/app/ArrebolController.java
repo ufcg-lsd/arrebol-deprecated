@@ -105,14 +105,14 @@ public class ArrebolController {
 	private class JobCheckPointer implements Runnable {
 		@Override
 		public void run() {
-			for (Job aJob : getJobMap().values()) {
+			for (JDFJob aJob : getJobMap().values()) {
 				JDFJob aJDFJob = (JDFJob) aJob;
 				saveJob(aJDFJob);
 			}
 		}
 	}
 
-	private void saveJob(Job job) {
+	private void saveJob(JDFJob job) {
 		// hook to DB implementation
 	}
 
@@ -172,7 +172,7 @@ public class ArrebolController {
 
 	public ArrayList<JDFJob> getAllJobs(String owner) {
 		ArrayList<JDFJob> jobList = new ArrayList<JDFJob>();
-		for (Job job : this.jobMap.values()) {
+		for (JDFJob job : this.jobMap.values()) {
 			JDFJob jdfJob = (JDFJob) job;
 			if (jdfJob.getOwner().equals(owner)) {
 				jobList.add((JDFJob) job);
@@ -192,7 +192,7 @@ public class ArrebolController {
 	}
 
 	public String stopJob(String jobReference, String owner) {
-		Job jobToRemove = getJobByName(jobReference, owner);
+		JDFJob jobToRemove = getJobByName(jobReference, owner);
 		if (jobToRemove != null) {
 			this.jobMap.remove(jobToRemove.getId());
 			this.jobDB.commit();
@@ -212,7 +212,7 @@ public class ArrebolController {
 		if (jobName == null) {
 			return null;
 		}
-		for (Job job : this.jobMap.values()) {
+		for (JDFJob job : this.jobMap.values()) {
 			JDFJob jdfJob = (JDFJob) job;
 			// TODO review this IFs
 			if (jdfJob.getOwner().equals(owner)) {
@@ -225,7 +225,7 @@ public class ArrebolController {
 	}
 
 	public Task getTaskById(String taskId, String owner) {
-		for (Job job : getAllJobs(owner)) {
+		for (JDFJob job : getAllJobs(owner)) {
 			JDFJob jdfJob = (JDFJob) job;
 			Task task = jdfJob.getTaskById(taskId);
 			if (task != null) {
