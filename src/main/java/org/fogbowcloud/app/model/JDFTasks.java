@@ -24,6 +24,8 @@ import org.fogbowcloud.blowout.core.model.TaskImpl;
 import org.fogbowcloud.blowout.infrastructure.provider.fogbow.FogbowRequirementsHelper;
 import org.fogbowcloud.blowout.pool.AbstractResource;
 
+import com.amazonaws.services.dynamodbv2.xspec.GetItemExpressionSpec;
+
 public class JDFTasks {
 
 	// FIXME: what is this?
@@ -31,6 +33,7 @@ public class JDFTasks {
 
 	// FIXME: what is this?
 	private static final String LOCAL_OUTPUT_FOLDER = "local_output";
+
 	private static final String REMOTE_OUTPUT_FOLDER = "remote_output_folder";
 
 	private static final String PRIVATE_KEY_FILEPATH = "private_key_filepath";
@@ -71,6 +74,7 @@ public class JDFTasks {
 
 				JobSpecification jobSpec = (JobSpecification) commonCompiler.getResult().get(0);
 
+
 				job.setFriendlyName(jobSpec.getLabel());
 
 				String schedPath = jobSpec.getSchedPath();
@@ -95,7 +99,7 @@ public class JDFTasks {
 
 				int i = 0;
 				for (String req : jobRequirementes.split("and")) {
-					if (i == 0 && !req.trim().startsWith("image")) {
+				if (i == 0 && !req.trim().startsWith("image")) {
 						i++;
 						spec.addRequirement(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS, req);
 
@@ -167,13 +171,21 @@ public class JDFTasks {
 	}
 
 	/**
+<<<<<<< HEAD
 	 * This method translates the Ourgrid input IOBlocks to JDL InputSandbox
+=======
+	 * It translates the input IOBlocks to JDL InputSandbox
+>>>>>>> Fixed most of the FIXMEs
 	 *
 	 * @param jobId
 	 * @param taskSpec
 	 *            The task specification {@link TaskSpecification}
 	 * @param task
 	 *            The output expression containing the JDL job
+<<<<<<< HEAD
+=======
+	 * @param schedPath
+>>>>>>> Fixed most of the FIXMEs
 	 */
 	private static void parseInitCommands(String jobId, TaskSpecification taskSpec, Task task, String schedPath) {
 

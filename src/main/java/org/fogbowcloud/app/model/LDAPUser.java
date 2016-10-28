@@ -3,7 +3,6 @@ package org.fogbowcloud.app.model;
 public class LDAPUser implements User{
 
 	private String user;
-	//FIXME: do we need it?
 	private String UUID;
 	
 	public LDAPUser(String user) {

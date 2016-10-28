@@ -25,8 +25,6 @@ import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskState;
 import org.fogbowcloud.blowout.core.util.AppPropertiesConstants;
 import org.fogbowcloud.blowout.core.util.ManagerTimer;
-import org.fogbowcloud.blowout.infrastructure.manager.InfrastructureManager;
-import org.fogbowcloud.blowout.infrastructure.provider.InfrastructureProvider;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.mapdb.DB;
@@ -34,14 +32,12 @@ import org.mapdb.DBMaker;
 
 public class ArrebolController {
 
-	//FIXME: get from conf
 	private static final int DEFAULT_EXECUTION_MONITOR_INTERVAL = 30000;
-
-    private static final int CHECKPOINT_INTERVAL = 30000;
+	private static final int CHECKPOINT_INTERVAL = 30000;
 
 	private static final Logger LOGGER = Logger.getLogger(ArrebolController.class);
 
-	//FIXME: final
+	// FIXME: final
 	private DB jobDB;
 	private BlowoutController blowoutController;
 	private Properties properties;
@@ -51,12 +47,12 @@ public class ArrebolController {
 	private ArrebolAuthenticator auth;
 
 	private static ManagerTimer executionMonitorTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
-    private static ManagerTimer checkPointTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
+	private static ManagerTimer checkPointTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
 
 	public ArrebolController(Properties properties) {
-        if (properties == null) {
-            throw new IllegalArgumentException("Properties cannot be null");
-        }
+		if (properties == null) {
+			throw new IllegalArgumentException("Properties cannot be null");
+		}
 		this.properties = properties;
 	}
 
@@ -64,7 +60,7 @@ public class ArrebolController {
 		return properties;
 	}
 
-	public HashMap<String, JDFJob> getJobMap(){
+	public HashMap<String, JDFJob> getJobMap() {
 		return null;
 	}
 
@@ -108,19 +104,18 @@ public class ArrebolController {
 	}
 
 	private class JobCheckPointer implements Runnable {
-        @Override
-        public void run() {
-            for (Job aJob : getJobMap().values()) {
-                JDFJob aJDFJob = (JDFJob) aJob;
-                saveJob(aJDFJob);
-            }
-        }
-    }
+		@Override
+		public void run() {
+			for (Job aJob : getJobMap().values()) {
+				JDFJob aJDFJob = (JDFJob) aJob;
+				saveJob(aJDFJob);
+			}
+		}
+	}
 
-    private void saveJob(Job job) {
-        //hook to DB implementation
-    }
-
+	private void saveJob(Job job) {
+		// hook to DB implementation
+	}
 
 	private ArrayList<JDFJob> getLegacyJobs(ConcurrentMap<String, JDFJob> jobMapDB) {
 		ArrayList<JDFJob> legacyJobs = new ArrayList<JDFJob>();
@@ -130,7 +125,7 @@ public class ArrebolController {
 		}
 		return legacyJobs;
 	}
-	
+
 	private ArrebolAuthenticator createAuthenticatorPluginInstance() throws Exception {
 		String providerClassName = this.properties.getProperty(PropertiesConstants.AUTHENTICATION_PLUGIN);
 		Class<?> forName = Class.forName(providerClassName);
@@ -155,11 +150,12 @@ public class ArrebolController {
 		JDFJob job = new JDFJob(schedPath, owner.getUsername());
 		job.setUUID(owner.getUUID());
 		List<Task> taskList = getTasksFromJDFFile(jdfFilePath, job);
-		
+
 		if (job.getName() != null && !job.getName().trim().isEmpty()
 				&& getJobByName(job.getName(), owner.getUsername()) != null) {
+
 			throw new NameAlreadyInUseException(
-					"The name " + job.getName() + " is already in use for the user " + "owner");
+					"The name " + job.getName() + " is already in use for the user " + owner);
 		}
 
 		for (Task task : taskList) {
@@ -169,9 +165,9 @@ public class ArrebolController {
 		LOGGER.debug("Adding job " + job.getName() + " to scheduler");
 
 		this.jobMap.put(job.getId(), job);
-		
+
 		blowoutController.addTaskList(job.getTasks());
-		
+
 		return job.getId();
 	}
 
@@ -241,7 +237,7 @@ public class ArrebolController {
 	}
 
 	public TaskState getTaskState(String taskId, String owner) {
-		
+
 		Task task = finishedTasks.get(taskId);
 		if (task != null) {
 			return TaskState.COMPLETED;
@@ -256,8 +252,8 @@ public class ArrebolController {
 			return null;
 		}
 	}
-	
-	public void moveTaskToFinished(Task task){
+
+	public void moveTaskToFinished(Task task) {
 		finishedTasks.put(task.getId(), task);
 	}
 
@@ -265,7 +261,7 @@ public class ArrebolController {
 		if (credentials == null) {
 			return null;
 		}
-		
+
 		Credential credential = null;
 		try {
 			credential = Credential.fromJSON(new JSONObject(credentials));
@@ -273,7 +269,7 @@ public class ArrebolController {
 			LOGGER.error("Invalid credentials format", e);
 			return null;
 		}
-		
+
 		LOGGER.debug("Checking nonce");
 		if (credential != null && this.nonces.contains(credential.getNonce())) {
 			return this.auth.authenticateUser(credential);
@@ -288,8 +284,7 @@ public class ArrebolController {
 		return nonce;
 	}
 
-	protected List<Task> getTasksFromJDFFile(String jdfFilePath, JDFJob job)
-			throws CompilerException {
+	protected List<Task> getTasksFromJDFFile(String jdfFilePath, JDFJob job) throws CompilerException {
 		List<Task> taskList = JDFTasks.getTasksFromJDFFile(job, jdfFilePath, this.properties);
 		return taskList;
 	}
@@ -317,5 +312,5 @@ public class ArrebolController {
 	public void setBlowoutController(BlowoutController blowout) {
 		this.blowoutController = blowout;
 	}
-	
+
 }
