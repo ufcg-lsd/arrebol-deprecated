@@ -24,8 +24,6 @@ import org.fogbowcloud.blowout.core.model.TaskImpl;
 import org.fogbowcloud.blowout.infrastructure.provider.fogbow.FogbowRequirementsHelper;
 import org.fogbowcloud.blowout.pool.AbstractResource;
 
-import com.amazonaws.services.dynamodbv2.xspec.GetItemExpressionSpec;
-
 public class JDFTasks {
 
 	// FIXME: what is this?

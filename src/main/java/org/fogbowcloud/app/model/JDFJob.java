@@ -43,7 +43,7 @@ public class JDFJob extends Job {
 	}
 
 	public Task getCompletedTask(String taskId) {
-		//TODO
+		//TODO remove
 		return null;
 	}
 
@@ -53,7 +53,7 @@ public class JDFJob extends Job {
 	}
 
 	public TaskState getTaskState(String taskId) {
-		//TODO
+		//TODO remove
 		return null;
 	}
 

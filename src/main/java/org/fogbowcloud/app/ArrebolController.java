@@ -37,7 +37,6 @@ public class ArrebolController {
 
 	private static final Logger LOGGER = Logger.getLogger(ArrebolController.class);
 
-	// FIXME: final
 	private DB jobDB;
 	private BlowoutController blowoutController;
 	private Properties properties;
