@@ -1,11 +1,14 @@
 package org.fogbowcloud.app.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.fogbowcloud.blowout.core.model.Job;
 import org.fogbowcloud.blowout.core.model.Task;
+import org.fogbowcloud.blowout.core.model.TaskImpl;
 import org.fogbowcloud.blowout.core.model.TaskState;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,10 +29,18 @@ public class JDFJob extends Job {
 	private String schedPath;
 	private final String owner;
 
-	public JDFJob(String schedPath, String owner) {
-		super();
+	public JDFJob(String schedPath, String owner, List<Task> taskList) {
+		super(taskList);
 		this.schedPath = schedPath;
 		this.jobId = UUID.randomUUID().toString();
+		this.owner = owner;
+	}
+	
+	public JDFJob(String jobId, String schedPath, 
+			String owner, List<Task> taskList) {
+		super(taskList);
+		this.schedPath = schedPath;
+		this.jobId = jobId;
 		this.owner = owner;
 	}
 
@@ -102,8 +113,21 @@ public class JDFJob extends Job {
 	}
 
 	public static JDFJob fromJSON(JSONObject job) {
+		List<Task> tasks = new ArrayList<Task>();
 		
-		return null;
+		JSONArray tasksJSON = job.optJSONArray("tasks");
+		for (int i = 0; i < tasksJSON.length(); i++) {
+			JSONObject taskJSON = tasksJSON.optJSONObject(i);
+			Task task = TaskImpl.fromJSON(taskJSON);
+			tasks.add(task);
+		}
+		
+		JDFJob jdfJob = new JDFJob(job.optString("jobId"), 
+				job.optString("schedPath"), 
+				job.optString("owner"), tasks);
+		jdfJob.setFriendlyName(job.optString("name"));
+		jdfJob.setUUID(job.optString("uuid"));
+		return jdfJob;
 	}
 
 }

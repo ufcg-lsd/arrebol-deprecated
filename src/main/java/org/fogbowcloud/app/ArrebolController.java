@@ -1,6 +1,5 @@
 package org.fogbowcloud.app;
 
-import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
@@ -8,10 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
+import org.fogbowcloud.app.datastore.JobDataStore;
 import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.JDFTasks;
@@ -24,10 +23,12 @@ import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskState;
 import org.fogbowcloud.blowout.core.util.AppPropertiesConstants;
 import org.fogbowcloud.blowout.core.util.ManagerTimer;
+import org.fogbowcloud.blowout.core.model.Job;
+import org.fogbowcloud.blowout.infrastructure.manager.DefaultInfrastructureManager;
+import org.fogbowcloud.blowout.infrastructure.manager.InfrastructureManager;
+import org.fogbowcloud.blowout.infrastructure.provider.InfrastructureProvider;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.mapdb.DB;
-import org.mapdb.DBMaker;
 
 public class ArrebolController {
 
@@ -36,13 +37,14 @@ public class ArrebolController {
 
 	private static final Logger LOGGER = Logger.getLogger(ArrebolController.class);
 
-	private DB jobDB;
 	private BlowoutController blowoutController;
 	private Properties properties;
 	private List<Integer> nonces;
-	private ConcurrentMap<String, JDFJob> jobMap;
-	private ConcurrentMap<String, Task> finishedTasks;
+	private HashMap<String, JDFJob> jobMap;
+	private HashMap<String, Task> finishedTasks;
+	private JobDataStore jobDataStore;
 	private ArrebolAuthenticator auth;
+	private ExecutionMonitorWithDB executionMonitor;
 
 	private static ManagerTimer executionMonitorTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
 	private static ManagerTimer checkPointTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
@@ -64,32 +66,27 @@ public class ArrebolController {
 
 	public void init() throws Exception {
 
-		//FIXME: add as constructor param?
+		// FIXME: add as constructor param?
 		this.auth = createAuthenticatorPluginInstance();
-		//FIXME: replace by a proper
-		final File jobDBFile = new File(PropertiesConstants.DB_FILE_NAME);
-		this.jobDB = DBMaker.newFileDB(jobDBFile).make();
-		this.jobDB.checkShouldCreate(PropertiesConstants.DB_MAP_NAME);
-		ConcurrentMap<String, JDFJob> jobMapDB = this.jobDB.getHashMap(PropertiesConstants.DB_MAP_NAME);
+		// FIXME: replace by a proper
+		this.jobDataStore = new JobDataStore(null);
 
 		Boolean removePreviousResources = new Boolean(
-				this.properties.getProperty(PropertiesConstants.REMOVE_PREVIOUS_RESOURCES))
-						.booleanValue();
+				this.properties.getProperty(PropertiesConstants.REMOVE_PREVIOUS_RESOURCES)).booleanValue();
 
 		LOGGER.debug("Properties: " + properties.getProperty(PropertiesConstants.DEFAULT_SPECS_FILE_PATH));
 
-		//this.scheduler = new Scheduler(infraManager, );
-		
-		//legacyJobs.toArray(new JDFJob[legacyJobs.size()])
-		
+		// this.scheduler = new Scheduler(infraManager, );
+
+		// legacyJobs.toArray(new JDFJob[legacyJobs.size()])
+
 		this.blowoutController = new BlowoutController(this.properties);
 		blowoutController.start(removePreviousResources);
-		
-		LOGGER.debug("Application to be started on port: "
-				+ properties.getProperty(PropertiesConstants.REST_SERVER_PORT));
-		ExecutionMonitorWithDB executionMonitor = new ExecutionMonitorWithDB(this.blowoutController, this, this.jobDB);
-		LOGGER.info("Properties: " + properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
 
+		LOGGER.debug(
+				"Application to be started on port: " + properties.getProperty(PropertiesConstants.REST_SERVER_PORT));
+		ArrayList<JDFJob> legacyJobs = getLegacyJobs();
+		LOGGER.info("Properties: " + properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
 
 		this.nonces = new ArrayList<Integer>();
 
@@ -97,7 +94,7 @@ public class ArrebolController {
 				+ properties.getProperty(PropertiesConstants.EXECUTION_MONITOR_PERIOD));
 		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0, DEFAULT_EXECUTION_MONITOR_INTERVAL);
 
-        JobCheckPointer jobCheckPointer = new JobCheckPointer();
+		JobCheckPointer jobCheckPointer = new JobCheckPointer();
 		checkPointTimer.scheduleAtFixedRate(jobCheckPointer, 0, CHECKPOINT_INTERVAL);
 	}
 
@@ -116,11 +113,12 @@ public class ArrebolController {
 
 	}
 
-	private ArrayList<JDFJob> getLegacyJobs(ConcurrentMap<String, JDFJob> jobMapDB) {
+	private ArrayList<JDFJob> getLegacyJobs() {
 		ArrayList<JDFJob> legacyJobs = new ArrayList<JDFJob>();
 
-		for (String key : jobMapDB.keySet()) {
-			legacyJobs.add((JDFJob) jobMapDB.get(key));
+		List<JDFJob> jobs = this.jobDataStore.getAll();
+		for (JDFJob jdfJob : jobs) {
+			legacyJobs.add(jdfJob);
 		}
 		return legacyJobs;
 	}
@@ -146,19 +144,18 @@ public class ArrebolController {
 
 	public String addJob(String jdfFilePath, String schedPath, User owner)
 			throws CompilerException, NameAlreadyInUseException {
-		JDFJob job = new JDFJob(schedPath, owner.getUsername());
-		job.setUUID(owner.getUUID());
-		List<Task> taskList = getTasksFromJDFFile(jdfFilePath, job);
+		JDFJob tmpJob = new JDFJob(schedPath, owner.getUsername(), new ArrayList<Task>());
+		tmpJob.setUUID(owner.getUUID());
+		List<Task> taskList = getTasksFromJDFFile(jdfFilePath, tmpJob);
+		JDFJob job = new JDFJob(tmpJob.getId(), tmpJob.getSchedPath(), tmpJob.getOwner(), taskList);
+		job.setUUID(tmpJob.getUUID());
+		job.setFriendlyName(tmpJob.getName());
 
 		if (job.getName() != null && !job.getName().trim().isEmpty()
 				&& getJobByName(job.getName(), owner.getUsername()) != null) {
 
 			throw new NameAlreadyInUseException(
 					"The name " + job.getName() + " is already in use for the user " + owner);
-		}
-
-		for (Task task : taskList) {
-			job.addTask(task);
 		}
 
 		LOGGER.debug("Adding job " + job.getName() + " to scheduler");
@@ -182,27 +179,26 @@ public class ArrebolController {
 		return jobList;
 	}
 
-	public void setJobDB(DB jobDB) {
-		this.jobDB = jobDB;
-	}
-
 	public void updateJob(JDFJob job) {
-		this.jobMap.put(job.getId(), job);
-		this.jobDB.commit();
+		this.jobDataStore.update(job);
 	}
 
 	public String stopJob(String jobReference, String owner) {
 		JDFJob jobToRemove = getJobByName(jobReference, owner);
 		if (jobToRemove != null) {
-			this.jobMap.remove(jobToRemove.getId());
-			this.jobDB.commit();
-			return jobToRemove.getId();
+			this.jobDataStore.deleteByJobId(jobToRemove.getId(), owner);
+			for (Task task : jobToRemove.getTasks()) {
+				blowoutController.cleanTask(task);
+				return jobToRemove.getId();
+			}
 		} else {
 			jobToRemove = getJobById(jobReference, owner);
 			if (jobToRemove != null) {
-				this.jobMap.remove(jobReference);
-				this.jobDB.commit();
-				return jobToRemove.getId();
+				this.jobDataStore.deleteByJobId(jobToRemove.getId(), owner);
+				for (Task task : jobToRemove.getTasks()) {
+					blowoutController.cleanTask(task);
+					jobToRemove.getId();
+				}
 			}
 		}
 		return null;
@@ -300,7 +296,7 @@ public class ArrebolController {
 		}
 	}
 
-	public void setJobMap(ConcurrentMap<String, JDFJob> jobMap) {
+	public void setJobMap(HashMap<String, JDFJob> jobMap) {
 		this.jobMap = jobMap;
 	}
 
@@ -308,8 +304,13 @@ public class ArrebolController {
 		return this.auth.getAuthenticatorName();
 	}
 
+
 	public void setBlowoutController(BlowoutController blowout) {
 		this.blowoutController = blowout;
+	}
+
+	public JobDataStore getJobDataStore() {
+		return this.jobDataStore;
 	}
 
 }

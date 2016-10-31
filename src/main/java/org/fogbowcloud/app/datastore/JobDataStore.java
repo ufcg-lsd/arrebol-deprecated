@@ -14,7 +14,7 @@ import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.utils.DataStoreHelper;
 import org.json.JSONObject;
 
-public class JobsDataStore {
+public class JobDataStore {
 
 	public static final String JOB_DATASTORE_DRIVER = "org.sqlite.JDBC";
 	public static final String JOBS_TABLE_NAME = "arrebol_jobs";
@@ -43,13 +43,13 @@ public class JobsDataStore {
 	private static final String DELETE_BY_JOB_ID_SQL = "DELETE FROM " + JOBS_TABLE_NAME + " WHERE "
 			+ JOB_ID + " = ? AND " + JOB_OWNER + " = ?";
 
-	private static final Logger LOGGER = Logger.getLogger(JobsDataStore.class);
+	private static final Logger LOGGER = Logger.getLogger(JobDataStore.class);
 	protected static final String ERROR_WHILE_INITIALIZING_THE_DATA_STORE = "Error while initializing the Job DataStore.";
 	private static final String DEFAULT_DATASTORE_NAME = "datastore_jobs.slite";
 
 	private String jobDataStoreURL;
-
-	public JobsDataStore(String jobDataStoreURL) {
+	
+	public JobDataStore(String jobDataStoreURL) {
 		
 		this.jobDataStoreURL = DataStoreHelper.getDataStoreUrl(jobDataStoreURL,
 				DEFAULT_DATASTORE_NAME);
