@@ -11,7 +11,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentMap;
 
 import org.fogbowcloud.app.datastore.JobDataStore;
 import org.fogbowcloud.app.model.JDFJob;
@@ -27,8 +26,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mapdb.DB;
-import org.mapdb.HTreeMap;
 import org.mockito.Mockito;
 
 public class TestArrebolController {
@@ -45,6 +42,28 @@ public class TestArrebolController {
 		this.arrebolController = Mockito.spy(new ArrebolController(properties));
 		// this.arrebolController.init();
 
+		properties.put(PropertiesConstants.INFRA_INITIAL_SPECS_BLOCK_CREATING, "true");
+		properties.put(PropertiesConstants.INFRA_IS_STATIC, "true");
+		properties.put(PropertiesConstants.INFRA_RESOURCE_REUSE_TIMES, "2");
+		properties.put(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH, "");
+		properties.put(AppPropertiesConstants.REST_SERVER_PORT, "4444");
+		properties.put(AppPropertiesConstants.EXECUTION_MONITOR_PERIOD, "60000");
+		properties.put(AppPropertiesConstants.INFRA_PROVIDER_CLASS_NAME, 
+				"org.fogbowcloud.blowout.infrastructure.provider.fogbow.FogbowInfrastructureProvider");
+		properties.put(AppPropertiesConstants.INFRA_FOGBOW_TOKEN_UPDATE_PLUGIN, "org.fogbowcloud.blowout.infrastructure.token.KeystoneTokenUpdatePlugin");
+		properties.put(AppPropertiesConstants.INFRA_FOGBOW_TOKEN_PUBLIC_KEY_FILEPATH, "/tmp/keystone_cert");
+		properties.put(AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT, "300000000");
+		properties.put(AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME, "30000");
+		properties.put(AppPropertiesConstants.INFRA_MANAGEMENT_SERVICE_TIME, "100000");
+		properties.put(AppPropertiesConstants.INFRA_RESOURCE_SERVICE_TIME, "100000");
+		properties.put(AppPropertiesConstants.AUTHENTICATION_PLUGIN, "org.fogbowcloud.app.utils.authenticator.CommonAuthenticator");
+		properties.put("datastore_url", "jdbc:h2:/local/marcosancj/git/arrebol/datastores/fogbowresourcesdatastore");
+		this.arrebolController = Mockito.spy(new ArrebolController(properties));		
+		Mockito.doReturn(null).when(this.arrebolController).getInfraManager(true, true, true);		
+		this.arrebolController.init();
+		
+		Scheduler scheduler = Mockito.mock(Scheduler.class);
+		this.arrebolController.setScheduler(scheduler);
 	}
 
 	@After
@@ -80,10 +99,9 @@ public class TestArrebolController {
 
 		String jdfFilePath = "";
 		String schedPath = "";
-		String friendlyName = "";
 		User user = Mockito.mock(User.class);
 		BlowoutController controller = mock(BlowoutController.class);
-		ConcurrentMap<String, JDFJob> jobMap = mock(HTreeMap.class);
+		HashMap<String, JDFJob> jobMap = mock(HashMap.class);
 		arrebolController.setBlowoutController(controller);
 		this.arrebolController.setJobMap(jobMap);
 		doReturn(mock(Job.class)).when(jobMap).put(any(String.class), any(JDFJob.class));
@@ -102,7 +120,7 @@ public class TestArrebolController {
 		jobs.add(new JDFJob("", owner));
 
 		BlowoutController controller = mock(BlowoutController.class);
-		ConcurrentMap<String, JDFJob> jobMap = mock(HTreeMap.class);
+		HashMap<String, JDFJob> jobMap = mock(HashMap.class);
 		arrebolController.setBlowoutController(controller);
 		this.arrebolController.setJobMap(jobMap);
 		doReturn(jobs).when(jobMap).values();
@@ -115,7 +133,6 @@ public class TestArrebolController {
 		jobs.add(new JDFJob("", owner, new ArrayList<Task>()));
 		jobs.add(new JDFJob("", owner, new ArrayList<Task>()));
 		jobs.add(new JDFJob("", owner, new ArrayList<Task>()));
-		Mockito.when(this.arrebolController.getScheduler().getJobs()).thenReturn(jobs);
 		
 		Assert.assertEquals(jobs, this.arrebolController.getAllJobs(owner));
 		JobDataStore jobDataStore = this.arrebolController.getJobDataStore();
@@ -237,11 +254,33 @@ public class TestArrebolController {
 		this.arrebolController.getAllJobs(owner);
 
 		Assert.assertEquals(jdfJob.getId(), this.arrebolController.stopJob(jdfJob.getId(), owner));
+<<<<<<< HEAD
+=======
+		Assert.assertEquals(jobs.size() - 1, this.arrebolController.getJobDataStore().getAll().size());
+	}	
+	
+	@Test
+	public void testGetTaskById() {
+		String taskId = "taskId00";
+		Task task = new TaskImpl(taskId, new Specification("image", "username", "publicKey", "privateKeyFilePath", "", ""));
+		List<Task> tasks = new ArrayList<Task>();
+		tasks.add(task);
+		
+		ArrayList<Job> jobs = new ArrayList<Job>();
+		String owner = "owner";
+		JDFJob jdfJob = new JDFJob("", owner, tasks);
+		jobs.add(jdfJob);
+		Mockito.when(this.arrebolController.getScheduler().getJobs()).thenReturn(jobs);
+		
+		Assert.assertEquals(jobs, this.arrebolController.getAllJobs(owner));				
+		Assert.assertEquals(task, this.arrebolController.getTaskById(taskId, owner));
+>>>>>>> Renaming property infra_management_service_time
 	}
 
 	@Test
 	public void testGetTaskById() {
 		String taskId = "taskId00";
+<<<<<<< HEAD
 		Task task = new TaskImpl(taskId,
 				new Specification("image", "username", "publicKey", "privateKeyFilePath", "", ""));
 
@@ -251,6 +290,14 @@ public class TestArrebolController {
 		jdfJob.addTask(task);
 		// jdfJob.run(task);
 		JDFJob jdfJob = new JDFJob("", owner, new ArrayList<Task>());
+=======
+		Task task = new TaskImpl(taskId, new Specification("image", "username", "publicKey", "privateKeyFilePath", "", ""));
+		List<Task> tasks = new ArrayList<Task>();
+		tasks.add(task);
+		ArrayList<Job> jobs = new ArrayList<Job>();
+		String owner = "owner";
+		JDFJob jdfJob = new JDFJob("", owner, tasks);
+>>>>>>> Renaming property infra_management_service_time
 		jobs.add(jdfJob);
 
 		BlowoutController controller = mock(BlowoutController.class);
