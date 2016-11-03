@@ -106,7 +106,7 @@ public class JobResource extends ServerResource {
 			JSONObject jTask = new JSONObject();
 			jTask.put(TASK_ID, task.getId());
 			TaskState ts = application.getTaskState(task.getId(), owner.getUsername());
-			jTask.put(STATE, ts != null ? ts.getDesc() : "UNDEFINED");
+			jTask.put(STATE, ts != null ? ts.getDesc().toUpperCase() : "UNDEFINED");
 			jobTasks.put(jTask);
 		}
 		jsonJob.put(JOB_TASKS, jobTasks);

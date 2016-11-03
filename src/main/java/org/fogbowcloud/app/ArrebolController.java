@@ -93,6 +93,9 @@ public class ArrebolController {
 		LOGGER.debug("Starting Scheduler and Execution Monitor, execution monitor period: "
 				+ properties.getProperty(PropertiesConstants.EXECUTION_MONITOR_PERIOD));
 		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0, DEFAULT_EXECUTION_MONITOR_INTERVAL);
+		int schedulerPeriod = Integer.valueOf(properties.getProperty(PropertiesConstants.EXECUTION_MONITOR_PERIOD));
+		
+		LOGGER.info("Starting scheduler with period: " + schedulerPeriod);
 
 		JobCheckPointer jobCheckPointer = new JobCheckPointer();
 		checkPointTimer.scheduleAtFixedRate(jobCheckPointer, 0, CHECKPOINT_INTERVAL);
