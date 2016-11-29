@@ -12,21 +12,21 @@ import static org.mockito.Mockito.verify;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jetty.util.thread.Scheduler;
 import org.fogbowcloud.app.model.JDFJob;
-import org.fogbowcloud.app.utils.AppPropertiesConstants;
-import org.fogbowcloud.blowout.scheduler.core.ExecutionMonitor;
-import org.fogbowcloud.blowout.scheduler.core.Scheduler;
-import org.fogbowcloud.blowout.scheduler.core.model.Resource;
-import org.fogbowcloud.blowout.scheduler.core.model.Task;
-import org.fogbowcloud.blowout.scheduler.core.model.TaskImpl;
-import org.fogbowcloud.blowout.scheduler.core.model.TaskProcess;
-import org.fogbowcloud.blowout.scheduler.core.model.TaskProcessImpl;
-import org.fogbowcloud.blowout.scheduler.infrastructure.InfrastructureManager;
-import org.fogbowcloud.blowout.scheduler.infrastructure.exceptions.InfrastructureException;
+import org.fogbowcloud.blowout.core.model.Task;
+import org.fogbowcloud.blowout.core.model.TaskImpl;
+import org.fogbowcloud.blowout.core.model.TaskProcess;
+import org.fogbowcloud.blowout.core.model.TaskProcessImpl;
+import org.fogbowcloud.blowout.core.util.AppPropertiesConstants;
+import org.fogbowcloud.blowout.infrastructure.exception.InfrastructureException;
+import org.fogbowcloud.blowout.infrastructure.manager.InfrastructureManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.mapdb.DB;
 import org.mapdb.HTreeMap;
+
+import com.amazonaws.auth.policy.Resource;
 
 public class TestExecutionMonitorWithDB {
 

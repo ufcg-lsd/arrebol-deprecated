@@ -5,16 +5,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentMap;
-import org.fogbowcloud.app.model.User;
 
+import org.eclipse.jetty.util.thread.Scheduler;
 import org.fogbowcloud.app.model.JDFJob;
-import org.fogbowcloud.app.utils.AppPropertiesConstants;
-import org.fogbowcloud.blowout.scheduler.core.Scheduler;
-import org.fogbowcloud.blowout.scheduler.core.model.Job;
-import org.fogbowcloud.blowout.scheduler.core.model.Job.TaskState;
-import org.fogbowcloud.blowout.scheduler.core.model.Specification;
-import org.fogbowcloud.blowout.scheduler.core.model.Task;
-import org.fogbowcloud.blowout.scheduler.core.model.TaskImpl;
+import org.fogbowcloud.app.model.Job;
+import org.fogbowcloud.app.model.User;
+import org.fogbowcloud.app.utils.PropertiesConstants;
+import org.fogbowcloud.blowout.core.model.Specification;
+import org.fogbowcloud.blowout.core.model.Task;
+import org.fogbowcloud.blowout.core.model.TaskImpl;
+import org.fogbowcloud.blowout.core.model.TaskState;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,21 +29,21 @@ public class TestArrebolController {
 	@Before
 	public void setUp() throws Exception {
 		Properties properties = new Properties();
-		properties.put(AppPropertiesConstants.INFRA_INITIAL_SPECS_BLOCK_CREATING, "true");
-		properties.put(AppPropertiesConstants.INFRA_IS_STATIC, "true");
-		properties.put(AppPropertiesConstants.INFRA_RESOURCE_REUSE_TIMES, "2");
-		properties.put(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH, "");
-		properties.put(AppPropertiesConstants.REST_SERVER_PORT, "4444");
-		properties.put(AppPropertiesConstants.EXECUTION_MONITOR_PERIOD, "60000");
-		properties.put(AppPropertiesConstants.INFRA_PROVIDER_CLASS_NAME, 
+		properties.put(PropertiesConstants.INFRA_INITIAL_SPECS_BLOCK_CREATING, "true");
+		properties.put(PropertiesConstants.INFRA_IS_STATIC, "true");
+		properties.put(PropertiesConstants.INFRA_RESOURCE_REUSE_TIMES, "2");
+		properties.put(PropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH, "");
+		properties.put(PropertiesConstants.REST_SERVER_PORT, "4444");
+		properties.put(PropertiesConstants.EXECUTION_MONITOR_PERIOD, "60000");
+		properties.put(PropertiesConstants.IMPLEMENTATION_INFRA_PROVIDER, 
 				"org.fogbowcloud.blowout.scheduler.infrastructure.fogbow.FogbowInfrastructureProvider");
-		properties.put(AppPropertiesConstants.INFRA_FOGBOW_TOKEN_UPDATE_PLUGIN, "org.fogbowcloud.blowout.infrastructure.plugin.KeystoneTokenUpdatePlugin");
-		properties.put(AppPropertiesConstants.INFRA_FOGBOW_TOKEN_PUBLIC_KEY_FILEPATH, "/tmp/keystone_cert");
-		properties.put(AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT, "300000000");
-		properties.put(AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME, "30000");
-		properties.put(AppPropertiesConstants.INFRA_ORDER_SERVICE_TIME, "100000");
-		properties.put(AppPropertiesConstants.INFRA_RESOURCE_SERVICE_TIME, "100000");
-		properties.put(AppPropertiesConstants.AUTHENTICATION_PLUGIN, "org.fogbowcloud.app.utils.authenticator.CommonAuthenticator");
+		properties.put(PropertiesConstants.INFRA_FOGBOW_TOKEN_UPDATE_PLUGIN, "org.fogbowcloud.blowout.infrastructure.plugin.KeystoneTokenUpdatePlugin");
+		properties.put(PropertiesConstants.INFRA_FOGBOW_TOKEN_PUBLIC_KEY_FILEPATH, "/tmp/keystone_cert");
+		properties.put(PropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT, "300000000");
+		properties.put(PropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME, "30000");
+		properties.put(PropertiesConstants.INFRA_ORDER_SERVICE_TIME, "100000");
+		properties.put(PropertiesConstants.INFRA_RESOURCE_SERVICE_TIME, "100000");
+		properties.put(PropertiesConstants.AUTHENTICATION_PLUGIN, "org.fogbowcloud.app.utils.authenticator.CommonAuthenticator");
 		this.arrebolController = Mockito.spy(new ArrebolController(properties));		
 		Mockito.doReturn(null).when(this.arrebolController).getInfraManager(true, true, true);		
 		this.arrebolController.init();
@@ -55,9 +55,9 @@ public class TestArrebolController {
 	@After
 	public void tearDown() {
 		String[] filePaths = new String[3];
-		filePaths[0] = AppPropertiesConstants.DB_FILE_NAME;
-		filePaths[1] = AppPropertiesConstants.DB_FILE_NAME + ".p";
-		filePaths[2] = AppPropertiesConstants.DB_FILE_NAME + ".t";
+		filePaths[0] = PropertiesConstants.DB_FILE_NAME;
+		filePaths[1] = PropertiesConstants.DB_FILE_NAME + ".p";
+		filePaths[2] = PropertiesConstants.DB_FILE_NAME + ".t";
 		for (int i = 0; i < filePaths.length; i++) {
 			File file = new File(filePaths[i]);
 			if (file.exists()) {
@@ -103,7 +103,7 @@ public class TestArrebolController {
 		Assert.assertEquals(jobs, this.arrebolController.getAllJobs(owner));
 		
 		DB jobDB = this.arrebolController.getJobDB();
-		ConcurrentMap<String, JDFJob> jobMapDB = jobDB.get(AppPropertiesConstants.DB_MAP_NAME);
+		ConcurrentMap<String, JDFJob> jobMapDB = jobDB.get(PropertiesConstants.DB_MAP_NAME);
 		ConcurrentMap<String,JDFJob> jobMap = this.arrebolController.getJobMap();
 		Assert.assertEquals(jobMapDB, jobMap);
 		Assert.assertEquals(jobs.size(), jobMap.size());
@@ -117,12 +117,12 @@ public class TestArrebolController {
 		jobs.add(new JDFJob("", owner));
 		jobs.add(new JDFJob("", owner));
 		jobs.add(new JDFJob("", owner));
-		Mockito.when(this.arrebolController.getScheduler().getJobs()).thenReturn(jobs);
+		//Mockito.when(this.arrebolController.getScheduler().getJobs()).thenReturn(jobs);
 		
 		Assert.assertEquals(0, this.arrebolController.getAllJobs("wrong user owner").size());
 		
 		DB jobDB = this.arrebolController.getJobDB();
-		ConcurrentMap<String, JDFJob> jobMapDB = jobDB.get(AppPropertiesConstants.DB_MAP_NAME);
+		ConcurrentMap<String, JDFJob> jobMapDB = jobDB.get(PropertiesConstants.DB_MAP_NAME);
 		ConcurrentMap<String,JDFJob> jobMap = this.arrebolController.getJobMap();
 		Assert.assertEquals(jobMapDB, jobMap);
 		Assert.assertEquals(0, jobMap.size());
