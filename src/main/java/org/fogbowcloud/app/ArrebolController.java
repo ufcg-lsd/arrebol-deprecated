@@ -159,6 +159,10 @@ public class ArrebolController {
 		return jobList;
 	}
 
+	public void setJobDB(DB jobDB) {
+		this.jobDB = jobDB;
+	}
+
 	public void updateJob(JDFJob job) {
 		this.jobMap.put(job.getId(), job);
 		this.jobDB.commit();
@@ -169,13 +173,13 @@ public class ArrebolController {
 		if (jobToRemove != null) {
 			this.jobMap.remove(jobToRemove.getId());
 			this.jobDB.commit();
-			return jobMap.remove(jobToRemove.getId()).getId();
+			return jobToRemove.getId();
 		} else {
 			jobToRemove = getJobById(jobReference, owner);
 			if (jobToRemove != null) {
 				this.jobMap.remove(jobReference);
 				this.jobDB.commit();
-				return jobMap.remove(jobToRemove.getId()).getId();
+				return jobToRemove.getId();
 			}
 		}
 		return null;
@@ -274,8 +278,16 @@ public class ArrebolController {
 		}
 	}
 
+	public void setJobMap(ConcurrentMap<String, JDFJob> jobMap) {
+		this.jobMap = jobMap;
+	}
+
 	public String getAuthenticatorName() {
 		return this.auth.getAuthenticatorName();
 	}
 
+	public void setBlowoutController(BlowoutController blowout) {
+		this.blowoutController = blowout;
+	}
+	
 }

@@ -38,6 +38,7 @@ public class ExecutionMonitorWithDB implements Runnable {
 		}
 		this.db = db;
 		this.jobMap = db.getHashMap(PropertiesConstants.DB_MAP_NAME);
+		
 	}
 
 	@Override
@@ -72,11 +73,6 @@ public class ExecutionMonitorWithDB implements Runnable {
 		public void run() {
 
 			TaskState state = blowoutController.getTaskState(task.getId());
-
-			if (TaskState.FAILED.equals(state)) {
-				blowoutController.addTask(task);
-				return;
-			}
 
 			if (TaskState.COMPLETED.equals(state)) {
 				blowoutController.cleanTask(task);
