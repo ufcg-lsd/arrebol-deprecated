@@ -79,7 +79,7 @@ public class ArrebolController {
 		
 		//legacyJobs.toArray(new JDFJob[legacyJobs.size()])
 		
-		this.blowoutController = new BlowoutController();
+		this.blowoutController = new BlowoutController(this.properties);
 		blowoutController.start(removePreviousResources);
 		
 		LOGGER.debug("Application to be started on port: "

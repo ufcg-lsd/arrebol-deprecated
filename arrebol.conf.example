@@ -10,6 +10,6 @@ rest_server_port=44444
 resourcer_username=
 
 public_key=
-private_key_filepath=/home/username/.ssh/id_rsa
+private_key_filepath=/local/keylocation/.ssh/id_rsa
 local_output=/tmp/arrebol
 remote_output_folder=/tmp

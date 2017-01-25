@@ -5,7 +5,6 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
-import org.fogbowcloud.app.utils.PropertiesConstants;
 
 public class ArrebolMain {
 
@@ -28,7 +27,10 @@ public class ArrebolMain {
 		Properties properties = new Properties();
 
 		final String ARREBOL_CONF_PATH = args[0];
+		final String SCHED_CONF_PATH = args[1];
 		properties.load(new FileInputStream(ARREBOL_CONF_PATH));
+		
+		properties.load(new FileInputStream(SCHED_CONF_PATH));
 
 		if (!checkProperties(properties)) {
 			System.err.println("Missing required property, check Log for more information.");
