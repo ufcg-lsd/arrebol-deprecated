@@ -1,9 +1,8 @@
 package org.fogbowcloud.app.model;
 
-import org.fogbowcloud.blowout.scheduler.core.model.Job;
-import org.fogbowcloud.blowout.scheduler.core.model.Task;
-
 import java.util.UUID;
+
+import org.fogbowcloud.blowout.core.model.Task;
 
 /**
  * It add the job name, job name and sched path to the {@link Job} abstraction.

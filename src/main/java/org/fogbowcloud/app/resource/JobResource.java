@@ -14,10 +14,11 @@ import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
-import org.fogbowcloud.app.utils.AppPropertiesConstants;
+import org.fogbowcloud.app.utils.PropertiesConstants;
 import org.fogbowcloud.app.utils.ServerResourceUtils;
-import org.fogbowcloud.blowout.scheduler.core.model.Job.TaskState;
-import org.fogbowcloud.blowout.scheduler.core.model.Task;
+import org.fogbowcloud.blowout.core.model.Task;
+import org.fogbowcloud.blowout.core.model.TaskState;
+import org.fogbowcloud.blowout.core.util.AppPropertiesConstants;
 import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
@@ -99,11 +100,11 @@ public class JobResource extends ServerResource {
 		}
 		LOGGER.debug("JobID " + jobId + " is of job " + job);
 
-		for (Task task : job.getTasks().values()) {
+		for (Task task : job.getTasks()) {
 			JSONObject jTask = new JSONObject();
 			jTask.put(TASK_ID, task.getId());
 			TaskState ts = application.getTaskState(task.getId(), owner.getUsername());
-			jTask.put(STATE, ts != null ? ts.getValue() : "UNDEFINED");
+			jTask.put(STATE, ts != null ? ts.getDesc() : "UNDEFINED");
 			jobTasks.put(jTask);
 		}
 		jsonJob.put(JOB_TASKS, jobTasks);
@@ -118,7 +119,7 @@ public class JobResource extends ServerResource {
 		}
 		Map<String, String> fieldMap = new HashMap<String, String>();
 		fieldMap.put(JDF_FILE_PATH, null);
-		fieldMap.put(AppPropertiesConstants.X_CREDENTIALS, null);
+		fieldMap.put(PropertiesConstants.X_CREDENTIALS, null);
 		fieldMap.put(SCHED_PATH, null);
 		ServerResourceUtils.loadFields(entity, fieldMap, new HashMap<String, File>());
 
@@ -131,7 +132,7 @@ public class JobResource extends ServerResource {
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 		@SuppressWarnings("rawtypes")
 		Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
-		headers.add(AppPropertiesConstants.X_CREDENTIALS, fieldMap.get(AppPropertiesConstants.X_CREDENTIALS));
+		headers.add(PropertiesConstants.X_CREDENTIALS, fieldMap.get(PropertiesConstants.X_CREDENTIALS));
 		User owner = ResourceUtil.authenticateUser(application, headers);
 		String jdfAbsolutePath = fieldMap.get(JDF_FILE_PATH);
 		try {

@@ -51,6 +51,8 @@ public class TestJobSpec {
 
 	public static final String LARGE_JOB = RESOURCE_DIR + File.separator + "jobv4.jdf";
 
+	public static final String JOB_WITH_LOCATION = RESOURCE_DIR + File.separator + "location.jdf";
+	
 	@Before
 	public void setUp() throws Exception {
 
@@ -172,6 +174,16 @@ public class TestJobSpec {
 		assertTrue(3 == spec.getTaskSpecs().size());
 	}
 
+	@Test
+	public void testJobWithLocationClause() throws Exception {
+
+		JobSpecification spec = DescriptionFileCompile.compileJDF(JOB_WITH_LOCATION);
+		assertEquals("LocationJob", spec.getLabel());
+		assertTrue(6 == spec.getTaskSpecs().size());
+		System.out.println(spec.getRequirements());
+
+	}
+	
 //	@Test
 //	public void testLargeJob() throws Exception {
 //

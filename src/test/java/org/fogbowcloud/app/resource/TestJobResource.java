@@ -23,7 +23,7 @@ import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
-import org.fogbowcloud.app.utils.AppPropertiesConstants;
+import org.fogbowcloud.app.utils.PropertiesConstants;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.After;
@@ -55,7 +55,7 @@ public class TestJobResource {
 	public void testGetJobNotFound() throws Exception {
 		String jobId = "nof_found";
 		HttpGet get = new HttpGet(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX + "/" + jobId);
-		get.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, ResourceTestUtil.DEFAULT_OWNER));
+		get.addHeader(new BasicHeader(PropertiesConstants.X_AUTH_USER, ResourceTestUtil.DEFAULT_OWNER));
 		
 		HttpClient client = HttpClients.createMinimal();
 		HttpResponse response = client.execute(get);
@@ -66,8 +66,8 @@ public class TestJobResource {
 	@Test
 	public void testGetJobUnathorized() throws Exception {
 		HttpGet get = new HttpGet(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX + "/" + "jobId");
-		get.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, "wrong owner"));
-		get.addHeader(new BasicHeader(AppPropertiesConstants.X_CREDENTIALS, ResourceTestUtil.WRONG_CRED));
+		get.addHeader(new BasicHeader(PropertiesConstants.X_AUTH_USER, "wrong owner"));
+		get.addHeader(new BasicHeader(PropertiesConstants.X_CREDENTIALS, ResourceTestUtil.WRONG_CRED));
 		
 		HttpClient client = HttpClients.createMinimal();
 		HttpResponse response = client.execute(get);
@@ -80,7 +80,7 @@ public class TestJobResource {
 		String jobName = "jobName00";
 		String owner = ResourceTestUtil.DEFAULT_OWNER;
 		HttpGet get = new HttpGet(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX + "/" + jobName);
-		get.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));
+		get.addHeader(new BasicHeader(PropertiesConstants.X_AUTH_USER, owner));
 		
 		JDFJob job = new JDFJob("schedPath", owner);
 		job.setFriendlyName(jobName);
@@ -101,7 +101,7 @@ public class TestJobResource {
 	public void testGetJobs() throws Exception {
 		HttpGet get = new HttpGet(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
 		String owner = ResourceTestUtil.DEFAULT_OWNER;
-		get.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));	
+		get.addHeader(new BasicHeader(PropertiesConstants.X_AUTH_USER, owner));	
 		
 		ArrayList<JDFJob> jobs = new ArrayList<JDFJob>();
 		jobs.add(new JDFJob("schedPath", owner));
@@ -126,7 +126,7 @@ public class TestJobResource {
 		HttpDelete delete = new HttpDelete(ResourceTestUtil.DEFAULT_PREFIX_URL + 
 				ResourceTestUtil.JOB_RESOURCE_SUFIX + "/" + jobId);	
 		String owner = ResourceTestUtil.DEFAULT_OWNER;
-		delete.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));		
+		delete.addHeader(new BasicHeader(PropertiesConstants.X_AUTH_USER, owner));		
 		
 		Mockito.when(resourceTestUtil.getArrebolController().stopJob(Mockito.eq(jobId), Mockito.eq(owner))).thenReturn(jobId);
 		
@@ -142,7 +142,7 @@ public class TestJobResource {
 		String jobId = "jobId00";
 		HttpDelete delete = new HttpDelete(ResourceTestUtil.DEFAULT_PREFIX_URL + 
 				ResourceTestUtil.JOB_RESOURCE_SUFIX + "/" + jobId);	
-		delete.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, "owner"));
+		delete.addHeader(new BasicHeader(PropertiesConstants.X_AUTH_USER, "owner"));
 		
 		User userMock = Mockito.mock(User.class);
 		
@@ -159,7 +159,7 @@ public class TestJobResource {
 	public void testPostJob() throws Exception {
 		String owner = ResourceTestUtil.DEFAULT_OWNER;
 		HttpPost post = new HttpPost(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
-		post.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));
+		post.addHeader(new BasicHeader(PropertiesConstants.X_AUTH_USER, owner));
 		
 		
 		String jobName = "jobName00";
@@ -191,7 +191,7 @@ public class TestJobResource {
 	public void testPostJobWithoutJdfFilePath() throws Exception {
 		String owner = ResourceTestUtil.DEFAULT_PREFIX_URL;
 		HttpPost post = new HttpPost(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
-		post.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));
+		post.addHeader(new BasicHeader(PropertiesConstants.X_AUTH_USER, owner));
 		
 		String jobName = "jobName00";
 		JDFJob job = new JDFJob("schedPath", owner);
@@ -218,7 +218,7 @@ public class TestJobResource {
 	public void testPostJobNotAcceptable() throws Exception {
 		String owner = ResourceTestUtil.DEFAULT_OWNER;
 		HttpPost post = new HttpPost(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
-		post.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));
+		post.addHeader(new BasicHeader(PropertiesConstants.X_AUTH_USER, owner));
 		
 		JDFJob job = new JDFJob("", owner);
 		job.setFriendlyName("friendlyName");
@@ -242,7 +242,7 @@ public class TestJobResource {
 	public void testPostJobErrorWHenAddingJob() throws Exception {
 		String owner = ResourceTestUtil.DEFAULT_OWNER;
 		HttpPost post = new HttpPost(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
-		post.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));
+		post.addHeader(new BasicHeader(PropertiesConstants.X_AUTH_USER, owner));
 		
 		String jobName = "jobName00";
 		JDFJob job = new JDFJob("schedPath", owner);

@@ -5,7 +5,7 @@ import java.util.Properties;
 import org.fogbowcloud.app.ArrebolController;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
-import org.fogbowcloud.app.utils.AppPropertiesConstants;
+import org.fogbowcloud.app.utils.PropertiesConstants;
 import org.mockito.Mockito;
 
 public class ResourceTestUtil {
@@ -28,7 +28,7 @@ public class ResourceTestUtil {
 		Mockito.doNothing().when(this.arrebolController).init();
 
 		Properties properties = new Properties();
-		properties.put(AppPropertiesConstants.REST_SERVER_PORT, DEFAULT_SERVER_PORT);
+		properties.put(PropertiesConstants.REST_SERVER_PORT, DEFAULT_SERVER_PORT);
 		Mockito.when(this.arrebolController.getProperties()).thenReturn(properties);
 		User userMock = Mockito.mock(User.class);
 		

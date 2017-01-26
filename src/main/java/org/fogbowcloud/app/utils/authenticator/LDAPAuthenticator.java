@@ -17,7 +17,7 @@ import javax.naming.directory.SearchResult;
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.model.LDAPUser;
 import org.fogbowcloud.app.model.User;
-import org.fogbowcloud.app.utils.AppPropertiesConstants;
+import org.fogbowcloud.app.utils.PropertiesConstants;
 
 public class LDAPAuthenticator implements ArrebolAuthenticator {
 	
@@ -42,8 +42,8 @@ public class LDAPAuthenticator implements ArrebolAuthenticator {
 	
 
 	public LDAPAuthenticator(Properties properties) {
-		this.ldapUrl = properties.getProperty(AppPropertiesConstants.LDAP_AUTHENTICATION_URL);
-		this.ldapBase = properties.getProperty(AppPropertiesConstants.LDAP_AUTHENTICATION_BASE);
+		this.ldapUrl = properties.getProperty(PropertiesConstants.LDAP_AUTHENTICATION_URL);
+		this.ldapBase = properties.getProperty(PropertiesConstants.LDAP_AUTHENTICATION_BASE);
 	}
 
 	@Override

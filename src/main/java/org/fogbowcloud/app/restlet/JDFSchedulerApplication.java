@@ -11,15 +11,14 @@ import org.fogbowcloud.app.NameAlreadyInUseException;
 import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.User;
-import org.fogbowcloud.app.model.UserImpl;
-import org.fogbowcloud.app.resource.NonceResource;
 import org.fogbowcloud.app.resource.AuthenticationResource;
 import org.fogbowcloud.app.resource.JobResource;
+import org.fogbowcloud.app.resource.NonceResource;
 import org.fogbowcloud.app.resource.TaskResource4JDF;
 import org.fogbowcloud.app.resource.UserResource;
-import org.fogbowcloud.app.utils.AppPropertiesConstants;
-import org.fogbowcloud.blowout.scheduler.core.model.Job.TaskState;
-import org.fogbowcloud.blowout.scheduler.core.model.Task;
+import org.fogbowcloud.app.utils.PropertiesConstants;
+import org.fogbowcloud.blowout.core.model.Task;
+import org.fogbowcloud.blowout.core.model.TaskState;
 import org.restlet.Application;
 import org.restlet.Component;
 import org.restlet.Restlet;
@@ -42,13 +41,13 @@ public class JDFSchedulerApplication extends Application {
 
 	public void startServer() throws Exception {
 		Properties properties = this.arrebolController.getProperties();
-		if (!properties.containsKey(AppPropertiesConstants.REST_SERVER_PORT)) {
+		if (!properties.containsKey(PropertiesConstants.REST_SERVER_PORT)) {
 			throw new IllegalArgumentException(
-					AppPropertiesConstants.REST_SERVER_PORT
+					PropertiesConstants.REST_SERVER_PORT
 							+ " is missing on properties.");
 		}
 		Integer restServerPort = Integer.valueOf((String) properties
-				.get(AppPropertiesConstants.REST_SERVER_PORT));
+				.get(PropertiesConstants.REST_SERVER_PORT));
 
 		LOGGER.info("Starting service on port: " + restServerPort);
 

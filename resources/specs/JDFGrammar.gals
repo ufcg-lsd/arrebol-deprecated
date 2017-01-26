@@ -45,6 +45,7 @@ OR
 "<="
 ">="
 "\n"
+"""
 IN_PATH
 IN_CLASSPATH
 VERSION
@@ -126,5 +127,6 @@ VERSION
 	| "<=" #11 <value> 
 	| ">=" #11 <value> 
 	| @ ;
-<value> ::= string #11 ;
+<value> ::= string #11 
+	| """ #11 string #11 """ #11 ;
 
