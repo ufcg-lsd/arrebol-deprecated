@@ -127,7 +127,7 @@ VERSION
 	| <expr> ;
 <and_Or> ::= "||" #11 <expression2> <and_Or> 
 	| "&&" #11 <expression2> <and_Or> 
-	| AND #11 <expression2> <and_Or> 
+	| AND #11 <expression2> <and_Or>
 	| OR #11 <expression2> <and_Or> 
 	| @ ;
 <expr> ::= IN_PATH #11 string #11
@@ -143,4 +143,4 @@ VERSION
 	| "<=" #11 <value> 
 	| ">=" #11 <value> 
 	| @ ;
-<value> ::= string #11 ;
+<value> ::= string #11;
