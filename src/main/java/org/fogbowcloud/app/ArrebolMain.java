@@ -22,7 +22,7 @@ public class ArrebolMain {
 	public static void main(String[] args) throws Exception {
 		if (args.length < 1) {
 			System.err.println(
-					"Incomplete arguments. Necessary pass two args. (1) arrebol.conf path.");
+					"Incomplete arguments. Necessary to pass two args. (1) arrebol.conf path and (2) sheduler.conf path.");
 			System.exit(1);
 		}
 
