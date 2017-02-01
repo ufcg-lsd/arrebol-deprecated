@@ -24,6 +24,7 @@ import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.app.utils.PropertiesConstants;
+import org.fogbowcloud.blowout.core.model.Task;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.After;
@@ -102,7 +103,7 @@ public class TestJobResource {
 		HttpGet get = new HttpGet(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
 		String owner = ResourceTestUtil.DEFAULT_OWNER;
 		
-		get.addHeader(new BasicHeader(AppPropertiesConstants.X_AUTH_USER, owner));	
+		get.addHeader(new BasicHeader(PropertiesConstants.X_AUTH_USER, owner));	
 		ArrayList<Task> taskList = new ArrayList<Task>();
 		ArrayList<JDFJob> jobs = new ArrayList<JDFJob>();
 		jobs.add(new JDFJob("schedPath", owner, taskList));
