@@ -53,9 +53,7 @@ public class TestArrebolController {
 		properties.put("datastore_url", "jdbc:h2:/local/marcosancj/git/arrebol/datastores/fogbowresourcesdatastore");
 		this.arrebolController = Mockito.spy(new ArrebolController(properties));		
 		this.arrebolController.init();
-		
-		Scheduler scheduler = Mockito.mock(Scheduler.class);
-	}
+		}
 
 	@After
 	public void tearDown() {
