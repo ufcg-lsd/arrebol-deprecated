@@ -53,6 +53,8 @@ public class ArrebolController {
 		if (properties == null) {
 			throw new IllegalArgumentException("Properties cannot be null");
 		}
+		this.jobMap = new HashMap<String, JDFJob>();
+		this.finishedTasks = new HashMap<String, Task>();
 		this.properties = properties;
 	}
 
@@ -61,7 +63,7 @@ public class ArrebolController {
 	}
 
 	public HashMap<String, JDFJob> getJobMap() {
-		return null;
+		return jobMap;
 	}
 
 	public void init() throws Exception {
@@ -138,7 +140,7 @@ public class ArrebolController {
 	}
 
 	public JDFJob getJobById(String jobId, String owner) {
-		JDFJob jdfJob = (JDFJob) jobMap.get(jobId);
+		JDFJob jdfJob = (JDFJob) getJobMap().get(jobId);
 		if (jdfJob != null && jdfJob.getOwner().equals(owner)) {
 			return jdfJob;
 		}
@@ -172,7 +174,7 @@ public class ArrebolController {
 
 	public ArrayList<JDFJob> getAllJobs(String owner) {
 		ArrayList<JDFJob> jobList = new ArrayList<JDFJob>();
-		for (JDFJob job : this.jobMap.values()) {
+		for (JDFJob job : getJobMap().values()) {
 			JDFJob jdfJob = (JDFJob) job;
 			if (jdfJob.getOwner().equals(owner)) {
 				jobList.add((JDFJob) job);
@@ -192,16 +194,16 @@ public class ArrebolController {
 			this.jobDataStore.deleteByJobId(jobToRemove.getId(), owner);
 			for (Task task : jobToRemove.getTasks()) {
 				blowoutController.cleanTask(task);
-				return jobToRemove.getId();
 			}
+			return jobToRemove.getId();
 		} else {
 			jobToRemove = getJobById(jobReference, owner);
 			if (jobToRemove != null) {
 				this.jobDataStore.deleteByJobId(jobToRemove.getId(), owner);
 				for (Task task : jobToRemove.getTasks()) {
 					blowoutController.cleanTask(task);
-					jobToRemove.getId();
 				}
+				return jobToRemove.getId();
 			}
 		}
 		return null;
@@ -316,4 +318,15 @@ public class ArrebolController {
 		return this.jobDataStore;
 	}
 
+	public void setDataStore(JobDataStore dataStore) {
+		this.jobDataStore = dataStore;
+	}
+
+	public HashMap<String, Task> getFinishedTasks() {
+		return finishedTasks;
+	}
+
+	public void setFinishedTasks(HashMap<String, Task> finishedTasks) {
+		this.finishedTasks = finishedTasks;
+	}
 }

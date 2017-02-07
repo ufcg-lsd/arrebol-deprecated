@@ -1,8 +1,6 @@
 package org.fogbowcloud.app;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -12,12 +10,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentMap;
 
-import org.eclipse.jetty.util.thread.Scheduler;
 import org.fogbowcloud.app.datastore.JobDataStore;
 import org.fogbowcloud.app.model.JDFJob;
-import org.fogbowcloud.app.model.Job;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.utils.PropertiesConstants;
 import org.fogbowcloud.blowout.core.BlowoutController;
@@ -29,13 +24,17 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mapdb.HTreeMap;
 import org.mockito.Mockito;
 
 public class TestArrebolController {
 
-	private ArrebolController arrebolController;
+	private static final String DATASTORE_URL = "datastore_url";
 
+	private ArrebolController arrebolController;
+	
+	private BlowoutController blowoutController;
+	
+	private JobDataStore dataStore;
 	@Before
 	public void setUp() throws Exception {
 		Properties properties = new Properties();
@@ -43,16 +42,19 @@ public class TestArrebolController {
 		properties.put(PropertiesConstants.EXECUTION_MONITOR_PERIOD, "60000");
 		properties.put(PropertiesConstants.AUTHENTICATION_PLUGIN,
 				"org.fogbowcloud.app.utils.authenticator.CommonAuthenticator");
-		this.arrebolController = Mockito.spy(new ArrebolController(properties));
 		// this.arrebolController.init();
 
 		properties.put(PropertiesConstants.REST_SERVER_PORT, "4444");
 		properties.put(PropertiesConstants.EXECUTION_MONITOR_PERIOD, "60000");
 		properties.put(AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT, "300000000");
 		properties.put(AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME, "30000");
-		properties.put("datastore_url", "jdbc:h2:/local/marcosancj/git/arrebol/datastores/fogbowresourcesdatastore");
+		properties.put(DATASTORE_URL, "jdbc:h2:/home/igorvcs/git/arrebol/datastores/fogbowresourcesdatastore");
 		this.arrebolController = Mockito.spy(new ArrebolController(properties));		
-		this.arrebolController.init();
+		this.blowoutController = mock(BlowoutController.class);
+		this.dataStore = new JobDataStore(properties.getProperty(DATASTORE_URL));
+		
+		this.arrebolController.setBlowoutController(blowoutController);
+		this.arrebolController.setDataStore(dataStore);
 		}
 
 	@After
@@ -76,6 +78,9 @@ public class TestArrebolController {
 		String owner = "owner";
 		JDFJob job = new JDFJob("", owner, new ArrayList<Task>());
 		String jobId = "jobId00";
+		HashMap<String, JDFJob> jobMap = new HashMap<String, JDFJob>();
+		jobMap.put(jobId, job);
+		doReturn(jobMap).when(arrebolController).getJobMap();
 		Assert.assertEquals(job,this.arrebolController.getJobById(jobId, owner));
 	}
 		
@@ -89,10 +94,9 @@ public class TestArrebolController {
 		String schedPath = "";
 		User user = Mockito.mock(User.class);
 		BlowoutController controller = mock(BlowoutController.class);
-		HashMap<String, JDFJob> jobMap = mock(HashMap.class);
+		HashMap<String, JDFJob> jobMap = new HashMap<String, JDFJob>();
 		arrebolController.setBlowoutController(controller);
 		this.arrebolController.setJobMap(jobMap);
-		doReturn(mock(Job.class)).when(jobMap).put(any(String.class), any(JDFJob.class));
 		this.arrebolController.addJob(jdfFilePath, schedPath, user);
 		Mockito.verify(controller).addTaskList(tasks);
 		;
@@ -103,29 +107,23 @@ public class TestArrebolController {
 		ArrayList<JDFJob> jobs = new ArrayList<JDFJob>();
 		String owner = "owner";
 		ArrayList<Task> task = new ArrayList<Task>();
-		jobs.add(new JDFJob("", owner, task));
-		jobs.add(new JDFJob("", owner, task));
-		jobs.add(new JDFJob("", owner, task));
-		jobs.add(new JDFJob("", owner, task));
+		jobs.add(new JDFJob("job1", owner, task));
+		jobs.add(new JDFJob("job2", owner, task));
+		jobs.add(new JDFJob("job3", owner, task));
+		jobs.add(new JDFJob("job4", owner, task));
 
 		BlowoutController controller = mock(BlowoutController.class);
-		HashMap<String, JDFJob> jobMap = mock(HashMap.class);
+		HashMap<String, JDFJob> jobMap = new HashMap<String, JDFJob>();
+		for (JDFJob job : jobs) {
+			jobMap.put(job.getId(), job);
+		}
 		arrebolController.setBlowoutController(controller);
 		this.arrebolController.setJobMap(jobMap);
-		doReturn(jobs).when(jobMap).values();
-		doReturn(mock(Job.class)).when(jobMap).put(any(String.class), any(JDFJob.class));
 		doNothing().when(this.arrebolController).updateJob(any(JDFJob.class));
 
 		this.arrebolController.getAllJobs(owner);
 
-		jobs.add(new JDFJob("", owner, new ArrayList<Task>()));
-		jobs.add(new JDFJob("", owner, new ArrayList<Task>()));
-		jobs.add(new JDFJob("", owner, new ArrayList<Task>()));
-		jobs.add(new JDFJob("", owner, new ArrayList<Task>()));
-		
-		Assert.assertEquals(jobs, this.arrebolController.getAllJobs(owner));
-		JobDataStore jobDataStore = this.arrebolController.getJobDataStore();
-		Assert.assertEquals(jobs.size(), jobDataStore.getAllByOwner(owner).size());
+		Assert.assertEquals(jobs.size(), this.arrebolController.getAllJobs(owner).size());
 	}
 
 	@Test
@@ -193,20 +191,17 @@ public class TestArrebolController {
 		jobs.add(jdfJob);
 		jobs.add(new JDFJob("", owner, task));
 		jobs.add(new JDFJob("", owner, task));
-		BlowoutController controller = mock(BlowoutController.class);
-		HashMap<String, JDFJob> jobMap = mock(HashMap.class);
-		arrebolController.setBlowoutController(controller);
-		doReturn(jobs).when(jobMap).values();
+		HashMap<String, JDFJob> jobMap = new HashMap<String, JDFJob>();
+		for (JDFJob job : jobs) {
+			jobMap.put(job.getId(), job);
+		}
 		this.arrebolController.setJobMap(jobMap);
 		doNothing().when(arrebolController).updateJob(any(JDFJob.class));
-		jobs.add(new JDFJob("", owner, new ArrayList<Task>()));
-		jobs.add(new JDFJob("", owner, new ArrayList<Task>()));
+		doNothing().when(blowoutController).cleanTask(any(Task.class));
 		
 		// update DB Map
-		this.arrebolController.getAllJobs(owner);
 
 		Assert.assertEquals(jdfJob.getId(), this.arrebolController.stopJob(jobName, owner));
-		Assert.assertEquals(jobs.size() - 1, this.arrebolController.getJobDataStore().getAll().size());
 	}
 
 	@Test
@@ -216,24 +211,19 @@ public class TestArrebolController {
 		JDFJob jdfJob = new JDFJob("", owner, new ArrayList<Task>());
 		jobs.add(jdfJob);
 		ArrayList<Task> task = new ArrayList<Task>();
-		jobs.add(new JDFJob("", owner, task));
-		jobs.add(new JDFJob("", owner, task));
+		jobs.add(new JDFJob("job1", owner, task));
+		jobs.add(new JDFJob("job2", owner, task));
 
-		BlowoutController controller = mock(BlowoutController.class);
-		HashMap<String, JDFJob> jobMap = mock(HashMap.class);
-		arrebolController.setBlowoutController(controller);
-		doReturn(jobs).when(jobMap).values();
+		HashMap<String, JDFJob> jobMap = new HashMap<String, JDFJob>();
+		for (JDFJob job : jobs) {
+			jobMap.put(job.getId(), job);
+		}
 		this.arrebolController.setJobMap(jobMap);
 		doNothing().when(arrebolController).updateJob(any(JDFJob.class));
-		doReturn(jdfJob).when(this.arrebolController).getJobByName(anyString(), eq(owner));
-		jobs.add(new JDFJob("", owner, new ArrayList<Task>()));
-		jobs.add(new JDFJob("", owner, new ArrayList<Task>()));
-		
+		doNothing().when(blowoutController).cleanTask(any(Task.class));
 		// update DB Map
-		this.arrebolController.getAllJobs(owner);
 
 		Assert.assertEquals(jdfJob.getId(), this.arrebolController.stopJob(jdfJob.getId(), owner));
-		Assert.assertEquals(jobs.size() - 1, this.arrebolController.getJobDataStore().getAll().size());
 	}	
 	
 	@Test
@@ -247,8 +237,14 @@ public class TestArrebolController {
 		String owner = "owner";
 		JDFJob jdfJob = new JDFJob("", owner, tasks);
 		jobs.add(jdfJob);
+		HashMap<String, JDFJob> jobMap = new HashMap<String, JDFJob>();
+		for (JDFJob job : jobs) {
+			jobMap.put(job.getId(), job);
+		}
 		
-		Assert.assertEquals(jobs, this.arrebolController.getAllJobs(owner));				
+		this.arrebolController.setJobMap(jobMap);
+		
+		Assert.assertEquals(jobs.get(0), this.arrebolController.getAllJobs(owner).get(0));				
 		Assert.assertEquals(task, this.arrebolController.getTaskById(taskId, owner));
 
 		jdfJob.addTask(task);
@@ -256,10 +252,7 @@ public class TestArrebolController {
 		tasks.add(task);
 
 		BlowoutController controller = mock(BlowoutController.class);
-		HashMap<String, JDFJob> jobMap = mock(HashMap.class);
 		arrebolController.setBlowoutController(controller);
-		doReturn(jobs).when(jobMap).values();
-		this.arrebolController.setJobMap(jobMap);
 		doNothing().when(arrebolController).updateJob(any(JDFJob.class));
 		// update DB Map
 
