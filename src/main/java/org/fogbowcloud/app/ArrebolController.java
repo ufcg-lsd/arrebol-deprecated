@@ -214,7 +214,7 @@ public class ArrebolController {
 
 	public TaskState getTaskState(String taskId, String owner) {
 		
-		Task task = finishedTasks.get(taskId);
+		Task task = null;
 		if (task != null) {
 			return TaskState.COMPLETED;
 		} else {
