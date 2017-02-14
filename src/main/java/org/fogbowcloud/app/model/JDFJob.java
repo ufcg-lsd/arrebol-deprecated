@@ -97,7 +97,7 @@ public class JDFJob extends Job {
 			job.put("jobId", this.getId());
 			job.put("name", this.getName());
 			job.put("schedPath", this.getSchedPath());
-			job.put("owner", this.getId());
+			job.put("owner", this.getOwner());
 			job.put("uuid", this.getUUID());
 			JSONArray tasks = new JSONArray();
 			Map<String, Task> taskList = this.getTaskList();
@@ -125,6 +125,7 @@ public class JDFJob extends Job {
 		JDFJob jdfJob = new JDFJob(job.optString("jobId"), 
 				job.optString("schedPath"), 
 				job.optString("owner"), tasks);
+		LOGGER.debug("Job owner is: " +job.optString("owner"));
 		jdfJob.setFriendlyName(job.optString("name"));
 		jdfJob.setUUID(job.optString("uuid"));
 		return jdfJob;

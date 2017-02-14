@@ -71,7 +71,7 @@ public class ArrebolController {
 		// FIXME: add as constructor param?
 		this.auth = createAuthenticatorPluginInstance();
 		// FIXME: replace by a proper
-		this.jobDataStore = new JobDataStore(null);
+		this.jobDataStore = new JobDataStore(properties.getProperty(AppPropertiesConstants.DB_DATASTORE_URL));
 
 		Boolean removePreviousResources = new Boolean(
 				this.properties.getProperty(PropertiesConstants.REMOVE_PREVIOUS_RESOURCES)).booleanValue();
@@ -94,6 +94,8 @@ public class ArrebolController {
 
 		LOGGER.debug("Starting Scheduler and Execution Monitor, execution monitor period: "
 				+ properties.getProperty(PropertiesConstants.EXECUTION_MONITOR_PERIOD));
+		recoverMap(jobDataStore);
+		executionMonitor = new ExecutionMonitorWithDB(blowoutController, this, jobDataStore);
 		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0, DEFAULT_EXECUTION_MONITOR_INTERVAL);
 		int schedulerPeriod = Integer.valueOf(properties.getProperty(PropertiesConstants.EXECUTION_MONITOR_PERIOD));
 		
@@ -101,6 +103,12 @@ public class ArrebolController {
 
 		JobCheckPointer jobCheckPointer = new JobCheckPointer();
 		checkPointTimer.scheduleAtFixedRate(jobCheckPointer, 0, CHECKPOINT_INTERVAL);
+	}
+
+	private void recoverMap(JobDataStore jobDataStore) {
+		for (JDFJob job : jobDataStore.getAll()) {
+			this.jobMap.put(job.getId(), job);
+		}
 	}
 
 	private class JobCheckPointer implements Runnable {
@@ -114,8 +122,7 @@ public class ArrebolController {
 	}
 
 	private void saveJob(JDFJob job) {
-		// hook to DB implementation
-
+		jobDataStore.update(job);
 	}
 
 	private ArrayList<JDFJob> getLegacyJobs() {
@@ -168,7 +175,7 @@ public class ArrebolController {
 		this.jobMap.put(job.getId(), job);
 
 		blowoutController.addTaskList(job.getTasks());
-
+		jobDataStore.insert(job);
 		return job.getId();
 	}
 

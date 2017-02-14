@@ -1,17 +1,17 @@
 package org.fogbowcloud.app;
 
-import java.util.concurrent.ConcurrentMap;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
+import org.fogbowcloud.app.datastore.JobDataStore;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.Job;
-import org.fogbowcloud.app.utils.PropertiesConstants;
 import org.fogbowcloud.blowout.core.BlowoutController;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskState;
-import org.mapdb.DB;
 
 public class ExecutionMonitorWithDB implements Runnable {
 
@@ -19,16 +19,16 @@ public class ExecutionMonitorWithDB implements Runnable {
 	private ArrebolController arrebolController;
 	private static final Logger LOGGER = Logger.getLogger(ExecutionMonitorWithDB.class);
 	private ExecutorService service;
-	private DB db;
-	private ConcurrentMap<String, JDFJob> jobMap;
+	private JobDataStore db;
+	private ArrayList<JDFJob> jobMap;
 
 	public ExecutionMonitorWithDB(BlowoutController blowoutController, ArrebolController arrebolController,
-			DB pendingImageDownloadDB) {
-		this(blowoutController, arrebolController, Executors.newFixedThreadPool(3), pendingImageDownloadDB);
+			JobDataStore dataStore) {
+		this(blowoutController, arrebolController, Executors.newFixedThreadPool(3), dataStore);
 	}
 
 	public ExecutionMonitorWithDB(BlowoutController blowoutController, ArrebolController arrebolController,
-			ExecutorService service, DB db) {
+			ExecutorService service, JobDataStore db) {
 		this.blowoutController = blowoutController;
 		this.arrebolController = arrebolController;
 		if (service == null) {
@@ -37,19 +37,16 @@ public class ExecutionMonitorWithDB implements Runnable {
 			this.service = service;
 		}
 		this.db = db;
-		this.jobMap = db.getHashMap(PropertiesConstants.DB_MAP_NAME);
+		this.jobMap = (ArrayList<JDFJob>) db.getAll();
 	}
 
 	@Override
 	public void run() {
 		LOGGER.debug("Submitting monitoring tasks");
 
-		for (JDFJob aJob : jobMap.values()) {
-			JDFJob aJDFJob = (JDFJob) aJob;
-			this.jobMap.put(aJDFJob.getId(), aJDFJob);
-			this.db.commit();
-
+		for (JDFJob aJob : jobMap) {
 			for (Task task : aJob.getTasks()) {
+				LOGGER.debug("Task: " +task +" is being treated");
 				if (!task.isFinished()) {
 					TaskState taskState = blowoutController.getTaskState(task.getId());
 					LOGGER.debug("Process " + task.getId() + " has state " + taskState.getDesc());
