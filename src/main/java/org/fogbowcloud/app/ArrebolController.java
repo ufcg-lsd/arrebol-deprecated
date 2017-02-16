@@ -199,6 +199,7 @@ public class ArrebolController {
 		JDFJob jobToRemove = getJobByName(jobReference, owner);
 		if (jobToRemove != null) {
 			this.jobDataStore.deleteByJobId(jobToRemove.getId(), owner);
+			getJobMap().remove(jobToRemove.getId());
 			for (Task task : jobToRemove.getTasks()) {
 				blowoutController.cleanTask(task);
 			}
@@ -207,6 +208,7 @@ public class ArrebolController {
 			jobToRemove = getJobById(jobReference, owner);
 			if (jobToRemove != null) {
 				this.jobDataStore.deleteByJobId(jobToRemove.getId(), owner);
+				getJobMap().remove(jobToRemove.getId());
 				for (Task task : jobToRemove.getTasks()) {
 					blowoutController.cleanTask(task);
 				}
