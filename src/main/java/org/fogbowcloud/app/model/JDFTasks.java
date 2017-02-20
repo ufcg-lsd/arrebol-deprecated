@@ -72,7 +72,7 @@ public class JDFTasks {
 
 				JobSpecification jobSpec = (JobSpecification) commonCompiler.getResult().get(0);
 
-
+					
 				job.setFriendlyName(jobSpec.getLabel());
 
 				String schedPath = jobSpec.getSchedPath();
@@ -81,6 +81,8 @@ public class JDFTasks {
 
 				// FIXME: what does this block do?
 				String jobRequirementes = jobSpec.getRequirements();
+				LOGGER.debug("JobReq: " + jobRequirementes);
+				
 				jobRequirementes = jobRequirementes.replace("(", "").replace(")", "");
 				String image = standardImage;
 				for (String req : jobRequirementes.split("and")) {
