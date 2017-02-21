@@ -56,6 +56,8 @@ public class TestJobSpec {
 
 	public static final String JOB_WITH_LOCATION = RESOURCE_DIR + File.separator + "location.jdf";
 	
+	public static final String LOCATION_REQUIREMENT = " Glue2CloudComputeManagerID == \" SomeCloud \"";
+	
 	@Before
 	public void setUp() throws Exception {
 
@@ -183,7 +185,7 @@ public class TestJobSpec {
 		JobSpecification spec = DescriptionFileCompile.compileJDF(JOB_WITH_LOCATION);
 		assertEquals("LocationJob", spec.getLabel());
 		assertTrue(6 == spec.getTaskSpecs().size());
-		System.out.println(spec.getRequirements());
+		assertEquals(LOCATION_REQUIREMENT, spec.getRequirements());
 
 	}
 	
