@@ -101,7 +101,7 @@ do_post() {
 }
 
 do_stop() {
-	if [ $# -eq 5 ]
+	if [ $# -eq 3 ]
 	then
 		define_parameters $@
 		authenticator=$(curl -G "$host/arrebol/authenticator" 2> /dev/null)

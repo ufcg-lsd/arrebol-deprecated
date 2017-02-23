@@ -40,7 +40,6 @@ public class ArrebolController {
 	private BlowoutController blowoutController;
 	private Properties properties;
 	private List<Integer> nonces;
-	private HashMap<String, JDFJob> jobMap;
 	private HashMap<String, Task> finishedTasks;
 	private JobDataStore jobDataStore;
 	private ArrebolAuthenticator auth;
@@ -53,7 +52,6 @@ public class ArrebolController {
 		if (properties == null) {
 			throw new IllegalArgumentException("Properties cannot be null");
 		}
-		this.jobMap = new HashMap<String, JDFJob>();
 		this.finishedTasks = new HashMap<String, Task>();
 		this.properties = properties;
 	}
@@ -61,11 +59,7 @@ public class ArrebolController {
 	public Properties getProperties() {
 		return properties;
 	}
-
-	public HashMap<String, JDFJob> getJobMap() {
-		return jobMap;
-	}
-
+	
 	public void init() throws Exception {
 
 		// FIXME: add as constructor param?
@@ -94,36 +88,14 @@ public class ArrebolController {
 
 		LOGGER.debug("Starting Scheduler and Execution Monitor, execution monitor period: "
 				+ properties.getProperty(PropertiesConstants.EXECUTION_MONITOR_PERIOD));
-		recoverMap(jobDataStore);
 		executionMonitor = new ExecutionMonitorWithDB(blowoutController, this, jobDataStore);
 		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0, DEFAULT_EXECUTION_MONITOR_INTERVAL);
 		int schedulerPeriod = Integer.valueOf(properties.getProperty(PropertiesConstants.EXECUTION_MONITOR_PERIOD));
 		
 		LOGGER.info("Starting scheduler with period: " + schedulerPeriod);
 
-		JobCheckPointer jobCheckPointer = new JobCheckPointer();
-		checkPointTimer.scheduleAtFixedRate(jobCheckPointer, 0, CHECKPOINT_INTERVAL);
 	}
 
-	private void recoverMap(JobDataStore jobDataStore) {
-		for (JDFJob job : jobDataStore.getAll()) {
-			this.jobMap.put(job.getId(), job);
-		}
-	}
-
-	private class JobCheckPointer implements Runnable {
-		@Override
-		public void run() {
-			for (JDFJob aJob : getJobMap().values()) {
-				JDFJob aJDFJob = (JDFJob) aJob;
-				saveJob(aJDFJob);
-			}
-		}
-	}
-
-	private void saveJob(JDFJob job) {
-		jobDataStore.update(job);
-	}
 
 	private ArrayList<JDFJob> getLegacyJobs() {
 		ArrayList<JDFJob> legacyJobs = new ArrayList<JDFJob>();
@@ -147,11 +119,8 @@ public class ArrebolController {
 	}
 
 	public JDFJob getJobById(String jobId, String owner) {
-		JDFJob jdfJob = (JDFJob) getJobMap().get(jobId);
-		if (jdfJob != null && jdfJob.getOwner().equals(owner)) {
+		JDFJob jdfJob = (JDFJob) this.jobDataStore.getByJobId(jobId, owner);
 			return jdfJob;
-		}
-		return null;
 	}
 
 	public String addJob(String jdfFilePath, String schedPath, User owner)
@@ -172,7 +141,6 @@ public class ArrebolController {
 
 		LOGGER.debug("Adding job " + job.getName() + " to scheduler");
 
-		this.jobMap.put(job.getId(), job);
 
 		blowoutController.addTaskList(job.getTasks());
 		jobDataStore.insert(job);
@@ -180,15 +148,8 @@ public class ArrebolController {
 	}
 
 	public ArrayList<JDFJob> getAllJobs(String owner) {
-		ArrayList<JDFJob> jobList = new ArrayList<JDFJob>();
-		for (JDFJob job : getJobMap().values()) {
-			JDFJob jdfJob = (JDFJob) job;
-			if (jdfJob.getOwner().equals(owner)) {
-				jobList.add((JDFJob) job);
-				updateJob((JDFJob) job);
-			}
-		}
-		return jobList;
+		
+		return (ArrayList<JDFJob>) this.jobDataStore.getAllByOwner(owner);
 	}
 
 	public void updateJob(JDFJob job) {
@@ -199,7 +160,6 @@ public class ArrebolController {
 		JDFJob jobToRemove = getJobByName(jobReference, owner);
 		if (jobToRemove != null) {
 			this.jobDataStore.deleteByJobId(jobToRemove.getId(), owner);
-			getJobMap().remove(jobToRemove.getId());
 			for (Task task : jobToRemove.getTasks()) {
 				blowoutController.cleanTask(task);
 			}
@@ -208,7 +168,6 @@ public class ArrebolController {
 			jobToRemove = getJobById(jobReference, owner);
 			if (jobToRemove != null) {
 				this.jobDataStore.deleteByJobId(jobToRemove.getId(), owner);
-				getJobMap().remove(jobToRemove.getId());
 				for (Task task : jobToRemove.getTasks()) {
 					blowoutController.cleanTask(task);
 				}
@@ -222,14 +181,12 @@ public class ArrebolController {
 		if (jobName == null) {
 			return null;
 		}
-		for (JDFJob job : this.jobMap.values()) {
+		for (JDFJob job : this.jobDataStore.getAllByOwner(owner)) {
 			JDFJob jdfJob = (JDFJob) job;
 			// TODO review this IFs
-			if (jdfJob.getOwner().equals(owner)) {
 				if (jobName.equals(((JDFJob) job).getName())) {
 					return (JDFJob) job;
 				}
-			}
 		}
 		return null;
 	}
@@ -308,10 +265,6 @@ public class ArrebolController {
 		} catch (Exception e) {
 			throw new RuntimeException("Could not add user", e);
 		}
-	}
-
-	public void setJobMap(HashMap<String, JDFJob> jobMap) {
-		this.jobMap = jobMap;
 	}
 
 	public String getAuthenticatorName() {
