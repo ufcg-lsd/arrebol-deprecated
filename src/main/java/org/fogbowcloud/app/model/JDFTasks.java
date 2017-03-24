@@ -1,6 +1,7 @@
 package org.fogbowcloud.app.model;
 
 import java.io.File;
+import java.nio.file.FileSystem;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -34,11 +35,11 @@ public class JDFTasks {
 
 	private static final String REMOTE_OUTPUT_FOLDER = "remote_output_folder";
 
-	private static final String PRIVATE_KEY_FILEPATH = "private_key_filepath";
+	protected static final String PRIVATE_KEY_FILEPATH = "private_key_filepath";
 
 	private static String standardImage = "fogbow-ubuntu";
 
-	private static final String PUBLIC_KEY_CONSTANT = "public_key";
+	protected static final String PUBLIC_KEY_CONSTANT = "public_key";
 	private final static String SSH_SCP_PRECOMMAND = "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no";
 
 	private static final Logger LOGGER = Logger.getLogger(JDFTasks.class);
@@ -235,7 +236,10 @@ public class JDFTasks {
 	}
 
 	public static String getDirectoryTree(String destination) {
-		int lastDir = destination.lastIndexOf("/");
+		int lastDir = destination.lastIndexOf(File.separator);
+		if (lastDir == -1 ) {
+			return "";
+		}
 		return destination.substring(0, lastDir);
 	}
 
