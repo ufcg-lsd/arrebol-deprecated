@@ -1,6 +1,6 @@
 package org.fogbowcloud.app.utils;
 
-public class AppPropertiesConstants {
+public class ArrebolPropertiesConstants {
 
 	// __________ INFRASTRUCTURE CONSTANTS __________ //
 	public static final String INFRA_IS_STATIC = "infra_is_elastic";
@@ -43,5 +43,10 @@ public class AppPropertiesConstants {
 	public static final String AUTHENTICATION_PLUGIN = "authentication_plugin";
 	public static final String LDAP_AUTHENTICATION_URL = "arrebol.ldap.auth.url";
 	public static final String LDAP_AUTHENTICATION_BASE = "arrebol.ldap.base";
+	
+	
+	//___________ ARREBOL CONSTANTS ____//
+	public static final String JOB_ID  = "jobID";
+	public static final String OWNER = "owner";
 	
 }

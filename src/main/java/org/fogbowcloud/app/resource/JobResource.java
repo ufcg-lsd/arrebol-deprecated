@@ -16,6 +16,7 @@ import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.app.utils.PropertiesConstants;
 import org.fogbowcloud.app.utils.ServerResourceUtils;
+import org.fogbowcloud.blowout.core.exception.BlowoutException;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskState;
 import org.restlet.data.MediaType;
@@ -152,6 +153,9 @@ public class JobResource extends ServerResource {
 		} catch (NameAlreadyInUseException e) {
 			LOGGER.debug(e.getMessage(), e);
 			throw new ResourceException(HttpStatus.SC_BAD_REQUEST, e);
+		} catch (BlowoutException be) {
+			LOGGER.debug(be.getMessage(), be);
+			throw new ResourceException(HttpStatus.SC_BAD_REQUEST, be);
 		}
 
 	}

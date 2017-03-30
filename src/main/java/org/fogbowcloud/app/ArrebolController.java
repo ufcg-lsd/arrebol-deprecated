@@ -15,18 +15,16 @@ import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.JDFTasks;
 import org.fogbowcloud.app.model.User;
+import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.app.utils.PropertiesConstants;
 import org.fogbowcloud.app.utils.authenticator.ArrebolAuthenticator;
 import org.fogbowcloud.app.utils.authenticator.Credential;
 import org.fogbowcloud.blowout.core.BlowoutController;
+import org.fogbowcloud.blowout.core.exception.BlowoutException;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskState;
 import org.fogbowcloud.blowout.core.util.AppPropertiesConstants;
 import org.fogbowcloud.blowout.core.util.ManagerTimer;
-import org.fogbowcloud.blowout.core.model.Job;
-import org.fogbowcloud.blowout.infrastructure.manager.DefaultInfrastructureManager;
-import org.fogbowcloud.blowout.infrastructure.manager.InfrastructureManager;
-import org.fogbowcloud.blowout.infrastructure.provider.InfrastructureProvider;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -79,9 +77,9 @@ public class ArrebolController {
 		this.blowoutController = new BlowoutController(this.properties);
 		blowoutController.start(removePreviousResources);
 
+		
 		LOGGER.debug(
 				"Application to be started on port: " + properties.getProperty(PropertiesConstants.REST_SERVER_PORT));
-		ArrayList<JDFJob> legacyJobs = getLegacyJobs();
 		LOGGER.info("Properties: " + properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
 
 		this.nonces = new ArrayList<Integer>();
@@ -92,19 +90,22 @@ public class ArrebolController {
 		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0, DEFAULT_EXECUTION_MONITOR_INTERVAL);
 		int schedulerPeriod = Integer.valueOf(properties.getProperty(PropertiesConstants.EXECUTION_MONITOR_PERIOD));
 		
+		restartAllJobs();
 		LOGGER.info("Starting scheduler with period: " + schedulerPeriod);
 
 	}
 
 
-	private ArrayList<JDFJob> getLegacyJobs() {
-		ArrayList<JDFJob> legacyJobs = new ArrayList<JDFJob>();
-
-		List<JDFJob> jobs = this.jobDataStore.getAll();
-		for (JDFJob jdfJob : jobs) {
-			legacyJobs.add(jdfJob);
+	private void restartAllJobs() throws BlowoutException {
+		for (JDFJob job : this.jobDataStore.getAll()) {
+			ArrayList<Task> taskList = new ArrayList<Task>();
+			for (Task task : job.getTasks()) {
+				if (!task.isFinished()) {
+					taskList.add(task);
+				}
+			}
+			blowoutController.addTaskList(taskList);
 		}
-		return legacyJobs;
 	}
 
 	private ArrebolAuthenticator createAuthenticatorPluginInstance() throws Exception {
@@ -124,7 +125,7 @@ public class ArrebolController {
 	}
 
 	public String addJob(String jdfFilePath, String schedPath, User owner)
-			throws CompilerException, NameAlreadyInUseException {
+			throws CompilerException, NameAlreadyInUseException, BlowoutException {
 		JDFJob tmpJob = new JDFJob(schedPath, owner.getUsername(), new ArrayList<Task>());
 		tmpJob.setUUID(owner.getUUID());
 		List<Task> taskList = getTasksFromJDFFile(jdfFilePath, tmpJob);
@@ -220,7 +221,10 @@ public class ArrebolController {
 	}
 
 	public void moveTaskToFinished(Task task) {
-		finishedTasks.put(task.getId(), task);
+			JDFJob job = this.jobDataStore.getByJobId(task.getMetadata(ArrebolPropertiesConstants.JOB_ID), 
+					task.getMetadata(ArrebolPropertiesConstants.OWNER));
+			job.finish(task);
+			updateJob(job);
 	}
 
 	public User authUser(String credentials) throws IOException, GeneralSecurityException {

@@ -17,6 +17,7 @@ import org.fogbowcloud.app.jdfcompiler.semantic.IOCommand;
 import org.fogbowcloud.app.jdfcompiler.semantic.JDLCommand;
 import org.fogbowcloud.app.jdfcompiler.semantic.JDLCommand.JDLCommandType;
 import org.fogbowcloud.app.jdfcompiler.semantic.RemoteCommand;
+import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.app.utils.PropertiesConstants;
 import org.fogbowcloud.blowout.core.model.Command;
 import org.fogbowcloud.blowout.core.model.Specification;
@@ -123,6 +124,8 @@ public class JDFTasks {
 					task.putMetadata(TaskImpl.METADATA_SANDBOX, SANDBOX);
 					task.putMetadata(TaskImpl.METADATA_REMOTE_COMMAND_EXIT_PATH,
 							properties.getProperty(REMOTE_OUTPUT_FOLDER) + "/exit");
+					task.putMetadata(ArrebolPropertiesConstants.JOB_ID, job.getId());
+					task.putMetadata(ArrebolPropertiesConstants.OWNER, job.getOwner());
 
 					parseInitCommands(job.getId(), taskSpec, task, schedPath);
 					parseTaskCommands(job.getId(), taskSpec, task, schedPath);

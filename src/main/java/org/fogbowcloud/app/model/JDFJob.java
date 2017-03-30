@@ -81,7 +81,7 @@ public class JDFJob extends Job {
 
 	@Override
 	public void finish(Task task) {
-		// TODO Auto-generated method stub
+		getTaskById(task.getId()).finish();
 		
 	}
 
