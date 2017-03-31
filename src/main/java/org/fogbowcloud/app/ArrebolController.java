@@ -96,7 +96,7 @@ public class ArrebolController {
 	}
 
 
-	private void restartAllJobs() throws BlowoutException {
+	public void restartAllJobs() throws BlowoutException {
 		for (JDFJob job : this.jobDataStore.getAll()) {
 			ArrayList<Task> taskList = new ArrayList<Task>();
 			for (Task task : job.getTasks()) {
