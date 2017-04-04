@@ -4,6 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -24,6 +25,7 @@ import org.fogbowcloud.app.resource.JobResource;
 import org.fogbowcloud.app.resource.ResourceTestUtil;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.app.utils.PropertiesConstants;
+import org.fogbowcloud.app.utils.authenticator.Credential;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.util.AppPropertiesConstants;
 import org.junit.Test;
@@ -85,6 +87,8 @@ public class ArrebolControllerIT {
 		properties.setProperty(AppPropertiesConstants.INFRA_MONITOR_PERIOD, "30000");
 		properties.setProperty(AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_RETRY, "1");
 		properties.setProperty(AppPropertiesConstants.INFRA_RESOURCE_REUSE_TIMES, "1");
+		File file = new File("/tmp/testdatastore");
+		file.delete();
 		this.ac = new ArrebolController(properties);
 		try {
 			this.app = new JDFSchedulerApplication(ac);
@@ -96,6 +100,9 @@ public class ArrebolControllerIT {
 		String owner = ResourceTestUtil.DEFAULT_OWNER;
 		HttpPost post = new HttpPost(DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
 		post.addHeader(new BasicHeader(PropertiesConstants.X_AUTH_USER, owner));
+		Credential cred = new Credential(owner, "blabla", this.ac.getNonce());
+		post.addHeader(new BasicHeader(PropertiesConstants.X_CREDENTIALS, cred.toJSON().toString()));
+		
 		
 		
 		String jdfFilePath = EXSIMPLE_JOB;
