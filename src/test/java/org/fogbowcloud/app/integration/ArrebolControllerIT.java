@@ -1,18 +1,48 @@
 package org.fogbowcloud.app.integration;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.util.EntityUtils;
 import org.fogbowcloud.app.ArrebolController;
+import org.fogbowcloud.app.model.JDFJob;
+import org.fogbowcloud.app.model.User;
+import org.fogbowcloud.app.resource.JobResource;
+import org.fogbowcloud.app.resource.ResourceTestUtil;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.app.utils.PropertiesConstants;
+import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.util.AppPropertiesConstants;
 import org.junit.Test;
+
+import com.amazonaws.auth.policy.Resource;
 
 public class ArrebolControllerIT {
 	
 	public ArrebolController ac;
 
 	public JDFSchedulerApplication app;
+	
+	public static final String RESOURCE_DIR = "test" + File.separator + "resources";
+	
+	public static final String EXSIMPLE_JOB = RESOURCE_DIR + File.separator + "sleepjob.jdf";
+
+	private static final String DEFAULT_SERVER_PORT = "44444";
+	
+	public static final String DEFAULT_PREFIX_URL = "http://localhost:" + DEFAULT_SERVER_PORT;
 	
 	@Test
 	public void testNormalExecution() {
@@ -59,7 +89,41 @@ public class ArrebolControllerIT {
 		try {
 			this.app = new JDFSchedulerApplication(ac);
 			this.app.startServer();
-			this.app.stopServer();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String owner = ResourceTestUtil.DEFAULT_OWNER;
+		HttpPost post = new HttpPost(DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
+		post.addHeader(new BasicHeader(PropertiesConstants.X_AUTH_USER, owner));
+		
+		
+		String jdfFilePath = EXSIMPLE_JOB;
+		String schedPath = "schedPath";
+		String friendlyName = "friendly";
+		
+		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+		builder.addTextBody(JobResource.SCHED_PATH, schedPath, ContentType.TEXT_PLAIN);
+		builder.addTextBody(JobResource.FRIENDLY, friendlyName, ContentType.TEXT_PLAIN);
+		builder.addTextBody(JobResource.JDF_FILE_PATH, jdfFilePath, ContentType.TEXT_PLAIN);
+		HttpEntity multipart = builder.build();		
+		post.setEntity(multipart);
+		
+		HttpResponse response;
+		try {
+			Thread.sleep(2000);
+			response = HttpClients.createMinimal().execute(post);
+			String responseStr = EntityUtils.toString(response.getEntity(), "UTF-8");
+			assertTrue(this.ac.getJobById(responseStr, ResourceTestUtil.DEFAULT_OWNER) != null);
+		
+			System.out.println("Chegou aqui");
+			this.app.stop();
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
