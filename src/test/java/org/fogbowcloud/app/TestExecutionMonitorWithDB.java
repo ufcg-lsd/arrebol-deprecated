@@ -10,7 +10,6 @@ import static org.mockito.Mockito.verify;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.fogbowcloud.app.datastore.JobDataStore;

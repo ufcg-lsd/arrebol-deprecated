@@ -1,7 +1,6 @@
 package org.fogbowcloud.app;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 

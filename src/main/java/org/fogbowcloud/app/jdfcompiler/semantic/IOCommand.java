@@ -20,6 +20,7 @@
 package org.fogbowcloud.app.jdfcompiler.semantic;
 
 import java.io.Serializable;
+
 import org.fogbowcloud.app.jdfcompiler.job.IOEntry;
 
 /**

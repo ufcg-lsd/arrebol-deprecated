@@ -4,9 +4,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 import org.apache.http.HttpEntity;
@@ -19,18 +16,13 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.fogbowcloud.app.ArrebolController;
-import org.fogbowcloud.app.model.JDFJob;
-import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.resource.JobResource;
 import org.fogbowcloud.app.resource.ResourceTestUtil;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.app.utils.PropertiesConstants;
 import org.fogbowcloud.app.utils.authenticator.Credential;
-import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.util.AppPropertiesConstants;
 import org.junit.Test;
-
-import com.amazonaws.auth.policy.Resource;
 
 public class ArrebolControllerIT {
 	

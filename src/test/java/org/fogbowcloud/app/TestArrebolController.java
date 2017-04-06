@@ -5,7 +5,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +15,7 @@ import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.utils.PropertiesConstants;
 import org.fogbowcloud.blowout.core.BlowoutController;
+import org.fogbowcloud.blowout.core.exception.BlowoutException;
 import org.fogbowcloud.blowout.core.model.Specification;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskImpl;
@@ -29,6 +29,8 @@ import org.mockito.Mockito;
 public class TestArrebolController {
 
 	private static final String DATASTORE_URL = "datastore_url";
+
+	private static final String owner = "owner";
 
 	private ArrebolController arrebolController;
 
@@ -57,6 +59,7 @@ public class TestArrebolController {
 		this.arrebolController.setBlowoutController(blowoutController);
 		this.arrebolController.setDataStore(dataStore);
 	}
+	
 
 	@After
 	public void tearDown() {
@@ -65,8 +68,31 @@ public class TestArrebolController {
 	}
 
 	@Test
+	public void testRestart() throws BlowoutException{
+		
+		ArrayList<Task> taskList = new ArrayList<Task>();
+		Task task = new TaskImpl("taskId",
+				new Specification("image", "owner", "publicKey", "privateKeyFilePath", "", ""));
+		taskList.add(task);
+		
+		JDFJob job = new JDFJob("", owner, taskList);
+		this.arrebolController.getJobDataStore().insert(job);
+		
+		try {
+			this.arrebolController.restartAllJobs();
+		} catch (BlowoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Mockito.verify(this.blowoutController).addTaskList(any(ArrayList.class));
+		
+		
+	}
+	
+	
+	@Test
 	public void testGetJobById() {
-		String owner = "owner";
+
 		JDFJob job = new JDFJob("", owner, new ArrayList<Task>());
 		String jobId = "jobId00";
 		doReturn(job).when(dataStore).getByJobId(jobId, owner);
