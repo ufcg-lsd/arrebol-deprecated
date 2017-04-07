@@ -10,6 +10,7 @@ import org.fogbowcloud.blowout.core.model.Job;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskImpl;
 import org.fogbowcloud.blowout.core.model.TaskState;
+import org.hamcrest.core.IsInstanceOf;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -129,6 +130,16 @@ public class JDFJob extends Job {
 		jdfJob.setFriendlyName(job.optString("name"));
 		jdfJob.setUUID(job.optString("uuid"));
 		return jdfJob;
+	}
+	
+	@Override
+	public boolean equals(Object job2) {
+		if (job2 instanceof JDFJob) {
+			if (this.toJSON() ==  ((JDFJob) job2).toJSON()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

@@ -25,6 +25,7 @@ import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskState;
 import org.fogbowcloud.blowout.core.util.AppPropertiesConstants;
 import org.fogbowcloud.blowout.core.util.ManagerTimer;
+import org.fogbowcloud.blowout.infrastructure.provider.fogbow.FogbowRequirementsHelper;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -57,7 +58,7 @@ public class ArrebolController {
 	public Properties getProperties() {
 		return properties;
 	}
-	
+
 	public void init() throws Exception {
 
 		// FIXME: add as constructor param?
@@ -77,7 +78,6 @@ public class ArrebolController {
 		this.blowoutController = new BlowoutController(this.properties);
 		blowoutController.start(removePreviousResources);
 
-		
 		LOGGER.debug(
 				"Application to be started on port: " + properties.getProperty(PropertiesConstants.REST_SERVER_PORT));
 		LOGGER.info("Properties: " + properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
@@ -89,12 +89,11 @@ public class ArrebolController {
 		executionMonitor = new ExecutionMonitorWithDB(blowoutController, this, jobDataStore);
 		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0, DEFAULT_EXECUTION_MONITOR_INTERVAL);
 		int schedulerPeriod = Integer.valueOf(properties.getProperty(PropertiesConstants.EXECUTION_MONITOR_PERIOD));
-		
+
 		restartAllJobs();
 		LOGGER.info("Starting scheduler with period: " + schedulerPeriod);
 
 	}
-
 
 	public void restartAllJobs() throws BlowoutException {
 		for (JDFJob job : this.jobDataStore.getAll()) {
@@ -102,6 +101,9 @@ public class ArrebolController {
 			for (Task task : job.getTasks()) {
 				if (!task.isFinished()) {
 					taskList.add(task);
+					LOGGER.debug("Specification of Recovered task: " + task.getSpecification().toJSON().toString());
+					LOGGER.debug("Task Requirements: " + task.getSpecification()
+							.getRequirementValue(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS));
 				}
 			}
 			blowoutController.addTaskList(taskList);
@@ -121,7 +123,7 @@ public class ArrebolController {
 
 	public JDFJob getJobById(String jobId, String owner) {
 		JDFJob jdfJob = (JDFJob) this.jobDataStore.getByJobId(jobId, owner);
-			return jdfJob;
+		return jdfJob;
 	}
 
 	public String addJob(String jdfFilePath, String schedPath, User owner)
@@ -142,14 +144,13 @@ public class ArrebolController {
 
 		LOGGER.debug("Adding job " + job.getName() + " to scheduler");
 
-
 		blowoutController.addTaskList(job.getTasks());
 		jobDataStore.insert(job);
 		return job.getId();
 	}
 
 	public ArrayList<JDFJob> getAllJobs(String owner) {
-		
+
 		return (ArrayList<JDFJob>) this.jobDataStore.getAllByOwner(owner);
 	}
 
@@ -185,9 +186,9 @@ public class ArrebolController {
 		for (JDFJob job : this.jobDataStore.getAllByOwner(owner)) {
 			JDFJob jdfJob = (JDFJob) job;
 			// TODO review this IFs
-				if (jobName.equals(((JDFJob) job).getName())) {
-					return (JDFJob) job;
-				}
+			if (jobName.equals(((JDFJob) job).getName())) {
+				return (JDFJob) job;
+			}
 		}
 		return null;
 	}
@@ -221,10 +222,10 @@ public class ArrebolController {
 	}
 
 	public void moveTaskToFinished(Task task) {
-			JDFJob job = this.jobDataStore.getByJobId(task.getMetadata(ArrebolPropertiesConstants.JOB_ID), 
-					task.getMetadata(ArrebolPropertiesConstants.OWNER));
-			job.finish(task);
-			updateJob(job);
+		JDFJob job = this.jobDataStore.getByJobId(task.getMetadata(ArrebolPropertiesConstants.JOB_ID),
+				task.getMetadata(ArrebolPropertiesConstants.OWNER));
+		job.finish(task);
+		updateJob(job);
 	}
 
 	public User authUser(String credentials) throws IOException, GeneralSecurityException {
@@ -274,7 +275,6 @@ public class ArrebolController {
 	public String getAuthenticatorName() {
 		return this.auth.getAuthenticatorName();
 	}
-
 
 	public void setBlowoutController(BlowoutController blowout) {
 		this.blowoutController = blowout;

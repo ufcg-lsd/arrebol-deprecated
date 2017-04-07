@@ -20,6 +20,8 @@ import org.fogbowcloud.blowout.core.model.Specification;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskImpl;
 import org.fogbowcloud.blowout.core.util.AppPropertiesConstants;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -68,11 +70,12 @@ public class TestArrebolController {
 	}
 
 	@Test
-	public void testRestart() throws BlowoutException{
+	public void testRestart() throws BlowoutException, JSONException{
 		
 		ArrayList<Task> taskList = new ArrayList<Task>();
+		Specification spec = new Specification("image", "owner", "publicKey", "privateKeyFilePath", "", "");
 		Task task = new TaskImpl("taskId",
-				new Specification("image", "owner", "publicKey", "privateKeyFilePath", "", ""));
+				spec);
 		taskList.add(task);
 		
 		JDFJob job = new JDFJob("", owner, taskList);
@@ -81,9 +84,16 @@ public class TestArrebolController {
 		try {
 			this.arrebolController.restartAllJobs();
 		} catch (BlowoutException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
+		Assert.assertEquals(1, this.arrebolController.getAllJobs("owner").size());
+		assert(this.arrebolController.getAllJobs("owner").get(0).equals(job));
+		System.out.println(this.arrebolController.getAllJobs("owner").get(0).getTaskById("taskId").getSpecification().toJSON().toString());
+		
+		Specification spec2 =  Specification.fromJSON(new JSONObject(this.arrebolController.getAllJobs("owner").get(0).getTaskById("taskId").getSpecification().toJSON().toString()));
+		Assert.assertEquals(1, this.arrebolController.getAllJobs("owner").get(0).getTaskList().size());
+		assert(spec.equals(spec2));
+		assert(task.equals(this.arrebolController.getAllJobs("owner").get(0).getTaskList().get(0)));
+		assert(spec.equals(this.arrebolController.getAllJobs("owner").get(0).getTaskList().get(0).getSpecification()));
 		Mockito.verify(this.blowoutController).addTaskList(any(ArrayList.class));
 		
 		
@@ -93,10 +103,10 @@ public class TestArrebolController {
 	@Test
 	public void testGetJobById() {
 
-		JDFJob job = new JDFJob("", owner, new ArrayList<Task>());
+		JDFJob job = new JDFJob("jobId00", owner, new ArrayList<Task>());
 		String jobId = "jobId00";
 		doReturn(job).when(dataStore).getByJobId(jobId, owner);
-		Assert.assertEquals(job, this.arrebolController.getJobById(jobId, owner));
+		assert(job.equals(this.arrebolController.getJobById(jobId, owner)));
 	}
 
 	@Test
@@ -184,7 +194,7 @@ public class TestArrebolController {
 		doReturn(jobs).when(this.dataStore).getAllByOwner(owner);
 
 		this.arrebolController.getJobByName(jobName, owner);
-		Assert.assertEquals(jdfJob, this.arrebolController.getJobByName(jobName, owner));
+		assert(jdfJob.equals(this.arrebolController.getJobByName(jobName, owner)));
 	}
 
 	@Test
@@ -247,7 +257,7 @@ public class TestArrebolController {
 		}
 
 		doReturn(jobs).when(this.dataStore).getAllByOwner(owner);
-		Assert.assertEquals(jobs.get(0), this.arrebolController.getAllJobs(owner).get(0));
+		assert(jobs.get(0).equals( this.arrebolController.getAllJobs(owner).get(0)));
 		Assert.assertEquals(task, this.arrebolController.getTaskById(taskId, owner));
 
 		jdfJob.addTask(task);

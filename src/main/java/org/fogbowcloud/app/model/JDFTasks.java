@@ -102,6 +102,7 @@ public class JDFTasks {
 				for (String req : jobRequirementes.split("and")) {
 				if (i == 0 && !req.trim().startsWith("image")) {
 						i++;
+						LOGGER.debug("NEW REQUIREMENT: " +req);
 						spec.addRequirement(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS, req);
 
 					} else if (!req.trim().startsWith("image")) {
@@ -132,6 +133,7 @@ public class JDFTasks {
 
 					taskList.add(task);
 					LOGGER.debug("Task spec: " + task.getSpecification().toString());
+				
 					taskID++;
 				}
 
