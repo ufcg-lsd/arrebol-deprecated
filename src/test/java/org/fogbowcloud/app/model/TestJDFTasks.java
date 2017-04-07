@@ -16,7 +16,7 @@ public class TestJDFTasks {
 	
 	public static final String RESOURCE_DIR = "test" + File.separator + "resources";
 
-	public static final String EXSIMPLE_JOB = RESOURCE_DIR + File.separator + "complexjob.jdf";
+	public static final String EXSIMPLE_JOB = RESOURCE_DIR + File.separator + "SimpleJob2.jdf";
 
 	@Test
 	public void testJDFCompilation () throws CompilerException {
@@ -26,7 +26,7 @@ public class TestJDFTasks {
 		properties.setProperty(JDFTasks.PRIVATE_KEY_FILEPATH, "file path");
 		ArrayList<Task> tasks = (ArrayList<Task>) JDFTasks.getTasksFromJDFFile(new JDFJob("", "ownner", new ArrayList<Task>()), EXSIMPLE_JOB, properties);
 		
-		assertEquals(tasks.size(), 1);
+		assertEquals(tasks.size(), 3);
 		for (Command command : tasks.get(0).getAllCommands()) {
 			System.out.println(command.getCommand());
 		}
