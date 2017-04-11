@@ -17,6 +17,9 @@ public class TestJobSpec {
 
 	public static final String EXSIMPLE_JOB = RESOURCE_DIR + File.separator + "simplejob.jdf";
 
+	public static final String EXSIMPLE_JOB_REQ = RESOURCE_DIR + File.separator + "simplejobreq.jdf";
+
+	
 	public static final String EXSIMPLEST_JOB = RESOURCE_DIR + File.separator + "simplestjob.jdf";
 
 	public static final String EXSIMPLE_JOB2 = RESOURCE_DIR + File.separator + File.separator + "simplejob2.jdf";
@@ -52,6 +55,8 @@ public class TestJobSpec {
 	public static final String LARGE_JOB = RESOURCE_DIR + File.separator + "jobv4.jdf";
 
 	public static final String JOB_WITH_LOCATION = RESOURCE_DIR + File.separator + "location.jdf";
+	
+	public static final String LOCATION_REQUIREMENT = " Glue2CloudComputeManagerID == \" SomeCloud \"";
 	
 	@Before
 	public void setUp() throws Exception {
@@ -180,7 +185,7 @@ public class TestJobSpec {
 		JobSpecification spec = DescriptionFileCompile.compileJDF(JOB_WITH_LOCATION);
 		assertEquals("LocationJob", spec.getLabel());
 		assertTrue(6 == spec.getTaskSpecs().size());
-		System.out.println(spec.getRequirements());
+		assertEquals(LOCATION_REQUIREMENT, spec.getRequirements());
 
 	}
 	
@@ -192,4 +197,13 @@ public class TestJobSpec {
 //		assertTrue(200 == spec.getTaskSpecs().size());
 //	}
 
+	@Test
+	public void testExSimpleJobWithRequirements() throws Exception {
+
+		JobSpecification spec = DescriptionFileCompile.compileJDF(EXSIMPLE_JOB_REQ);
+		assertEquals("SimpleJobReq", spec.getLabel());
+		assertTrue(1 == spec.getTaskSpecs().size());
+
+	}
+	
 }

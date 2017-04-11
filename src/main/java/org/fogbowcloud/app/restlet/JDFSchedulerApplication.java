@@ -17,6 +17,7 @@ import org.fogbowcloud.app.resource.NonceResource;
 import org.fogbowcloud.app.resource.TaskResource4JDF;
 import org.fogbowcloud.app.resource.UserResource;
 import org.fogbowcloud.app.utils.PropertiesConstants;
+import org.fogbowcloud.blowout.core.exception.BlowoutException;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskState;
 import org.restlet.Application;
@@ -85,7 +86,7 @@ public class JDFSchedulerApplication extends Application {
 	}
 
 	public String addJob(String jdfFilePath, String schedPath, User owner)
-			throws CompilerException, NameAlreadyInUseException {
+			throws CompilerException, NameAlreadyInUseException, BlowoutException {
 		return this.arrebolController.addJob(jdfFilePath, schedPath, owner);
 	}
 

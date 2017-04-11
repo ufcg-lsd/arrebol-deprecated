@@ -1,5 +1,6 @@
 job:
-label: myjob7
-requirements: Glue2RAM >= 1024 AND Glue2CloudComputeManagerID==servers.lsd.ufcg.edu.br
+label: job3
+requirements: Glue2RAM >= 1024 AND Glue2CloudComputeManagerID=="servers.lsd.ufcg.edu.br"
 task:
-remote: sleep 5
+sleep 5
+sleep 10

@@ -16,9 +16,9 @@ import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.app.utils.PropertiesConstants;
 import org.fogbowcloud.app.utils.ServerResourceUtils;
+import org.fogbowcloud.blowout.core.exception.BlowoutException;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskState;
-import org.fogbowcloud.blowout.core.util.AppPropertiesConstants;
 import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
@@ -33,6 +33,9 @@ import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONObject;
 
 public class JobResource extends ServerResource {
+
+	//FIXME: it seems we can make it simpler
+
 	private static final Logger LOGGER = Logger.getLogger(JobResource.class);
 	
 	public static final String JOB_LIST = "Jobs";
@@ -104,7 +107,7 @@ public class JobResource extends ServerResource {
 			JSONObject jTask = new JSONObject();
 			jTask.put(TASK_ID, task.getId());
 			TaskState ts = application.getTaskState(task.getId(), owner.getUsername());
-			jTask.put(STATE, ts != null ? ts.getDesc() : "UNDEFINED");
+			jTask.put(STATE, ts != null ? ts.getDesc().toUpperCase() : "UNDEFINED");
 			jobTasks.put(jTask);
 		}
 		jsonJob.put(JOB_TASKS, jobTasks);
@@ -117,6 +120,7 @@ public class JobResource extends ServerResource {
 		if (entity != null && !MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
 			throw new ResourceException(HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE);
 		}
+
 		Map<String, String> fieldMap = new HashMap<String, String>();
 		fieldMap.put(JDF_FILE_PATH, null);
 		fieldMap.put(PropertiesConstants.X_CREDENTIALS, null);
@@ -149,6 +153,9 @@ public class JobResource extends ServerResource {
 		} catch (NameAlreadyInUseException e) {
 			LOGGER.debug(e.getMessage(), e);
 			throw new ResourceException(HttpStatus.SC_BAD_REQUEST, e);
+		} catch (BlowoutException be) {
+			LOGGER.debug(be.getMessage(), be);
+			throw new ResourceException(HttpStatus.SC_BAD_REQUEST, be);
 		}
 
 	}

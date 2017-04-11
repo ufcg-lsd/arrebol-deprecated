@@ -16,6 +16,7 @@ import org.fogbowcloud.app.jdfcompiler.semantic.IOCommand;
 import org.fogbowcloud.app.jdfcompiler.semantic.JDLCommand;
 import org.fogbowcloud.app.jdfcompiler.semantic.JDLCommand.JDLCommandType;
 import org.fogbowcloud.app.jdfcompiler.semantic.RemoteCommand;
+import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.app.utils.PropertiesConstants;
 import org.fogbowcloud.blowout.core.model.Command;
 import org.fogbowcloud.blowout.core.model.Specification;
@@ -31,13 +32,14 @@ public class JDFTasks {
 
 	// FIXME: what is this?
 	private static final String LOCAL_OUTPUT_FOLDER = "local_output";
+
 	private static final String REMOTE_OUTPUT_FOLDER = "remote_output_folder";
 
-	private static final String PRIVATE_KEY_FILEPATH = "private_key_filepath";
+	protected static final String PRIVATE_KEY_FILEPATH = "private_key_filepath";
 
 	private static String standardImage = "fogbow-ubuntu";
 
-	private static final String PUBLIC_KEY_CONSTANT = "public_key";
+	protected static final String PUBLIC_KEY_CONSTANT = "public_key";
 	private final static String SSH_SCP_PRECOMMAND = "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no";
 
 	private static final Logger LOGGER = Logger.getLogger(JDFTasks.class);
@@ -71,6 +73,7 @@ public class JDFTasks {
 
 				JobSpecification jobSpec = (JobSpecification) commonCompiler.getResult().get(0);
 
+					
 				job.setFriendlyName(jobSpec.getLabel());
 
 				String schedPath = jobSpec.getSchedPath();
@@ -79,6 +82,8 @@ public class JDFTasks {
 
 				// FIXME: what does this block do?
 				String jobRequirementes = jobSpec.getRequirements();
+				LOGGER.debug("JobReq: " + jobRequirementes);
+				
 				jobRequirementes = jobRequirementes.replace("(", "").replace(")", "");
 				String image = standardImage;
 				for (String req : jobRequirementes.split("and")) {
@@ -95,8 +100,9 @@ public class JDFTasks {
 
 				int i = 0;
 				for (String req : jobRequirementes.split("and")) {
-					if (i == 0 && !req.trim().startsWith("image")) {
+				if (i == 0 && !req.trim().startsWith("image")) {
 						i++;
+						LOGGER.debug("NEW REQUIREMENT: " +req);
 						spec.addRequirement(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS, req);
 
 					} else if (!req.trim().startsWith("image")) {
@@ -118,6 +124,8 @@ public class JDFTasks {
 					task.putMetadata(TaskImpl.METADATA_SANDBOX, SANDBOX);
 					task.putMetadata(TaskImpl.METADATA_REMOTE_COMMAND_EXIT_PATH,
 							properties.getProperty(REMOTE_OUTPUT_FOLDER) + "/exit");
+					task.putMetadata(ArrebolPropertiesConstants.JOB_ID, job.getId());
+					task.putMetadata(ArrebolPropertiesConstants.OWNER, job.getOwner());
 
 					parseInitCommands(job.getId(), taskSpec, task, schedPath);
 					parseTaskCommands(job.getId(), taskSpec, task, schedPath);
@@ -125,6 +133,7 @@ public class JDFTasks {
 
 					taskList.add(task);
 					LOGGER.debug("Task spec: " + task.getSpecification().toString());
+				
 					taskID++;
 				}
 
@@ -167,13 +176,21 @@ public class JDFTasks {
 	}
 
 	/**
+<<<<<<< HEAD
 	 * This method translates the Ourgrid input IOBlocks to JDL InputSandbox
+=======
+	 * It translates the input IOBlocks to JDL InputSandbox
+>>>>>>> Fixed most of the FIXMEs
 	 *
 	 * @param jobId
 	 * @param taskSpec
 	 *            The task specification {@link TaskSpecification}
 	 * @param task
 	 *            The output expression containing the JDL job
+<<<<<<< HEAD
+=======
+	 * @param schedPath
+>>>>>>> Fixed most of the FIXMEs
 	 */
 	private static void parseInitCommands(String jobId, TaskSpecification taskSpec, Task task, String schedPath) {
 
@@ -223,7 +240,10 @@ public class JDFTasks {
 	}
 
 	public static String getDirectoryTree(String destination) {
-		int lastDir = destination.lastIndexOf("/");
+		int lastDir = destination.lastIndexOf(File.separator);
+		if (lastDir == -1 ) {
+			return "";
+		}
 		return destination.substring(0, lastDir);
 	}
 
@@ -274,5 +294,4 @@ public class JDFTasks {
 		String mkdirCommand = "su $UserID ; " + "mkdir -p " + folder;
 		return new Command(mkdirCommand, Command.Type.LOCAL);
 	}
-
 }

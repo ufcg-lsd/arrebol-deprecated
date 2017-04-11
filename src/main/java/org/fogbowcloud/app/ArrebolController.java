@@ -1,50 +1,57 @@
 package org.fogbowcloud.app;
 
-import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
+import org.fogbowcloud.app.datastore.JobDataStore;
 import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.JDFTasks;
-import org.fogbowcloud.app.model.Job;
 import org.fogbowcloud.app.model.User;
+import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.app.utils.PropertiesConstants;
 import org.fogbowcloud.app.utils.authenticator.ArrebolAuthenticator;
 import org.fogbowcloud.app.utils.authenticator.Credential;
 import org.fogbowcloud.blowout.core.BlowoutController;
+import org.fogbowcloud.blowout.core.exception.BlowoutException;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskState;
+import org.fogbowcloud.blowout.core.util.AppPropertiesConstants;
 import org.fogbowcloud.blowout.core.util.ManagerTimer;
+import org.fogbowcloud.blowout.infrastructure.provider.fogbow.FogbowRequirementsHelper;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.mapdb.DB;
-import org.mapdb.DBMaker;
 
 public class ArrebolController {
 
 	private static final int DEFAULT_EXECUTION_MONITOR_INTERVAL = 30000;
+	private static final int CHECKPOINT_INTERVAL = 30000;
 
-	public static final Logger LOGGER = Logger.getLogger(ArrebolController.class);
+	private static final Logger LOGGER = Logger.getLogger(ArrebolController.class);
 
-	private DB jobDB;
 	private BlowoutController blowoutController;
 	private Properties properties;
 	private List<Integer> nonces;
-	private ConcurrentMap<String, JDFJob> jobMap;
-	private ConcurrentMap<String, Task> finishedTasks;
+	private HashMap<String, Task> finishedTasks;
+	private JobDataStore jobDataStore;
 	private ArrebolAuthenticator auth;
+	private ExecutionMonitorWithDB executionMonitor;
 
 	private static ManagerTimer executionMonitorTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
+	private static ManagerTimer checkPointTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
 
-	public ArrebolController(Properties properties) throws Exception {
+	public ArrebolController(Properties properties) {
+		if (properties == null) {
+			throw new IllegalArgumentException("Properties cannot be null");
+		}
+		this.finishedTasks = new HashMap<String, Task>();
 		this.properties = properties;
 	}
 
@@ -52,55 +59,55 @@ public class ArrebolController {
 		return properties;
 	}
 
-	protected DB getJobDB() {
-		return jobDB;
-	}
-
-	protected ConcurrentMap<String, JDFJob> getJobMap() {
-		return jobMap;
-	}
-
 	public void init() throws Exception {
+
+		// FIXME: add as constructor param?
 		this.auth = createAuthenticatorPluginInstance();
-		
-		final File pendingImageDownloadFile = new File(PropertiesConstants.DB_FILE_NAME);
-		this.jobDB = DBMaker.newFileDB(pendingImageDownloadFile).make();
-		this.jobDB.checkShouldCreate(PropertiesConstants.DB_MAP_NAME);
-		ConcurrentMap<String, JDFJob> jobMapDB = this.jobDB.getHashMap(PropertiesConstants.DB_MAP_NAME);
+		// FIXME: replace by a proper
+		this.jobDataStore = new JobDataStore(properties.getProperty(AppPropertiesConstants.DB_DATASTORE_URL));
 
 		Boolean removePreviousResources = new Boolean(
-				this.properties.getProperty(PropertiesConstants.REMOVE_PREVIOUS_RESOURCES))
-						.booleanValue();
+				this.properties.getProperty(PropertiesConstants.REMOVE_PREVIOUS_RESOURCES)).booleanValue();
 
-		ArrayList<JDFJob> legacyJobs = getLegacyJobs(jobMapDB);
 		LOGGER.debug("Properties: " + properties.getProperty(PropertiesConstants.DEFAULT_SPECS_FILE_PATH));
 
-		//this.scheduler = new Scheduler(infraManager, );
-		
-		//legacyJobs.toArray(new JDFJob[legacyJobs.size()])
-		
+		// this.scheduler = new Scheduler(infraManager, );
+
+		// legacyJobs.toArray(new JDFJob[legacyJobs.size()])
+
 		this.blowoutController = new BlowoutController(this.properties);
 		blowoutController.start(removePreviousResources);
-		
-		LOGGER.debug("Application to be started on port: "
-				+ properties.getProperty(PropertiesConstants.REST_SERVER_PORT));
-		ExecutionMonitorWithDB executionMonitor = new ExecutionMonitorWithDB(this.blowoutController, this, this.jobDB);
 
-		this.jobMap = this.jobDB.getHashMap(PropertiesConstants.DB_MAP_NAME);
+		LOGGER.debug(
+				"Application to be started on port: " + properties.getProperty(PropertiesConstants.REST_SERVER_PORT));
+		LOGGER.info("Properties: " + properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
+
 		this.nonces = new ArrayList<Integer>();
 
 		LOGGER.debug("Starting Scheduler and Execution Monitor, execution monitor period: "
 				+ properties.getProperty(PropertiesConstants.EXECUTION_MONITOR_PERIOD));
+		executionMonitor = new ExecutionMonitorWithDB(blowoutController, this, jobDataStore);
 		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0, DEFAULT_EXECUTION_MONITOR_INTERVAL);
+		int schedulerPeriod = Integer.valueOf(properties.getProperty(PropertiesConstants.EXECUTION_MONITOR_PERIOD));
+
+		restartAllJobs();
+		LOGGER.info("Starting scheduler with period: " + schedulerPeriod);
+
 	}
 
-	private ArrayList<JDFJob> getLegacyJobs(ConcurrentMap<String, JDFJob> jobMapDB) {
-		ArrayList<JDFJob> legacyJobs = new ArrayList<JDFJob>();
-
-		for (String key : jobMapDB.keySet()) {
-			legacyJobs.add((JDFJob) jobMapDB.get(key));
+	public void restartAllJobs() throws BlowoutException {
+		for (JDFJob job : this.jobDataStore.getAll()) {
+			ArrayList<Task> taskList = new ArrayList<Task>();
+			for (Task task : job.getTasks()) {
+				if (!task.isFinished()) {
+					taskList.add(task);
+					LOGGER.debug("Specification of Recovered task: " + task.getSpecification().toJSON().toString());
+					LOGGER.debug("Task Requirements: " + task.getSpecification()
+							.getRequirementValue(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS));
+				}
+			}
+			blowoutController.addTaskList(taskList);
 		}
-		return legacyJobs;
 	}
 
 	private ArrebolAuthenticator createAuthenticatorPluginInstance() throws Exception {
@@ -115,70 +122,57 @@ public class ArrebolController {
 	}
 
 	public JDFJob getJobById(String jobId, String owner) {
-		JDFJob jdfJob = (JDFJob) jobMap.get(jobId);
-		if (jdfJob != null && jdfJob.getOwner().equals(owner)) {
-			return jdfJob;
-		}
-		return null;
+		JDFJob jdfJob = (JDFJob) this.jobDataStore.getByJobId(jobId, owner);
+		return jdfJob;
 	}
 
 	public String addJob(String jdfFilePath, String schedPath, User owner)
-			throws CompilerException, NameAlreadyInUseException {
-		JDFJob job = new JDFJob(schedPath, owner.getUsername());
-		job.setUUID(owner.getUUID());
-		List<Task> taskList = getTasksFromJDFFile(jdfFilePath, job);
-		
+			throws CompilerException, NameAlreadyInUseException, BlowoutException {
+		JDFJob tmpJob = new JDFJob(schedPath, owner.getUsername(), new ArrayList<Task>());
+		tmpJob.setUUID(owner.getUUID());
+		List<Task> taskList = getTasksFromJDFFile(jdfFilePath, tmpJob);
+		JDFJob job = new JDFJob(tmpJob.getId(), tmpJob.getSchedPath(), tmpJob.getOwner(), taskList);
+		job.setUUID(tmpJob.getUUID());
+		job.setFriendlyName(tmpJob.getName());
+
 		if (job.getName() != null && !job.getName().trim().isEmpty()
 				&& getJobByName(job.getName(), owner.getUsername()) != null) {
-			throw new NameAlreadyInUseException(
-					"The name " + job.getName() + " is already in use for the user " + "owner");
-		}
 
-		for (Task task : taskList) {
-			job.addTask(task);
+			throw new NameAlreadyInUseException(
+					"The name " + job.getName() + " is already in use for the user " + owner);
 		}
 
 		LOGGER.debug("Adding job " + job.getName() + " to scheduler");
 
-		this.jobMap.put(job.getId(), job);
-		
 		blowoutController.addTaskList(job.getTasks());
-		
+		jobDataStore.insert(job);
 		return job.getId();
 	}
 
 	public ArrayList<JDFJob> getAllJobs(String owner) {
-		ArrayList<JDFJob> jobList = new ArrayList<JDFJob>();
-		for (Job job : this.jobMap.values()) {
-			JDFJob jdfJob = (JDFJob) job;
-			if (jdfJob.getOwner().equals(owner)) {
-				jobList.add((JDFJob) job);
-				updateJob((JDFJob) job);
-			}
-		}
-		return jobList;
-	}
 
-	public void setJobDB(DB jobDB) {
-		this.jobDB = jobDB;
+		return (ArrayList<JDFJob>) this.jobDataStore.getAllByOwner(owner);
 	}
 
 	public void updateJob(JDFJob job) {
-		this.jobMap.put(job.getId(), job);
-		this.jobDB.commit();
+		this.jobDataStore.update(job);
 	}
 
 	public String stopJob(String jobReference, String owner) {
-		Job jobToRemove = getJobByName(jobReference, owner);
+		JDFJob jobToRemove = getJobByName(jobReference, owner);
 		if (jobToRemove != null) {
-			this.jobMap.remove(jobToRemove.getId());
-			this.jobDB.commit();
+			this.jobDataStore.deleteByJobId(jobToRemove.getId(), owner);
+			for (Task task : jobToRemove.getTasks()) {
+				blowoutController.cleanTask(task);
+			}
 			return jobToRemove.getId();
 		} else {
 			jobToRemove = getJobById(jobReference, owner);
 			if (jobToRemove != null) {
-				this.jobMap.remove(jobReference);
-				this.jobDB.commit();
+				this.jobDataStore.deleteByJobId(jobToRemove.getId(), owner);
+				for (Task task : jobToRemove.getTasks()) {
+					blowoutController.cleanTask(task);
+				}
 				return jobToRemove.getId();
 			}
 		}
@@ -189,20 +183,18 @@ public class ArrebolController {
 		if (jobName == null) {
 			return null;
 		}
-		for (Job job : this.jobMap.values()) {
+		for (JDFJob job : this.jobDataStore.getAllByOwner(owner)) {
 			JDFJob jdfJob = (JDFJob) job;
 			// TODO review this IFs
-			if (jdfJob.getOwner().equals(owner)) {
-				if (jobName.equals(((JDFJob) job).getName())) {
-					return (JDFJob) job;
-				}
+			if (jobName.equals(((JDFJob) job).getName())) {
+				return (JDFJob) job;
 			}
 		}
 		return null;
 	}
 
 	public Task getTaskById(String taskId, String owner) {
-		for (Job job : getAllJobs(owner)) {
+		for (JDFJob job : getAllJobs(owner)) {
 			JDFJob jdfJob = (JDFJob) job;
 			Task task = jdfJob.getTaskById(taskId);
 			if (task != null) {
@@ -213,8 +205,8 @@ public class ArrebolController {
 	}
 
 	public TaskState getTaskState(String taskId, String owner) {
-		
-		Task task = null;
+
+		Task task = finishedTasks.get(taskId);
 		if (task != null) {
 			return TaskState.COMPLETED;
 		} else {
@@ -228,16 +220,19 @@ public class ArrebolController {
 			return null;
 		}
 	}
-	
-	public void moveTaskToFinished(Task task){
-		finishedTasks.put(task.getId(), task);
+
+	public void moveTaskToFinished(Task task) {
+		JDFJob job = this.jobDataStore.getByJobId(task.getMetadata(ArrebolPropertiesConstants.JOB_ID),
+				task.getMetadata(ArrebolPropertiesConstants.OWNER));
+		job.finish(task);
+		updateJob(job);
 	}
 
 	public User authUser(String credentials) throws IOException, GeneralSecurityException {
 		if (credentials == null) {
 			return null;
 		}
-		
+
 		Credential credential = null;
 		try {
 			credential = Credential.fromJSON(new JSONObject(credentials));
@@ -245,7 +240,7 @@ public class ArrebolController {
 			LOGGER.error("Invalid credentials format", e);
 			return null;
 		}
-		
+
 		LOGGER.debug("Checking nonce");
 		if (credential != null && this.nonces.contains(credential.getNonce())) {
 			return this.auth.authenticateUser(credential);
@@ -260,8 +255,7 @@ public class ArrebolController {
 		return nonce;
 	}
 
-	protected List<Task> getTasksFromJDFFile(String jdfFilePath, JDFJob job)
-			throws CompilerException {
+	protected List<Task> getTasksFromJDFFile(String jdfFilePath, JDFJob job) throws CompilerException {
 		List<Task> taskList = JDFTasks.getTasksFromJDFFile(job, jdfFilePath, this.properties);
 		return taskList;
 	}
@@ -278,10 +272,6 @@ public class ArrebolController {
 		}
 	}
 
-	public void setJobMap(ConcurrentMap<String, JDFJob> jobMap) {
-		this.jobMap = jobMap;
-	}
-
 	public String getAuthenticatorName() {
 		return this.auth.getAuthenticatorName();
 	}
@@ -289,5 +279,20 @@ public class ArrebolController {
 	public void setBlowoutController(BlowoutController blowout) {
 		this.blowoutController = blowout;
 	}
-	
+
+	public JobDataStore getJobDataStore() {
+		return this.jobDataStore;
+	}
+
+	public void setDataStore(JobDataStore dataStore) {
+		this.jobDataStore = dataStore;
+	}
+
+	public HashMap<String, Task> getFinishedTasks() {
+		return finishedTasks;
+	}
+
+	public void setFinishedTasks(HashMap<String, Task> finishedTasks) {
+		this.finishedTasks = finishedTasks;
+	}
 }

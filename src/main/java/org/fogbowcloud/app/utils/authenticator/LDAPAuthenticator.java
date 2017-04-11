@@ -51,7 +51,6 @@ public class LDAPAuthenticator implements ArrebolAuthenticator {
 		String username = credential.getUsername();
 		String password = credential.getPassword();
 		LOGGER.debug("Authenticating LDAP user: " + username);
-		
 		User user = null;
 		try {
 			user = new LDAPUser(ldapAuthenticate(username, password));

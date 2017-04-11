@@ -231,13 +231,23 @@ public class JDFSemanticActions implements SemanticActions {
 		this.stack.push( condition );
 	}
 
-
+//	/**
+//	 * This action: Closes and set the job expression.
+//	 */
+//	public void action14() {
+//		LOG.debug("Calling 14");
+//		this.theJob.setRequirements( this.actualToken.getSymbol());
+//		mode = CommonSyntacticalAnalyzer.MODE_NORMAL;
+//	}
+	
+	
 	/**
 	 * This action: Closes and set the job expression.
 	 */
 	public void action14() {
 		LOG.debug("Calling 14");
-		this.theJob.setRequirements( condition.trim() );
+		this.theJob.setRequirements( this.condition);
+		mode = CommonSyntacticalAnalyzer.MODE_NORMAL;
 	}
 
 

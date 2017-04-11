@@ -129,4 +129,3 @@ VERSION
 	| @ ;
 <value> ::= string #11 
 	| """ #11 string #11 """ #11 ;
-

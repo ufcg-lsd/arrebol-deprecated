@@ -19,7 +19,6 @@ import com.amazonaws.util.json.JSONObject;
 
 public class TaskResource4JDF extends ServerResource {
 	private static final Logger LOGGER = Logger.getLogger(TaskResource4JDF.class);
-
 	List<String> validVariables = new ArrayList<String>();
 
 	@Get
@@ -27,9 +26,6 @@ public class TaskResource4JDF extends ServerResource {
 		LOGGER.info("Getting tasks...");
 		String taskId = (String) getRequest().getAttributes().get("taskId");
 		LOGGER.debug("TaskId is " + taskId);
-		// FIXME not being used
-		String varName = (String) getRequest().getAttributes().get("varName");
-		LOGGER.debug("varName is " + varName);
 
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 		
