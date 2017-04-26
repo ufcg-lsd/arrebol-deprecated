@@ -125,6 +125,11 @@ public class JobResource extends ServerResource {
 		fieldMap.put(JDF_FILE_PATH, null);
 		fieldMap.put(PropertiesConstants.X_CREDENTIALS, null);
 		fieldMap.put(SCHED_PATH, null);
+		
+		if (entity == null) {
+			LOGGER.debug("****************************************************************************");
+		}
+		
 		ServerResourceUtils.loadFields(entity, fieldMap, new HashMap<String, File>());
 
 		String jdf = fieldMap.get(JDF_FILE_PATH);
@@ -133,6 +138,7 @@ public class JobResource extends ServerResource {
 		}
 		String schedPath = fieldMap.get(SCHED_PATH);
 
+		LOGGER.debug("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 		@SuppressWarnings("rawtypes")
 		Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
