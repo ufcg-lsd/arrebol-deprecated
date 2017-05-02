@@ -107,7 +107,7 @@ public class LDAPAuthenticator implements ArrebolAuthenticator {
 			return userName;
 			
 		} catch (Exception e) {
-			LOGGER.error("Error while authenticate " + uid +" - Error: "+e.getMessage());
+			LOGGER.error("Error while authenticate " + uid +" - Error: ", e);
  			throw e;
 		} finally {
 			dirContext.close();
