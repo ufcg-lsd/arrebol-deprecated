@@ -30,6 +30,8 @@ import org.mockito.Mockito;
 
 public class TestArrebolController {
 
+	private static final String FAKE_UUID = "1234";
+
 	private static final String DATASTORE_URL = "datastore_url";
 
 	private static final String owner = "owner";
@@ -75,7 +77,7 @@ public class TestArrebolController {
 		ArrayList<Task> taskList = new ArrayList<Task>();
 		Specification spec = new Specification("image", "owner", "publicKey", "privateKeyFilePath", "", "");
 		Task task = new TaskImpl("taskId",
-				spec);
+				spec, FAKE_UUID);
 		taskList.add(task);
 		
 		JDFJob job = new JDFJob("", owner, taskList);
@@ -243,7 +245,7 @@ public class TestArrebolController {
 	public void testGetTaskById() {
 		String taskId = "taskId00";
 		Task task = new TaskImpl(taskId,
-				new Specification("image", "username", "publicKey", "privateKeyFilePath", "", ""));
+				new Specification("image", "username", "publicKey", "privateKeyFilePath", "", ""), FAKE_UUID);
 		List<Task> tasks = new ArrayList<Task>();
 		tasks.add(task);
 

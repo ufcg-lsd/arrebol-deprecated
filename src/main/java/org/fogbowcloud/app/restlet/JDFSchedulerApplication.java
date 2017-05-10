@@ -86,7 +86,7 @@ public class JDFSchedulerApplication extends Application {
 	}
 
 	public String addJob(String jdfFilePath, String schedPath, User owner)
-			throws CompilerException, NameAlreadyInUseException, BlowoutException {
+			throws CompilerException, NameAlreadyInUseException, BlowoutException, IOException {
 		return this.arrebolController.addJob(jdfFilePath, schedPath, owner);
 	}
 

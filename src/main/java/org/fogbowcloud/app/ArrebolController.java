@@ -127,7 +127,7 @@ public class ArrebolController {
 	}
 
 	public String addJob(String jdfFilePath, String schedPath, User owner)
-			throws CompilerException, NameAlreadyInUseException, BlowoutException {
+			throws CompilerException, NameAlreadyInUseException, BlowoutException, IOException {
 		JDFJob tmpJob = new JDFJob(schedPath, owner.getUsername(), new ArrayList<Task>());
 		tmpJob.setUUID(owner.getUUID());
 		List<Task> taskList = getTasksFromJDFFile(jdfFilePath, tmpJob);
@@ -255,7 +255,7 @@ public class ArrebolController {
 		return nonce;
 	}
 
-	protected List<Task> getTasksFromJDFFile(String jdfFilePath, JDFJob job) throws CompilerException {
+	protected List<Task> getTasksFromJDFFile(String jdfFilePath, JDFJob job) throws CompilerException, IOException {
 		List<Task> taskList = JDFTasks.getTasksFromJDFFile(job, jdfFilePath, this.properties);
 		return taskList;
 	}

@@ -3,6 +3,7 @@ package org.fogbowcloud.app.model;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -19,16 +20,17 @@ public class TestJDFTasks {
 	public static final String EXSIMPLE_JOB = RESOURCE_DIR + File.separator + "SimpleJob2.jdf";
 
 	@Test
-	public void testJDFCompilation () throws CompilerException {
+	public void testJDFCompilation () throws CompilerException, IOException {
 		Properties properties = new Properties();
 		properties.setProperty(PropertiesConstants.INFRA_RESOURCE_USERNAME, "infraname");
 		properties.setProperty(JDFTasks.PUBLIC_KEY_CONSTANT, "public_key"); 
 		properties.setProperty(JDFTasks.PRIVATE_KEY_FILEPATH, "file path");
-		ArrayList<Task> tasks = (ArrayList<Task>) JDFTasks.getTasksFromJDFFile(new JDFJob("", "ownner", new ArrayList<Task>()), EXSIMPLE_JOB, properties);
+		ArrayList<Task> tasks = (ArrayList<Task>) JDFTasks.getTasksFromJDFFile(new JDFJob("", "arrebolservice", new ArrayList<Task>()), EXSIMPLE_JOB, properties);
 		
 		assertEquals(tasks.size(), 3);
 		for (Command command : tasks.get(0).getAllCommands()) {
 			System.out.println(command.getCommand());
 		}
+		assertEquals(tasks.get(0).getUUID(), "1417");
 	}
 }

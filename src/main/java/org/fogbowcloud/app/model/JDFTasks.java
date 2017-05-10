@@ -1,6 +1,9 @@
 package org.fogbowcloud.app.model;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -53,9 +56,10 @@ public class JDFTasks {
 	 * @return
 	 * @throws IllegalArgumentException
 	 * @throws CompilerException
+	 * @throws IOException 
 	 */
 	public static List<Task> getTasksFromJDFFile(JDFJob job, String jdfFilePath, Properties properties)
-			throws CompilerException {
+			throws CompilerException, IOException {
 
 		ArrayList<Task> taskList = new ArrayList<Task>();
 
@@ -115,8 +119,43 @@ public class JDFTasks {
 				spec.addRequirement(FogbowRequirementsHelper.METADATA_FOGBOW_REQUEST_TYPE, "one-time");
 				int taskID = 0;
 				for (TaskSpecification taskSpec : jobSpec.getTaskSpecs()) {
+					Runtime r = Runtime.getRuntime();                    
 
-					Task task = new TaskImpl("TaskNumber" + "-" + taskID + "-" + UUID.randomUUID(), spec);
+//					Process p = r.exec("id -u "+ job.getOwner());
+//					try {
+//						p.waitFor();
+//					} catch (InterruptedException e) {
+//						LOGGER.debug("could not finish the query on user UUID", e);
+//					} 
+//					BufferedReader in =
+//					        new BufferedReader(new InputStreamReader(p.getInputStream()));
+					ProcessBuilder   ps=new ProcessBuilder("id","-u", job.getOwner());
+
+					//From the DOC:  Initially, this property is false, meaning that the 
+					//standard output and error output of a subprocess are sent to two 
+					//separate streams
+					ps.redirectErrorStream(true);
+
+					Process pr = ps.start();  
+
+					BufferedReader in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+					try {
+						pr.waitFor();
+					} catch (InterruptedException e) {
+						LOGGER.debug("could not finish the query on user UUID", e);
+					}
+					String inputLine;
+					String result = "";
+					while ((inputLine = in.readLine()) != null) {
+				        System.out.println(inputLine);
+				        result += inputLine;
+				    }
+					System.out.println("========================================================" + job.getOwner());
+					System.out.println("========================================================" +result);
+					if (result.contains("no such user")) throw new SecurityException("User is not part of this security group");
+					in.close();
+					 
+					Task task = new TaskImpl("TaskNumber" + "-" + taskID + "-" + UUID.randomUUID(), spec, result);
 					task.putMetadata(TaskImpl.METADATA_REMOTE_OUTPUT_FOLDER,
 							properties.getProperty(REMOTE_OUTPUT_FOLDER));
 					task.putMetadata(TaskImpl.METADATA_LOCAL_OUTPUT_FOLDER,
@@ -212,7 +251,8 @@ public class JDFTasks {
 		String destination = command.getEntry().getDestination();
 		String IOType = command.getEntry().getCommand();
 		if (IOType.toUpperCase().equals("PUT") || IOType.toUpperCase().equals("STORE")) {
-			task.addCommand(mkdirRemoteFolder(getDirectoryTree(destination)));
+			Command mkdirComm = mkdirRemoteFolder(getDirectoryTree(destination));
+			if (mkdirComm != null )	task.addCommand(mkdirComm);
 			if (sourceFile.startsWith("/")) {
 				task.addCommand(stageInCommand(sourceFile, destination));
 			} else {
@@ -221,7 +261,8 @@ public class JDFTasks {
 			LOGGER.debug("JobId: " + jobId + " task: " + task.getId() + " input command:"
 					+ stageInCommand(schedPath + sourceFile, destination).getCommand());
 		} else {
-			task.addCommand(mkdirLocalFolder(getDirectoryTree(destination)));
+			Command mkdirComm = mkdirLocalFolder(getDirectoryTree(destination));
+			if (mkdirComm != null )	task.addCommand(mkdirComm);
 			if (sourceFile.startsWith("/")) {
 				task.addCommand(stageOutCommand(sourceFile, destination));
 			} else {
@@ -248,12 +289,16 @@ public class JDFTasks {
 	}
 
 	private static Command mkdirRemoteFolder(String folder) {
+		if (folder == "") {
+			return null;
+		}
 		String mkdirCommand = "mkdir -p " + folder;
 		return new Command(mkdirCommand, Command.Type.REMOTE);
 	}
 
 	private static Command stageInCommand(String localFile, String remoteFile) {
-		String scpCommand = "su $UUID ; " + "scp " + SSH_SCP_PRECOMMAND + " -P $" + AbstractResource.ENV_SSH_PORT
+		//String scpCommand = "su $UUID ; " + "scp " + SSH_SCP_PRECOMMAND + " -P $" + AbstractResource.ENV_SSH_PORT
+		String scpCommand = "scp " + SSH_SCP_PRECOMMAND + " -P $" + AbstractResource.ENV_SSH_PORT
 				+ " -i $" + AbstractResource.ENV_PRIVATE_KEY_FILE + " " + localFile + " $"
 				+ AbstractResource.ENV_SSH_USER + "@" + "$" + AbstractResource.ENV_HOST + ":" + remoteFile;
 		return new Command(scpCommand, Command.Type.LOCAL);
@@ -291,6 +336,9 @@ public class JDFTasks {
 	}
 
 	private static Command mkdirLocalFolder(String folder) {
+		if (folder == "") {
+			return null;
+		}
 		String mkdirCommand = "su $UserID ; " + "mkdir -p " + folder;
 		return new Command(mkdirCommand, Command.Type.LOCAL);
 	}

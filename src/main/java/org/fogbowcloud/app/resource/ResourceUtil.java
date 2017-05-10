@@ -19,8 +19,6 @@ public class ResourceUtil {
 	public static User authenticateUser(JDFSchedulerApplication application,
 			@SuppressWarnings("rawtypes") Series headers) throws IOException, GeneralSecurityException {
         String credentials = headers.getFirstValue(PropertiesConstants.X_CREDENTIALS);
-        LOGGER.debug("======================================================================");
-        LOGGER.debug("credentials: " + credentials);
         User user = application.authUser(credentials);
         if (user == null) {
         

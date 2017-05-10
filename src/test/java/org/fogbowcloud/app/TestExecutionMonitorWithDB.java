@@ -28,6 +28,7 @@ import com.amazonaws.auth.policy.Resource;
 
 public class TestExecutionMonitorWithDB {
 
+	private static final String FAKE_UUID = "1234";
 	public Task task;
 	public BlowoutController blowout;
 	public ArrebolController arrebol;
@@ -42,7 +43,7 @@ public class TestExecutionMonitorWithDB {
 	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp() {
-		task = spy(new TaskImpl(FAKE_TASK_ID, null));
+		task = spy(new TaskImpl(FAKE_TASK_ID, null, FAKE_UUID));
 		IM = mock(InfrastructureManager.class);
 		resource = mock(Resource.class);
 		db = mock(JobDataStore.class);
