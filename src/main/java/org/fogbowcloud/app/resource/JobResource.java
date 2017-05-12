@@ -68,7 +68,7 @@ public class JobResource extends ServerResource {
 				(Series) getRequestAttributes().get("org.restlet.http.headers"));
 
 		if (jobId == null) {
-			for (JDFJob job : application.getAllJobs(owner.getUsername())) {
+			for (JDFJob job : application.getAllJobs(owner.getUser())) {
 				JSONObject jJob = new JSONObject();
 				if (job.getName() != null) {
 					jJob.put("id", job.getId());
@@ -89,9 +89,9 @@ public class JobResource extends ServerResource {
 			return result;
 		}
 
-		JDFJob job = application.getJobById(jobId, owner.getUsername());
+		JDFJob job = application.getJobById(jobId, owner.getUser());
 		if (job == null) {
-			job = application.getJobByName(jobId, owner.getUsername());
+			job = application.getJobByName(jobId, owner.getUser());
 			if (job == null) {
 				throw new ResourceException(404);
 			}
@@ -106,7 +106,7 @@ public class JobResource extends ServerResource {
 		for (Task task : job.getTasks()) {
 			JSONObject jTask = new JSONObject();
 			jTask.put(TASK_ID, task.getId());
-			TaskState ts = application.getTaskState(task.getId(), owner.getUsername());
+			TaskState ts = application.getTaskState(task.getId(), owner.getUser());
 			jTask.put(STATE, ts != null ? ts.getDesc().toUpperCase() : "UNDEFINED");
 			jobTasks.put(jTask);
 		}
@@ -126,10 +126,6 @@ public class JobResource extends ServerResource {
 		fieldMap.put(PropertiesConstants.X_CREDENTIALS, null);
 		fieldMap.put(SCHED_PATH, null);
 		
-		if (entity == null) {
-			LOGGER.debug("****************************************************************************");
-		}
-		
 		ServerResourceUtils.loadFields(entity, fieldMap, new HashMap<String, File>());
 
 		String jdf = fieldMap.get(JDF_FILE_PATH);
@@ -138,7 +134,6 @@ public class JobResource extends ServerResource {
 		}
 		String schedPath = fieldMap.get(SCHED_PATH);
 
-		LOGGER.debug("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 		@SuppressWarnings("rawtypes")
 		Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
@@ -178,7 +173,7 @@ public class JobResource extends ServerResource {
 
 		LOGGER.debug("Got JDF File: " + JDFString);
 
-		String jobId = application.stopJob(JDFString, owner.getUsername());
+		String jobId = application.stopJob(JDFString, owner.getUser());
 
 		if (jobId == null) {
 			throw new ResourceException(404);

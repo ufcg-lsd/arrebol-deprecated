@@ -25,7 +25,8 @@ public class TestJDFTasks {
 		properties.setProperty(PropertiesConstants.INFRA_RESOURCE_USERNAME, "infraname");
 		properties.setProperty(JDFTasks.PUBLIC_KEY_CONSTANT, "public_key"); 
 		properties.setProperty(JDFTasks.PRIVATE_KEY_FILEPATH, "file path");
-		ArrayList<Task> tasks = (ArrayList<Task>) JDFTasks.getTasksFromJDFFile(new JDFJob("", "arrebolservice", new ArrayList<Task>()), EXSIMPLE_JOB, properties);
+		JDFJob testJob = new JDFJob("", "arrebolservice", new ArrayList<Task>(), "arrebolservice");
+		ArrayList<Task> tasks = (ArrayList<Task>) JDFTasks.getTasksFromJDFFile(testJob, EXSIMPLE_JOB, properties);
 		
 		assertEquals(tasks.size(), 3);
 		for (Command command : tasks.get(0).getAllCommands()) {

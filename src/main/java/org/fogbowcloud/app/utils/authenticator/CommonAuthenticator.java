@@ -43,7 +43,7 @@ public class CommonAuthenticator implements ArrebolAuthenticator {
 		// and here we need to replace it back with the new line char
 		hash = hash.replace("*", "\n");
 		RSAPublicKey publicKey = RSAUtils.getPublicKeyFromString(((UserImpl)user).getPublicKey());
-		return RSAUtils.verify(publicKey, user.getUsername() + nonce, hash);
+		return RSAUtils.verify(publicKey, user.getUser() + nonce, hash);
 
 	}
 

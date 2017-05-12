@@ -53,7 +53,7 @@ public class LDAPAuthenticator implements ArrebolAuthenticator {
 		LOGGER.debug("Authenticating LDAP user: " + username);
 		User user = null;
 		try {
-			user = new LDAPUser(ldapAuthenticate(username, password));
+			user = new LDAPUser(ldapAuthenticate(username, password), username);
 		} catch (Exception e) {
 			LOGGER.error("Error while trying to log in with LDAP", e);
 		}

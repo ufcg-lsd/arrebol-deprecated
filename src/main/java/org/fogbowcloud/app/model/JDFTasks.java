@@ -129,7 +129,8 @@ public class JDFTasks {
 //					} 
 //					BufferedReader in =
 //					        new BufferedReader(new InputStreamReader(p.getInputStream()));
-					ProcessBuilder   ps=new ProcessBuilder("id","-u", job.getOwner());
+					LOGGER.debug("========================================================" + job.getUserId());
+					ProcessBuilder   ps=new ProcessBuilder("id","-u", job.getUserId());
 
 					//From the DOC:  Initially, this property is false, meaning that the 
 					//standard output and error output of a subprocess are sent to two 
@@ -150,9 +151,8 @@ public class JDFTasks {
 				        System.out.println(inputLine);
 				        result += inputLine;
 				    }
-					System.out.println("========================================================" + job.getOwner());
-					System.out.println("========================================================" +result);
-					if (result.contains("no such user")) throw new SecurityException("User is not part of this security group");
+					LOGGER.debug("========================================================" +result);
+					if (result.contains("no such user")) throw new SecurityException("User "+job.getUserId()+" is not part of this security group");
 					in.close();
 					 
 					Task task = new TaskImpl("TaskNumber" + "-" + taskID + "-" + UUID.randomUUID(), spec, result);

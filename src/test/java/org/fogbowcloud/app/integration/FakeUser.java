@@ -13,12 +13,12 @@ public class FakeUser implements User {
 	}
 	
 	@Override
-	public String getUsername() {
+	public String getUser() {
 		return this.username;
 	}
 
 	@Override
-	public String getUUID() {
+	public String getUsername() {
 		return this.uuid;
 	}
 

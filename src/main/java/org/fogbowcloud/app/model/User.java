@@ -2,7 +2,7 @@ package org.fogbowcloud.app.model;
 
 public interface User {
 	
-	String getUsername();
+	String getUser();
 
-	String getUUID();
+	String getUsername();
 }

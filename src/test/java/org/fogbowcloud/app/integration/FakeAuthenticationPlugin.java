@@ -16,18 +16,18 @@ public class FakeAuthenticationPlugin implements ArrebolAuthenticator {
 	
 	@Override
 	public User authenticateUser(Credential credential) {
-		return new FakeUser(credential.getUsername(), "1");
+		return new FakeUser(credential.getUsername(), "arrebolservice");
 	}
 
 	@Override
 	public User addUser(String username, String password) {		
-		return new FakeUser(username, "1");
+		return new FakeUser(username, "arrebolservice");
 	}
 
 	@Override
 	public User getUserByUsername(String username) {
 		// TODO Auto-generated method stub
-		return new FakeUser(username, "1");
+		return new FakeUser(username, "arrebolservice");
 	}
 
 	@Override

@@ -17,7 +17,7 @@ public class UserImpl implements User {
 	}
 
 	@Override
-	public String getUsername() {
+	public String getUser() {
 		return username;
 	}
 
@@ -54,7 +54,7 @@ public class UserImpl implements User {
 	}
 
 	@Override
-	public String getUUID() {
+	public String getUsername() {
 		
 		return DEFAULT_USER;
 	}

@@ -22,7 +22,7 @@ public class FakeTokenUpdatePlugin extends AbstractTokenUpdatePlugin {
 	public Token generateToken() {
 		Date expirationDate = new Date(new Date().getTime() + EXPIRATION_INTERVAL);
 		Map<String, String> attributes = new HashMap<String, String>();
-		return new Token("fakeacess", new Token.User("1", "user"),expirationDate, attributes );
+		return new Token("fakeacess", new Token.User("arrebolservice", "user"),expirationDate, attributes );
 	}
 
 	@Override

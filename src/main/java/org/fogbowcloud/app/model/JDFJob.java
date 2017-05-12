@@ -29,20 +29,23 @@ public class JDFJob extends Job {
 	private String name;
 	private String schedPath;
 	private final String owner;
+	private final String userId;
 
-	public JDFJob(String schedPath, String owner, List<Task> taskList) {
+	public JDFJob(String schedPath, String owner, List<Task> taskList, String userID) {
 		super(taskList);
 		this.schedPath = schedPath;
 		this.jobId = UUID.randomUUID().toString();
 		this.owner = owner;
+		this.userId = userID;
 	}
 	
 	public JDFJob(String jobId, String schedPath, 
-			String owner, List<Task> taskList) {
+			String owner, List<Task> taskList, String userID) {
 		super(taskList);
 		this.schedPath = schedPath;
 		this.jobId = jobId;
 		this.owner = owner;
+		this.userId = userID;
 	}
 
 	public String getId() {
@@ -92,6 +95,10 @@ public class JDFJob extends Job {
 		
 	}
 	
+	public String getUserId() {
+		return this.userId;
+	}
+	
 	public JSONObject toJSON() {
 		try {
 			JSONObject job = new JSONObject();
@@ -99,7 +106,7 @@ public class JDFJob extends Job {
 			job.put("name", this.getName());
 			job.put("schedPath", this.getSchedPath());
 			job.put("owner", this.getOwner());
-			job.put("uuid", this.getUUID());
+			job.put("uuid", this.getUserId());
 			JSONArray tasks = new JSONArray();
 			Map<String, Task> taskList = this.getTaskList();
 			for (Entry<String, Task> entry : taskList.entrySet()) {
@@ -125,10 +132,9 @@ public class JDFJob extends Job {
 		
 		JDFJob jdfJob = new JDFJob(job.optString("jobId"), 
 				job.optString("schedPath"), 
-				job.optString("owner"), tasks);
+				job.optString("owner"), tasks, job.optString("uuid"));
 		LOGGER.debug("Job owner is: " +job.optString("owner"));
 		jdfJob.setFriendlyName(job.optString("name"));
-		jdfJob.setUUID(job.optString("uuid"));
 		return jdfJob;
 	}
 	

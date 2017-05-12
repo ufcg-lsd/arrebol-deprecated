@@ -32,7 +32,7 @@ public class ResourceTestUtil {
 		Mockito.when(this.arrebolController.getProperties()).thenReturn(properties);
 		User userMock = Mockito.mock(User.class);
 		
-		Mockito.doReturn(ResourceTestUtil.DEFAULT_OWNER).when(userMock).getUsername();
+		Mockito.doReturn(ResourceTestUtil.DEFAULT_OWNER).when(userMock).getUser();
 
 		Mockito.when(this.arrebolController.authUser(null)).thenReturn(userMock);
 		

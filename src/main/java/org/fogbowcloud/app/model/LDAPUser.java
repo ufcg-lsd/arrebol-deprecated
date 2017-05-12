@@ -3,20 +3,21 @@ package org.fogbowcloud.app.model;
 public class LDAPUser implements User{
 
 	private String user;
-	private String UUID;
+	private String username;
 	
-	public LDAPUser(String user) {
+	public LDAPUser(String user, String username) {
 		this.user = user;
+		this.username = username;
 	}
 	
 	@Override
-	public String getUsername() {
+	public String getUser() {
 		return this.user;
 	}
 
 	@Override
-	public String getUUID() {
-		return this.UUID;
+	public String getUsername() {
+		return this.username;
 	}
 
 }

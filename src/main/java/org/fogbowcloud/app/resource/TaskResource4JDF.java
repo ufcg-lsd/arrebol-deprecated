@@ -33,7 +33,7 @@ public class TaskResource4JDF extends ServerResource {
 		User owner = ResourceUtil.authenticateUser(application, (Series)getRequestAttributes()
 				.get("org.restlet.http.headers"));		
 		
-		Task task = application.getTaskById(taskId, owner.getUsername());
+		Task task = application.getTaskById(taskId, owner.getUser());
 		LOGGER.debug("TaskId " + taskId + " is of task " + task);
 		if (task == null) {
 			throw new ResourceException(404, new Exception("Task id not found"));
@@ -42,7 +42,7 @@ public class TaskResource4JDF extends ServerResource {
 		JSONObject jsonTask = new JSONObject();
 
 		jsonTask.put("metadata", task.getAllMetadata());
-		jsonTask.put("state", application.getTaskState(taskId, owner.getUsername()).toString());
+		jsonTask.put("state", application.getTaskState(taskId, owner.getUser()).toString());
 		return new StringRepresentation(jsonTask.toString(), MediaType.TEXT_PLAIN);
 	}
 }
