@@ -65,6 +65,8 @@ This two commands are used to copy files from and to the VM that will run your t
  GET remotefile localfile - where the localfile is writable to the scheduler that will run the job 
 ```
 
+The file or files to be transfered must be inside a special directory that shares a group with the user that runs arrebol
+
 ### Running a job via the Arrebol CLI
 
 After unpacking a **Arrebol** release package (listed [here](https://github.com/fogbow/arrebol/releases)), the **Arrebol CLI** script can be found in ```bin/```directory.
