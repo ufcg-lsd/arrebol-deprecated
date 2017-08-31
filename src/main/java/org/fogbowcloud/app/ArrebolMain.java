@@ -28,18 +28,34 @@ public class ArrebolMain {
 
 		Properties properties = new Properties();
 
-		final String ARREBOL_CONF_PATH = args[0];
-		final String SCHED_CONF_PATH = args[1];
-		properties.load(new FileInputStream(ARREBOL_CONF_PATH));
-		
-		properties.load(new FileInputStream(SCHED_CONF_PATH));
+		String arrebolConfPath = args[0];
+		String schedConfPath = args[1];
+
+		properties.load(new FileInputStream(arrebolConfPath));
+		properties.load(new FileInputStream(schedConfPath));
 
 		if (!checkProperties(properties)) {
 			System.err.println("Missing required property, check Log for more information.");
 			System.exit(1);
 		}
 
-		JDFSchedulerApplication app = new JDFSchedulerApplication(new ArrebolController(properties));
+		final JDFSchedulerApplication app = new JDFSchedulerApplication(new ArrebolController(properties));
+		final Thread mainThread = Thread.currentThread();
+		Runtime.getRuntime().addShutdownHook(
+				new Thread() {
+					@Override
+					public void run() {
+						try {
+							app.stopServer();
+							mainThread.join();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}
+		);
 		app.startServer();
 	}
 
