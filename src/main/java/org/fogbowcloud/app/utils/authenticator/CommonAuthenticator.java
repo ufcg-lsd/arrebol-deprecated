@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.model.UserImpl;
-import org.fogbowcloud.app.utils.PropertiesConstants;
+import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.app.utils.RSAUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,10 +25,10 @@ public class CommonAuthenticator implements ArrebolAuthenticator {
 	private ConcurrentMap<String, String> userList;
 	
 	public CommonAuthenticator(Properties properties) {
-		final File usersFile = new File(PropertiesConstants.DB_FILE_USERS);
+		final File usersFile = new File(ArrebolPropertiesConstants.DB_FILE_USERS);
 		this.usersDB = DBMaker.newFileDB(usersFile).make();
-		this.usersDB.checkShouldCreate(PropertiesConstants.DB_MAP_USERS);
-		this.userList = usersDB.getHashMap(PropertiesConstants.DB_MAP_USERS);
+		this.usersDB.checkShouldCreate(ArrebolPropertiesConstants.DB_MAP_USERS);
+		this.userList = usersDB.getHashMap(ArrebolPropertiesConstants.DB_MAP_USERS);
 	}
 	
 	public static boolean checkUserSignature(String hash, User user, int nonce)

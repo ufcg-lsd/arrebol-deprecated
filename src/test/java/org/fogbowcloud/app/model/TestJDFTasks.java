@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
-import org.fogbowcloud.app.utils.PropertiesConstants;
+import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.blowout.core.model.Command;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.junit.Test;
@@ -22,9 +22,9 @@ public class TestJDFTasks {
 	@Test
 	public void testJDFCompilation () throws CompilerException, IOException {
 		Properties properties = new Properties();
-		properties.setProperty(PropertiesConstants.INFRA_RESOURCE_USERNAME, "infraname");
-		properties.setProperty(JDFTasks.PUBLIC_KEY_CONSTANT, "public_key"); 
-		properties.setProperty(JDFTasks.PRIVATE_KEY_FILEPATH, "file path");
+		properties.setProperty(ArrebolPropertiesConstants.INFRA_RESOURCE_USERNAME, "infraname");
+		properties.setProperty(ArrebolPropertiesConstants.PUBLIC_KEY_CONSTANT, "public_key");
+		properties.setProperty(ArrebolPropertiesConstants.PRIVATE_KEY_FILEPATH, "file path");
 		JDFJob testJob = new JDFJob("", "arrebolservice", new ArrayList<Task>(), "arrebolservice");
 		ArrayList<Task> tasks = (ArrayList<Task>) JDFTasks.getTasksFromJDFFile(testJob, EXSIMPLE_JOB, properties);
 		

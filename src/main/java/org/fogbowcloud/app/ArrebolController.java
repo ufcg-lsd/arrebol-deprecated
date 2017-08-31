@@ -16,7 +16,6 @@ import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.JDFTasks;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
-import org.fogbowcloud.app.utils.PropertiesConstants;
 import org.fogbowcloud.app.utils.authenticator.ArrebolAuthenticator;
 import org.fogbowcloud.app.utils.authenticator.Credential;
 import org.fogbowcloud.blowout.core.BlowoutController;
@@ -67,9 +66,9 @@ public class ArrebolController {
 		this.jobDataStore = new JobDataStore(properties.getProperty(AppPropertiesConstants.DB_DATASTORE_URL));
 
 		Boolean removePreviousResources = new Boolean(
-				this.properties.getProperty(PropertiesConstants.REMOVE_PREVIOUS_RESOURCES)).booleanValue();
+				this.properties.getProperty(ArrebolPropertiesConstants.REMOVE_PREVIOUS_RESOURCES)).booleanValue();
 
-		LOGGER.debug("Properties: " + properties.getProperty(PropertiesConstants.DEFAULT_SPECS_FILE_PATH));
+		LOGGER.debug("Properties: " + properties.getProperty(ArrebolPropertiesConstants.DEFAULT_SPECS_FILE_PATH));
 
 		// this.scheduler = new Scheduler(infraManager, );
 
@@ -79,16 +78,16 @@ public class ArrebolController {
 		blowoutController.start(removePreviousResources);
 
 		LOGGER.debug(
-				"Application to be started on port: " + properties.getProperty(PropertiesConstants.REST_SERVER_PORT));
+				"Application to be started on port: " + properties.getProperty(ArrebolPropertiesConstants.REST_SERVER_PORT));
 		LOGGER.info("Properties: " + properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
 
 		this.nonces = new ArrayList<Integer>();
 
 		LOGGER.debug("Starting Scheduler and Execution Monitor, execution monitor period: "
-				+ properties.getProperty(PropertiesConstants.EXECUTION_MONITOR_PERIOD));
+				+ properties.getProperty(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD));
 		executionMonitor = new ExecutionMonitorWithDB(blowoutController, this, jobDataStore);
 		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0, DEFAULT_EXECUTION_MONITOR_INTERVAL);
-		int schedulerPeriod = Integer.valueOf(properties.getProperty(PropertiesConstants.EXECUTION_MONITOR_PERIOD));
+		int schedulerPeriod = Integer.valueOf(properties.getProperty(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD));
 
 		restartAllJobs();
 		LOGGER.info("Starting scheduler with period: " + schedulerPeriod);
@@ -111,7 +110,7 @@ public class ArrebolController {
 	}
 
 	private ArrebolAuthenticator createAuthenticatorPluginInstance() throws Exception {
-		String providerClassName = this.properties.getProperty(PropertiesConstants.AUTHENTICATION_PLUGIN);
+		String providerClassName = this.properties.getProperty(ArrebolPropertiesConstants.AUTHENTICATION_PLUGIN);
 		Class<?> forName = Class.forName(providerClassName);
 		Object clazz = forName.getConstructor(Properties.class).newInstance(this.properties);
 		if (!(clazz instanceof ArrebolAuthenticator)) {

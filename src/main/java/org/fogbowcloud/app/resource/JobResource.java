@@ -14,7 +14,7 @@ import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
-import org.fogbowcloud.app.utils.PropertiesConstants;
+import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.app.utils.ServerResourceUtils;
 import org.fogbowcloud.blowout.core.exception.BlowoutException;
 import org.fogbowcloud.blowout.core.model.Task;
@@ -123,7 +123,7 @@ public class JobResource extends ServerResource {
 
 		Map<String, String> fieldMap = new HashMap<String, String>();
 		fieldMap.put(JDF_FILE_PATH, null);
-		fieldMap.put(PropertiesConstants.X_CREDENTIALS, null);
+		fieldMap.put(ArrebolPropertiesConstants.X_CREDENTIALS, null);
 		fieldMap.put(SCHED_PATH, null);
 		
 		ServerResourceUtils.loadFields(entity, fieldMap, new HashMap<String, File>());
@@ -137,7 +137,7 @@ public class JobResource extends ServerResource {
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 		@SuppressWarnings("rawtypes")
 		Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
-		headers.add(PropertiesConstants.X_CREDENTIALS, fieldMap.get(PropertiesConstants.X_CREDENTIALS));
+		headers.add(ArrebolPropertiesConstants.X_CREDENTIALS, fieldMap.get(ArrebolPropertiesConstants.X_CREDENTIALS));
 		User owner = ResourceUtil.authenticateUser(application, headers);
 		String jdfAbsolutePath = fieldMap.get(JDF_FILE_PATH);
 		try {

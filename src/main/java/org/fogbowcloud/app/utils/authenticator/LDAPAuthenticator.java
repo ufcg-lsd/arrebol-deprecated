@@ -17,7 +17,7 @@ import javax.naming.directory.SearchResult;
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.model.LDAPUser;
 import org.fogbowcloud.app.model.User;
-import org.fogbowcloud.app.utils.PropertiesConstants;
+import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 
 public class LDAPAuthenticator implements ArrebolAuthenticator {
 	
@@ -42,8 +42,8 @@ public class LDAPAuthenticator implements ArrebolAuthenticator {
 	
 
 	public LDAPAuthenticator(Properties properties) {
-		this.ldapUrl = properties.getProperty(PropertiesConstants.LDAP_AUTHENTICATION_URL);
-		this.ldapBase = properties.getProperty(PropertiesConstants.LDAP_AUTHENTICATION_BASE);
+		this.ldapUrl = properties.getProperty(ArrebolPropertiesConstants.LDAP_AUTHENTICATION_URL);
+		this.ldapBase = properties.getProperty(ArrebolPropertiesConstants.LDAP_AUTHENTICATION_BASE);
 	}
 
 	@Override
@@ -86,7 +86,7 @@ public class LDAPAuthenticator implements ArrebolAuthenticator {
 			String dn = null;
 
 			if (enm.hasMore()) {
-				SearchResult result = (SearchResult) enm.next();
+				SearchResult result = enm.next();
 				dn = result.getNameInNamespace();
 				userName = extractUserName(result);
 			}
@@ -110,7 +110,9 @@ public class LDAPAuthenticator implements ArrebolAuthenticator {
 			LOGGER.error("Error while authenticate " + uid +" - Error: ", e);
  			throw e;
 		} finally {
-			dirContext.close();
+			if (dirContext != null) {
+				dirContext.close();
+			}
 		}
 
 	}
@@ -135,9 +137,9 @@ public class LDAPAuthenticator implements ArrebolAuthenticator {
 	
 	private String extractUserName(SearchResult result) {
 		String nameGroup[] = result.getName().split(",");
-		if(nameGroup != null && nameGroup.length > 0){
+		if(nameGroup.length > 0){
 			String cnName[] = nameGroup[0].split("=");
-			if(cnName != null && cnName.length > 1){
+			if(cnName.length > 1){
 				return cnName[1];
 			}
 		}

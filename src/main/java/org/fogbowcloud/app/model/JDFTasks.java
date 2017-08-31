@@ -20,7 +20,6 @@ import org.fogbowcloud.app.jdfcompiler.semantic.JDLCommand;
 import org.fogbowcloud.app.jdfcompiler.semantic.JDLCommand.JDLCommandType;
 import org.fogbowcloud.app.jdfcompiler.semantic.RemoteCommand;
 import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
-import org.fogbowcloud.app.utils.PropertiesConstants;
 import org.fogbowcloud.blowout.core.model.Command;
 import org.fogbowcloud.blowout.core.model.Specification;
 import org.fogbowcloud.blowout.core.model.Task;
@@ -32,18 +31,8 @@ public class JDFTasks {
 
 	// FIXME: what is this?
 	private static final String SANDBOX = "sandbox";
-
-	// FIXME: what is this?
-	private static final String LOCAL_OUTPUT_FOLDER = "local_output";
-
-	private static final String REMOTE_OUTPUT_FOLDER = "remote_output_folder";
-
-	protected static final String PRIVATE_KEY_FILEPATH = "private_key_filepath";
-
-	private static String standardImage = "fogbow-ubuntu";
-
-	protected static final String PUBLIC_KEY_CONSTANT = "public_key";
-	private final static String SSH_SCP_PRECOMMAND = "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no";
+	private static final String standardImage = "fogbow-ubuntu";
+	private static final String SSH_SCP_PRECOMMAND = "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no";
 
 	private static final Logger LOGGER = Logger.getLogger(JDFTasks.class);
 
@@ -51,7 +40,6 @@ public class JDFTasks {
 	 *
 	 * @param job
 	 * @param jdfFilePath
-	 * @param schedPath
 	 * @param properties
 	 * @return
 	 * @throws IllegalArgumentException
@@ -97,10 +85,12 @@ public class JDFTasks {
 				}
 
 				Specification spec = new Specification(image,
-						properties.getProperty(PropertiesConstants.INFRA_RESOURCE_USERNAME),
-						properties.getProperty(PUBLIC_KEY_CONSTANT), properties.getProperty(PRIVATE_KEY_FILEPATH), "",
+						properties.getProperty(ArrebolPropertiesConstants.INFRA_RESOURCE_USERNAME),
+						properties.getProperty(ArrebolPropertiesConstants.PUBLIC_KEY_CONSTANT),
+						properties.getProperty(ArrebolPropertiesConstants.PRIVATE_KEY_FILEPATH),
+						"",
 						"");
-				LOGGER.debug(properties.getProperty(PropertiesConstants.INFRA_RESOURCE_USERNAME));
+				LOGGER.debug(properties.getProperty(ArrebolPropertiesConstants.INFRA_RESOURCE_USERNAME));
 
 				int i = 0;
 				for (String req : jobRequirementes.split("and")) {
@@ -146,23 +136,25 @@ public class JDFTasks {
 						LOGGER.debug("could not finish the query on user UUID", e);
 					}
 					String inputLine;
-					String result = "";
+					StringBuilder resultBuilder = new StringBuilder();
 					while ((inputLine = in.readLine()) != null) {
 				        System.out.println(inputLine);
-				        result += inputLine;
+				        resultBuilder.append(inputLine);
 				    }
+					String result = resultBuilder.toString();
+
 					LOGGER.debug("========================================================" +result);
 					if (result.contains("no such user")) throw new SecurityException("User "+job.getUserId()+" is not part of this security group");
 					in.close();
 					 
 					Task task = new TaskImpl("TaskNumber" + "-" + taskID + "-" + UUID.randomUUID(), spec, result);
 					task.putMetadata(TaskImpl.METADATA_REMOTE_OUTPUT_FOLDER,
-							properties.getProperty(REMOTE_OUTPUT_FOLDER));
+							properties.getProperty(ArrebolPropertiesConstants.REMOTE_OUTPUT_FOLDER));
 					task.putMetadata(TaskImpl.METADATA_LOCAL_OUTPUT_FOLDER,
-							schedPath + properties.getProperty(LOCAL_OUTPUT_FOLDER));
+							schedPath + properties.getProperty(ArrebolPropertiesConstants.LOCAL_OUTPUT_FOLDER));
 					task.putMetadata(TaskImpl.METADATA_SANDBOX, SANDBOX);
 					task.putMetadata(TaskImpl.METADATA_REMOTE_COMMAND_EXIT_PATH,
-							properties.getProperty(REMOTE_OUTPUT_FOLDER) + "/exit");
+							properties.getProperty(ArrebolPropertiesConstants.REMOTE_OUTPUT_FOLDER) + "/exit");
 					task.putMetadata(ArrebolPropertiesConstants.JOB_ID, job.getId());
 					task.putMetadata(ArrebolPropertiesConstants.OWNER, job.getOwner());
 
@@ -191,7 +183,7 @@ public class JDFTasks {
 	 * This method translates the JDF remote executable command into the JDL
 	 * format
 	 *
-	 * @param jobID
+	 * @param jobId
 	 * @param taskSpec
 	 *            The task specification {@link TaskSpecification}
 	 * @param task
@@ -215,21 +207,14 @@ public class JDFTasks {
 	}
 
 	/**
-<<<<<<< HEAD
-	 * This method translates the Ourgrid input IOBlocks to JDL InputSandbox
-=======
 	 * It translates the input IOBlocks to JDL InputSandbox
->>>>>>> Fixed most of the FIXMEs
 	 *
 	 * @param jobId
 	 * @param taskSpec
 	 *            The task specification {@link TaskSpecification}
 	 * @param task
 	 *            The output expression containing the JDL job
-<<<<<<< HEAD
-=======
 	 * @param schedPath
->>>>>>> Fixed most of the FIXMEs
 	 */
 	private static void parseInitCommands(String jobId, TaskSpecification taskSpec, Task task, String schedPath) {
 
@@ -289,7 +274,7 @@ public class JDFTasks {
 	}
 
 	private static Command mkdirRemoteFolder(String folder) {
-		if (folder == "") {
+		if (folder.equals("")) {
 			return null;
 		}
 		String mkdirCommand = "mkdir -p " + folder;
@@ -307,7 +292,7 @@ public class JDFTasks {
 	/**
 	 * This method translates the Ourgrid output IOBlocks to JDL InputSandbox
 	 *
-	 * @param jobID
+	 * @param jobId
 	 * @param taskSpec
 	 *            The task specification {@link TaskSpecification}
 	 * @param task
@@ -336,7 +321,7 @@ public class JDFTasks {
 	}
 
 	private static Command mkdirLocalFolder(String folder) {
-		if (folder == "") {
+		if (folder.equals("")) {
 			return null;
 		}
 		String mkdirCommand = "su $UserID ; " + "mkdir -p " + folder;

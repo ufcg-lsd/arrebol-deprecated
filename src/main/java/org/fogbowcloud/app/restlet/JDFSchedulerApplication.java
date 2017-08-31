@@ -16,7 +16,7 @@ import org.fogbowcloud.app.resource.JobResource;
 import org.fogbowcloud.app.resource.NonceResource;
 import org.fogbowcloud.app.resource.TaskResource4JDF;
 import org.fogbowcloud.app.resource.UserResource;
-import org.fogbowcloud.app.utils.PropertiesConstants;
+import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.blowout.core.exception.BlowoutException;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskState;
@@ -42,13 +42,13 @@ public class JDFSchedulerApplication extends Application {
 
 	public void startServer() throws Exception {
 		Properties properties = this.arrebolController.getProperties();
-		if (!properties.containsKey(PropertiesConstants.REST_SERVER_PORT)) {
+		if (!properties.containsKey(ArrebolPropertiesConstants.REST_SERVER_PORT)) {
 			throw new IllegalArgumentException(
-					PropertiesConstants.REST_SERVER_PORT
+					ArrebolPropertiesConstants.REST_SERVER_PORT
 							+ " is missing on properties.");
 		}
 		Integer restServerPort = Integer.valueOf((String) properties
-				.get(PropertiesConstants.REST_SERVER_PORT));
+				.get(ArrebolPropertiesConstants.REST_SERVER_PORT));
 
 		LOGGER.info("Starting service on port: " + restServerPort);
 

@@ -19,7 +19,7 @@ import org.fogbowcloud.app.ArrebolController;
 import org.fogbowcloud.app.resource.JobResource;
 import org.fogbowcloud.app.resource.ResourceTestUtil;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
-import org.fogbowcloud.app.utils.PropertiesConstants;
+import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.app.utils.authenticator.Credential;
 import org.fogbowcloud.blowout.core.util.AppPropertiesConstants;
 import org.junit.Test;
@@ -40,7 +40,7 @@ public class ArrebolControllerIT {
 	
 	@Test
 	public void testNormalExecution() {
-		/**
+		/*
 		 * Required properties to be set:
 		 * 
 		 * (app) DB_DATASTORE_URL 
@@ -62,11 +62,11 @@ public class ArrebolControllerIT {
 		 * (app) INFRA_RESOURCE_REUSE_TIMES
 		 */
 		Properties properties = new Properties();
-		properties.setProperty(PropertiesConstants.REMOVE_PREVIOUS_RESOURCES, "true");
-		properties.setProperty(PropertiesConstants.DEFAULT_SPECS_FILE_PATH, "defaulResource.json");
-		properties.setProperty(PropertiesConstants.REST_SERVER_PORT, "44444");
-		properties.setProperty(PropertiesConstants.EXECUTION_MONITOR_PERIOD, "30000");
-		properties.setProperty(PropertiesConstants.AUTHENTICATION_PLUGIN, "org.fogbowcloud.app.integration.FakeAuthenticationPlugin");
+		properties.setProperty(ArrebolPropertiesConstants.REMOVE_PREVIOUS_RESOURCES, "true");
+		properties.setProperty(ArrebolPropertiesConstants.DEFAULT_SPECS_FILE_PATH, "defaulResource.json");
+		properties.setProperty(ArrebolPropertiesConstants.REST_SERVER_PORT, "44444");
+		properties.setProperty(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD, "30000");
+		properties.setProperty(ArrebolPropertiesConstants.AUTHENTICATION_PLUGIN, "org.fogbowcloud.app.integration.FakeAuthenticationPlugin");
 		properties.setProperty(AppPropertiesConstants.DB_DATASTORE_URL, "jdbc:sqlite:/tmp/testdatastore");
 		properties.setProperty(AppPropertiesConstants.IMPLEMENTATION_BLOWOUT_POOL, "org.fogbowcloud.blowout.pool.DefaultBlowoutPool");
 		properties.setProperty(AppPropertiesConstants.IMPLEMENTATION_INFRA_PROVIDER, "org.fogbowcloud.blowout.infrastructure.provider.fogbow.FogbowInfrastructureProvider");
@@ -91,9 +91,9 @@ public class ArrebolControllerIT {
 		}
 		String owner = ResourceTestUtil.DEFAULT_OWNER;
 		HttpPost post = new HttpPost(DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
-		post.addHeader(new BasicHeader(PropertiesConstants.X_AUTH_USER, owner));
+		post.addHeader(new BasicHeader(ArrebolPropertiesConstants.X_AUTH_USER, owner));
 		Credential cred = new Credential(owner, "blabla", this.ac.getNonce());
-		post.addHeader(new BasicHeader(PropertiesConstants.X_CREDENTIALS, cred.toJSON().toString()));
+		post.addHeader(new BasicHeader(ArrebolPropertiesConstants.X_CREDENTIALS, cred.toJSON().toString()));
 		
 		
 		
