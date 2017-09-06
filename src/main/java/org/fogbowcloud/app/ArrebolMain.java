@@ -114,8 +114,13 @@ public class ArrebolMain {
             try {
                 MessageDigest.getInstance(properties.getProperty(ArrebolPropertiesConstants.ENCRYPTION_TYPE));
             } catch (NoSuchAlgorithmException e) {
-                String message = "Property " + ArrebolPropertiesConstants.ENCRYPTION_TYPE + "(" + properties.getProperty(ArrebolPropertiesConstants.ENCRYPTION_TYPE) + ") does not refer to a valid encryption algorithm. Valid options are MD5, SHA1 and SHA256.";
-                LOGGER.error(message);
+                String builder = "Property " +
+                        ArrebolPropertiesConstants.ENCRYPTION_TYPE +
+                        "(" +
+                        properties.getProperty(ArrebolPropertiesConstants.ENCRYPTION_TYPE) +
+                        ") does not refer to a valid encryption algorithm." +
+                        " Valid options are 'MD5', 'SHA-1' and 'SHA-256'.";
+                LOGGER.error(builder);
                 return false;
             }
         }
