@@ -31,15 +31,11 @@ import org.mockito.Mockito;
 public class TestArrebolController {
 
 	private static final String FAKE_UUID = "1234";
-
 	private static final String DATASTORE_URL = "datastore_url";
-
 	private static final String owner = "owner";
 
 	private ArrebolController arrebolController;
-
 	private BlowoutController blowoutController;
-
 	private JobDataStore dataStore;
 
 	@Before
@@ -55,7 +51,7 @@ public class TestArrebolController {
 		properties.put(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD, "60000");
 		properties.put(AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT, "300000000");
 		properties.put(AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME, "30000");
-		properties.put(DATASTORE_URL, "jdbc:h2:/home/igorvcs/git/arrebol/datastores/testfogbowresourcesdatastore");
+		properties.put(DATASTORE_URL, "jdbc:h2:/home/lucas.farias/arrebol/datastores/testfogbowresourcesdatastore");
 		this.arrebolController = Mockito.spy(new ArrebolController(properties));
 		this.blowoutController = mock(BlowoutController.class);
 		this.dataStore = Mockito.spy(new JobDataStore(properties.getProperty(DATASTORE_URL)));
@@ -63,7 +59,6 @@ public class TestArrebolController {
 		this.arrebolController.setBlowoutController(blowoutController);
 		this.arrebolController.setDataStore(dataStore);
 	}
-	
 
 	@After
 	public void tearDown() {
@@ -73,14 +68,12 @@ public class TestArrebolController {
 
 	@Test
 	public void testRestart() throws BlowoutException, JSONException{
-		
 		ArrayList<Task> taskList = new ArrayList<Task>();
 		Specification spec = new Specification("image", "owner", "publicKey", "privateKeyFilePath", "", "");
-		Task task = new TaskImpl("taskId",
-				spec, FAKE_UUID);
+		Task task = new TaskImpl("taskId", spec, FAKE_UUID);
 		taskList.add(task);
 		
-		JDFJob job = new JDFJob("", owner, taskList, null);
+		JDFJob job = new JDFJob("", owner, taskList, "");
 		this.arrebolController.getJobDataStore().insert(job);
 		
 		try {
@@ -88,23 +81,20 @@ public class TestArrebolController {
 		} catch (BlowoutException e) {
 		}
 		Assert.assertEquals(1, this.arrebolController.getAllJobs("owner").size());
-		assert(this.arrebolController.getAllJobs("owner").get(0).equals(job));
+		JDFJob job1 = this.arrebolController.getAllJobs("owner").get(0);
+		assert(job1.equals(job));
 		System.out.println(this.arrebolController.getAllJobs("owner").get(0).getTaskById("taskId").getSpecification().toJSON().toString());
 		
 		Specification spec2 =  Specification.fromJSON(new JSONObject(this.arrebolController.getAllJobs("owner").get(0).getTaskById("taskId").getSpecification().toJSON().toString()));
 		Assert.assertEquals(1, this.arrebolController.getAllJobs("owner").get(0).getTaskList().size());
 		assert(spec.equals(spec2));
-		assert(task.equals(this.arrebolController.getAllJobs("owner").get(0).getTaskList().get(0)));
-		assert(spec.equals(this.arrebolController.getAllJobs("owner").get(0).getTaskList().get(0).getSpecification()));
-		Mockito.verify(this.blowoutController).addTaskList(any(ArrayList.class));
-		
-		
+		assert(task.equals(this.arrebolController.getAllJobs("owner").get(0).getTaskList().get("taskId")));
+		assert(spec.equals(this.arrebolController.getAllJobs("owner").get(0).getTaskList().get("taskId").getSpecification()));
+		Mockito.verify(this.blowoutController).addTaskList(taskList);
 	}
-	
-	
+
 	@Test
 	public void testGetJobById() {
-
 		JDFJob job = new JDFJob("jobId00", owner, new ArrayList<Task>(), null);
 		String jobId = "jobId00";
 		doReturn(job).when(dataStore).getByJobId(jobId, owner);
