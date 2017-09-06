@@ -238,15 +238,13 @@ public class JobDataStore {
 		PreparedStatement statement = null;
 		Connection conn = null;
 		try {
-
 			conn = getConnection();
 			statement = conn.prepareStatement(DELETE_BY_JOB_ID_SQL);
 			statement.setString(1, jobId);
 			statement.setString(2, owner);
 			boolean result = statement.execute();
-			conn.commit();
+//			conn.commit(); // database on autocommit
 			return result;
-
 		} catch (SQLException e) {
 			LOGGER.error("Couldn't delete registres on " + JOBS_TABLE_NAME + " with Job id ["
 					+ jobId + "]", e);

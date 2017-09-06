@@ -121,7 +121,7 @@ public class JobResource extends ServerResource {
 			throw new ResourceException(HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE);
 		}
 
-		Map<String, String> fieldMap = new HashMap<String, String>();
+		Map<String, String> fieldMap = new HashMap<>();
 		fieldMap.put(JDF_FILE_PATH, null);
 		fieldMap.put(ArrebolPropertiesConstants.X_CREDENTIALS, null);
 		fieldMap.put(SCHED_PATH, null);
@@ -135,7 +135,6 @@ public class JobResource extends ServerResource {
 		String schedPath = fieldMap.get(SCHED_PATH);
 
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
-		@SuppressWarnings("rawtypes")
 		Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
 		headers.add(ArrebolPropertiesConstants.X_CREDENTIALS, fieldMap.get(ArrebolPropertiesConstants.X_CREDENTIALS));
 		User owner = ResourceUtil.authenticateUser(application, headers);
@@ -147,16 +146,10 @@ public class JobResource extends ServerResource {
 			return new StringRepresentation(jobId, MediaType.TEXT_PLAIN);
 		} catch (CompilerException ce) {
 			LOGGER.debug(ce.getMessage(), ce);
-			throw new ResourceException(HttpStatus.SC_INTERNAL_SERVER_ERROR, ce);
-		} catch (IllegalArgumentException iae) {
+			throw new ResourceException(HttpStatus.SC_INTERNAL_SERVER_ERROR, ce.getMessage());
+		} catch (IllegalArgumentException | NameAlreadyInUseException | BlowoutException iae) {
 			LOGGER.debug(iae.getMessage(), iae);
-			throw new ResourceException(HttpStatus.SC_BAD_REQUEST, iae);
-		} catch (NameAlreadyInUseException e) {
-			LOGGER.debug(e.getMessage(), e);
-			throw new ResourceException(HttpStatus.SC_BAD_REQUEST, e);
-		} catch (BlowoutException be) {
-			LOGGER.debug(be.getMessage(), be);
-			throw new ResourceException(HttpStatus.SC_BAD_REQUEST, be);
+			throw new ResourceException(HttpStatus.SC_BAD_REQUEST, iae.getMessage());
 		}
 	}
 
@@ -164,9 +157,10 @@ public class JobResource extends ServerResource {
 	public StringRepresentation stopJob() throws IOException, GeneralSecurityException {
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 
-		@SuppressWarnings("rawtypes")
-		User owner = ResourceUtil.authenticateUser(application,
-				(Series) getRequestAttributes().get("org.restlet.http.headers"));
+		User owner = ResourceUtil.authenticateUser(
+				application,
+				(Series) getRequestAttributes().get("org.restlet.http.headers")
+		);
 
 		String JDFString = (String) getRequest().getAttributes().get(JOBPATH);
 
@@ -175,7 +169,7 @@ public class JobResource extends ServerResource {
 		String jobId = application.stopJob(JDFString, owner.getUser());
 
 		if (jobId == null) {
-			throw new ResourceException(404);
+			throw new ResourceException(404, "Job not found.");
 		}
 
 		return new StringRepresentation(jobId, MediaType.TEXT_PLAIN);

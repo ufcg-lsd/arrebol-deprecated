@@ -49,7 +49,7 @@ public class JDFTasks {
 	public static List<Task> getTasksFromJDFFile(JDFJob job, String jdfFilePath, Properties properties)
 			throws CompilerException, IOException {
 
-		ArrayList<Task> taskList = new ArrayList<Task>();
+		ArrayList<Task> taskList = new ArrayList<>();
 
 		if (jdfFilePath == null) {
 			throw new IllegalArgumentException("jdfFilePath cannot be null");

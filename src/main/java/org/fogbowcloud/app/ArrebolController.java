@@ -1,6 +1,9 @@
 package org.fogbowcloud.app;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,9 +33,6 @@ import org.json.JSONObject;
 
 public class ArrebolController {
 
-	private static final int DEFAULT_EXECUTION_MONITOR_INTERVAL = 30000;
-	private static final int CHECKPOINT_INTERVAL = 30000;
-
 	private static final Logger LOGGER = Logger.getLogger(ArrebolController.class);
 
 	private BlowoutController blowoutController;
@@ -41,10 +41,8 @@ public class ArrebolController {
 	private HashMap<String, Task> finishedTasks;
 	private JobDataStore jobDataStore;
 	private ArrebolAuthenticator auth;
-	private ExecutionMonitorWithDB executionMonitor;
 
-	private static ManagerTimer executionMonitorTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
-	private static ManagerTimer checkPointTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
+    private static ManagerTimer executionMonitorTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
 
 	public ArrebolController(Properties properties) {
 		if (properties == null) {
@@ -70,33 +68,29 @@ public class ArrebolController {
 
 		LOGGER.debug("Properties: " + properties.getProperty(ArrebolPropertiesConstants.DEFAULT_SPECS_FILE_PATH));
 
-		// this.scheduler = new Scheduler(infraManager, );
-
-		// legacyJobs.toArray(new JDFJob[legacyJobs.size()])
-
 		this.blowoutController = new BlowoutController(this.properties);
 		blowoutController.start(removePreviousResources);
 
 		LOGGER.debug("Application to be started on port: " + properties.getProperty(ArrebolPropertiesConstants.REST_SERVER_PORT));
 		LOGGER.info("Properties: " + properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
 
-		this.nonces = new ArrayList<Integer>();
+		this.nonces = new ArrayList<>();
 
 		LOGGER.debug(
 				"Starting Scheduler and Execution Monitor, execution monitor period: "
 				+ properties.getProperty(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD)
 		);
-		executionMonitor = new ExecutionMonitorWithDB(blowoutController, this, jobDataStore);
-		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0, DEFAULT_EXECUTION_MONITOR_INTERVAL);
-		int schedulerPeriod = Integer.valueOf(properties.getProperty(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD));
+        ExecutionMonitorWithDB executionMonitor = new ExecutionMonitorWithDB(blowoutController, this, jobDataStore);
+        int schedulerPeriod = Integer.valueOf(properties.getProperty(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD));
+        LOGGER.info("Starting scheduler with period: " + schedulerPeriod);
+		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0, schedulerPeriod);
 
 		restartAllJobs();
-		LOGGER.info("Starting scheduler with period: " + schedulerPeriod);
 	}
 
 	public void restartAllJobs() throws BlowoutException {
 		for (JDFJob job : this.jobDataStore.getAll()) {
-			ArrayList<Task> taskList = new ArrayList<Task>();
+			ArrayList<Task> taskList = new ArrayList<>();
 			for (Task task : job.getTasks()) {
 				if (!task.isFinished()) {
 					taskList.add(task);
@@ -121,25 +115,23 @@ public class ArrebolController {
 	}
 
 	public JDFJob getJobById(String jobId, String owner) {
-		JDFJob jdfJob = this.jobDataStore.getByJobId(jobId, owner);
-		return jdfJob;
+        return this.jobDataStore.getByJobId(jobId, owner);
 	}
 
 	public String addJob(String jdfFilePath, String schedPath, User owner)
 			throws CompilerException, NameAlreadyInUseException, BlowoutException, IOException {
 		JDFJob tmpJob = new JDFJob(schedPath, owner.getUser(), new ArrayList<Task>(), owner.getUsername());
-		LOGGER.debug("Adding job  of owner" +owner.getUsername()+" to scheduler" );
+		LOGGER.debug("Adding job  of owner " +owner.getUsername()+" to scheduler" );
 		List<Task> taskList = getTasksFromJDFFile(jdfFilePath, tmpJob);
 		JDFJob job = new JDFJob(tmpJob.getId(), tmpJob.getSchedPath(), tmpJob.getOwner(), taskList, owner.getUsername());
 		job.setFriendlyName(tmpJob.getName());
 
 		if (job.getName() != null && !job.getName().trim().isEmpty()
 				&& getJobByName(job.getName(), owner.getUser()) != null) {
-
 			throw new NameAlreadyInUseException(
-					"The name " + job.getName() + " is already in use for the user " + owner);
+					"The name " + job.getName() + " is already in use for the user " + owner.getUser()
+			);
 		}
-
 
 		blowoutController.addTaskList(job.getTasks());
 		jobDataStore.insert(job);
@@ -190,8 +182,7 @@ public class ArrebolController {
 
 	public Task getTaskById(String taskId, String owner) {
 		for (JDFJob job : getAllJobs(owner)) {
-			JDFJob jdfJob = job;
-			Task task = jdfJob.getTaskById(taskId);
+            Task task = job.getTaskById(taskId);
 			if (task != null) {
 				return task;
 			}
@@ -250,8 +241,7 @@ public class ArrebolController {
 	}
 
 	protected List<Task> getTasksFromJDFFile(String jdfFilePath, JDFJob job) throws CompilerException, IOException {
-		List<Task> taskList = JDFTasks.getTasksFromJDFFile(job, jdfFilePath, this.properties);
-		return taskList;
+        return JDFTasks.getTasksFromJDFFile(job, jdfFilePath, this.properties);
 	}
 
 	public User getUser(String username) {

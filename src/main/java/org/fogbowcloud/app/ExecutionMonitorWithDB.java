@@ -14,20 +14,23 @@ import org.fogbowcloud.blowout.core.model.TaskState;
 
 public class ExecutionMonitorWithDB implements Runnable {
 
+    private static final Logger LOGGER = Logger.getLogger(ExecutionMonitorWithDB.class);
+
 	private BlowoutController blowoutController;
 	private ArrebolController arrebolController;
-	private static final Logger LOGGER = Logger.getLogger(ExecutionMonitorWithDB.class);
 	private ExecutorService service;
-	private JobDataStore db;
-	private ArrayList<JDFJob> jobMap;
+    private ArrayList<JDFJob> jobMap;
 
-	public ExecutionMonitorWithDB(BlowoutController blowoutController, ArrebolController arrebolController,
-			JobDataStore dataStore) {
+	ExecutionMonitorWithDB(BlowoutController blowoutController,
+                           ArrebolController arrebolController,
+                           JobDataStore dataStore) {
 		this(blowoutController, arrebolController, Executors.newFixedThreadPool(3), dataStore);
 	}
 
-	public ExecutionMonitorWithDB(BlowoutController blowoutController, ArrebolController arrebolController,
-			ExecutorService service, JobDataStore db) {
+	ExecutionMonitorWithDB(BlowoutController blowoutController,
+                           ArrebolController arrebolController,
+                           ExecutorService service,
+                           JobDataStore db) {
 		this.blowoutController = blowoutController;
 		this.arrebolController = arrebolController;
 		if (service == null) {
@@ -35,8 +38,7 @@ public class ExecutionMonitorWithDB implements Runnable {
 		} else {
 			this.service = service;
 		}
-		this.db = db;
-		this.jobMap = (ArrayList<JDFJob>) db.getAll();
+        this.jobMap = (ArrayList<JDFJob>) db.getAll();
 	}
 
 	@Override
@@ -57,22 +59,19 @@ public class ExecutionMonitorWithDB implements Runnable {
 
 	class TaskExecutionChecker implements Runnable {
 
-		protected Task task;
-		protected Job job;
+		private Task task;
 
-		public TaskExecutionChecker(Task task) {
+		TaskExecutionChecker(Task task) {
 			this.task = task;
 		}
 
 		@Override
 		public void run() {
-
 			TaskState state = blowoutController.getTaskState(task.getId());
 
 			if (TaskState.COMPLETED.equals(state)) {
 				blowoutController.cleanTask(task);
 				arrebolController.moveTaskToFinished(task);
-				return;
 			}
 		}
 	}
