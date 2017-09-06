@@ -158,7 +158,6 @@ public class JobResource extends ServerResource {
 			LOGGER.debug(be.getMessage(), be);
 			throw new ResourceException(HttpStatus.SC_BAD_REQUEST, be);
 		}
-
 	}
 
 	@Delete

@@ -66,7 +66,6 @@ public class JDFSchedulerApplication extends Application {
 		this.restletComponent = new Component();
 		this.restletComponent.getServers().add(Protocol.HTTP, restServerPort);
 		this.restletComponent.getDefaultHost().attach(this);
-
 		this.restletComponent.start();
 	}
 

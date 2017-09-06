@@ -38,6 +38,7 @@ public class ArrebolPropertiesConstants {
 	public static final String PRIVATE_KEY_FILEPATH = "private_key_filepath";
 	public static final String LOCAL_OUTPUT_FOLDER = "local_output";
 	public static final String REMOTE_OUTPUT_FOLDER = "remote_output_folder";
+	public static final String ENCRYPTION_TYPE = "encryption_type";
 
 	//___________ APPLICATION HEADERS  ____//	
 	public static final String X_AUTH_NONCE = "X-auth-nonce";
@@ -51,5 +52,4 @@ public class ArrebolPropertiesConstants {
 	//___________ ARREBOL CONSTANTS ____//
 	public static final String JOB_ID  = "jobID";
 	public static final String OWNER = "owner";
-	
 }

@@ -10,7 +10,6 @@ import org.fogbowcloud.blowout.core.model.Job;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskImpl;
 import org.fogbowcloud.blowout.core.model.TaskState;
-import org.hamcrest.core.IsInstanceOf;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,15 +32,16 @@ public class JDFJob extends Job {
 
 	public JDFJob(String schedPath, String owner, List<Task> taskList, String userID) {
 		super(taskList);
+		this.name = "";
 		this.schedPath = schedPath;
 		this.jobId = UUID.randomUUID().toString();
 		this.owner = owner;
 		this.userId = userID;
 	}
 	
-	public JDFJob(String jobId, String schedPath, 
-			String owner, List<Task> taskList, String userID) {
+	public JDFJob(String jobId, String schedPath, String owner, List<Task> taskList, String userID) {
 		super(taskList);
+		this.name = "";
 		this.schedPath = schedPath;
 		this.jobId = jobId;
 		this.owner = owner;
@@ -141,7 +141,7 @@ public class JDFJob extends Job {
 	@Override
 	public boolean equals(Object job2) {
 		if (job2 instanceof JDFJob) {
-			if (this.toJSON() ==  ((JDFJob) job2).toJSON()) {
+			if (this.toJSON().similar(((JDFJob) job2).toJSON())) {
 				return true;
 			}
 		}

@@ -20,7 +20,7 @@ import org.mapdb.DBMaker;
 public class CommonAuthenticator implements ArrebolAuthenticator {
 	public static final Logger LOGGER = Logger.getLogger(CommonAuthenticator.class);
 
-	private static final String COMMON_AUTH = "commonauth";
+	public static final String AUTH_NAME = "commonauth";
 	private DB usersDB;
 	private ConcurrentMap<String, String> userList;
 	
@@ -64,7 +64,7 @@ public class CommonAuthenticator implements ArrebolAuthenticator {
 
 	@Override
 	public String getAuthenticatorName() {
-		return COMMON_AUTH;
+		return AUTH_NAME;
 	}
 
 	@Override

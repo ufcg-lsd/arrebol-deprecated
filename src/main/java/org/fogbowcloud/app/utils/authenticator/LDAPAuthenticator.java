@@ -20,30 +20,28 @@ import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 
 public class LDAPAuthenticator implements ArrebolAuthenticator {
-	
 
-	private static final String LDAP_AUTH = "ldapauth";
-	public static final String CRED_AUTH_URL = "authUrl";
-	public static final String CRED_LDAP_BASE = "base";
-	public static final String CRED_LDAP_ENCRYPT = "encrypt";
-	public static final String CRED_PRIVATE_KEY = "privateKey";
-	public static final String CRED_PUBLIC_KEY = "publicKey";
-	public static final String ENCRYPT_TYPE = ":TYPE:";
-	public static final String ENCRYPT_PASS = ":PASS:";
-	public static final String PASSWORD_ENCRYPTED = "{" + ENCRYPT_TYPE + "}" + ENCRYPT_PASS;
-	public static final String ACCESSID_SEPARATOR = "!#!";
+	public static final String AUTH_NAME = "ldapauth";
+//	public static final String CRED_AUTH_URL = "authUrl";
+//	public static final String CRED_LDAP_BASE = "base";
+//	public static final String CRED_LDAP_ENCRYPT = "encrypt";
+//	public static final String CRED_PRIVATE_KEY = "privateKey";
+//	public static final String CRED_PUBLIC_KEY = "publicKey";
+	private static final String ENCRYPT_TYPE = ":TYPE:";
+	private static final String ENCRYPT_PASS = ":PASS:";
+	private static final String PASSWORD_ENCRYPTED = "{" + ENCRYPT_TYPE + "}" + ENCRYPT_PASS;
+//	public static final String ACCESSID_SEPARATOR = "!#!";
 
 	private String ldapBase;
 	private String encryptType;
-	
-	
+
 	private static final Logger LOGGER = Logger.getLogger(LDAPAuthenticator.class);
 	private String ldapUrl;
-	
 
 	public LDAPAuthenticator(Properties properties) {
 		this.ldapUrl = properties.getProperty(ArrebolPropertiesConstants.LDAP_AUTHENTICATION_URL);
 		this.ldapBase = properties.getProperty(ArrebolPropertiesConstants.LDAP_AUTHENTICATION_BASE);
+		this.encryptType = properties.getProperty(ArrebolPropertiesConstants.ENCRYPTION_TYPE);
 	}
 
 	@Override
@@ -60,9 +58,8 @@ public class LDAPAuthenticator implements ArrebolAuthenticator {
 		return user;
 	}
 
-	protected String ldapAuthenticate(String uid, String password) throws Exception {
-
-		Hashtable<String, String> env = new Hashtable<String, String>();
+	private String ldapAuthenticate(String uid, String password) throws Exception {
+		Hashtable<String, String> env = new Hashtable<>();
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 		env.put(Context.PROVIDER_URL, ldapUrl);
 		env.put(Context.SECURITY_AUTHENTICATION, "simple");
@@ -70,7 +67,6 @@ public class LDAPAuthenticator implements ArrebolAuthenticator {
 		DirContext dirContext = null;
 		String userName = null;
 		try {
-
 			password = encryptPassword(password);
 
 			dirContext = new InitialDirContext(env);
@@ -105,7 +101,6 @@ public class LDAPAuthenticator implements ArrebolAuthenticator {
 			enm.close();
 
 			return userName;
-			
 		} catch (Exception e) {
 			LOGGER.error("Error while authenticate " + uid +" - Error: ", e);
  			throw e;
@@ -114,11 +109,9 @@ public class LDAPAuthenticator implements ArrebolAuthenticator {
 				dirContext.close();
 			}
 		}
-
 	}
 
 	private String encryptPassword(String password) throws NoSuchAlgorithmException, UnsupportedEncodingException {
-
 		if (encryptType == null || encryptType.isEmpty()) {
 			return password;
 		}
@@ -132,7 +125,6 @@ public class LDAPAuthenticator implements ArrebolAuthenticator {
 		}
 
 		return PASSWORD_ENCRYPTED.replaceAll(ENCRYPT_TYPE, encryptType).replaceAll(ENCRYPT_PASS, hexString.toString());
-
 	}
 	
 	private String extractUserName(SearchResult result) {
@@ -148,7 +140,7 @@ public class LDAPAuthenticator implements ArrebolAuthenticator {
 
 	@Override
 	public String getAuthenticatorName() {
-		return LDAP_AUTH;
+		return AUTH_NAME;
 	}
 
 	@Override

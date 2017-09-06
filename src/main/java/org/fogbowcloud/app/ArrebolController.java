@@ -50,7 +50,7 @@ public class ArrebolController {
 		if (properties == null) {
 			throw new IllegalArgumentException("Properties cannot be null");
 		}
-		this.finishedTasks = new HashMap<String, Task>();
+		this.finishedTasks = new HashMap<>();
 		this.properties = properties;
 	}
 
@@ -59,14 +59,14 @@ public class ArrebolController {
 	}
 
 	public void init() throws Exception {
-
 		// FIXME: add as constructor param?
 		this.auth = createAuthenticatorPluginInstance();
 		// FIXME: replace by a proper
 		this.jobDataStore = new JobDataStore(properties.getProperty(AppPropertiesConstants.DB_DATASTORE_URL));
 
-		Boolean removePreviousResources = new Boolean(
-				this.properties.getProperty(ArrebolPropertiesConstants.REMOVE_PREVIOUS_RESOURCES)).booleanValue();
+		Boolean removePreviousResources = Boolean.valueOf(
+				this.properties.getProperty(ArrebolPropertiesConstants.REMOVE_PREVIOUS_RESOURCES)
+		);
 
 		LOGGER.debug("Properties: " + properties.getProperty(ArrebolPropertiesConstants.DEFAULT_SPECS_FILE_PATH));
 
@@ -77,21 +77,21 @@ public class ArrebolController {
 		this.blowoutController = new BlowoutController(this.properties);
 		blowoutController.start(removePreviousResources);
 
-		LOGGER.debug(
-				"Application to be started on port: " + properties.getProperty(ArrebolPropertiesConstants.REST_SERVER_PORT));
+		LOGGER.debug("Application to be started on port: " + properties.getProperty(ArrebolPropertiesConstants.REST_SERVER_PORT));
 		LOGGER.info("Properties: " + properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
 
 		this.nonces = new ArrayList<Integer>();
 
-		LOGGER.debug("Starting Scheduler and Execution Monitor, execution monitor period: "
-				+ properties.getProperty(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD));
+		LOGGER.debug(
+				"Starting Scheduler and Execution Monitor, execution monitor period: "
+				+ properties.getProperty(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD)
+		);
 		executionMonitor = new ExecutionMonitorWithDB(blowoutController, this, jobDataStore);
 		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0, DEFAULT_EXECUTION_MONITOR_INTERVAL);
 		int schedulerPeriod = Integer.valueOf(properties.getProperty(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD));
 
 		restartAllJobs();
 		LOGGER.info("Starting scheduler with period: " + schedulerPeriod);
-
 	}
 
 	public void restartAllJobs() throws BlowoutException {
@@ -121,7 +121,7 @@ public class ArrebolController {
 	}
 
 	public JDFJob getJobById(String jobId, String owner) {
-		JDFJob jdfJob = (JDFJob) this.jobDataStore.getByJobId(jobId, owner);
+		JDFJob jdfJob = this.jobDataStore.getByJobId(jobId, owner);
 		return jdfJob;
 	}
 
@@ -147,7 +147,6 @@ public class ArrebolController {
 	}
 
 	public ArrayList<JDFJob> getAllJobs(String owner) {
-
 		return (ArrayList<JDFJob>) this.jobDataStore.getAllByOwner(owner);
 	}
 
@@ -181,10 +180,9 @@ public class ArrebolController {
 			return null;
 		}
 		for (JDFJob job : this.jobDataStore.getAllByOwner(owner)) {
-			JDFJob jdfJob = (JDFJob) job;
 			// TODO review this IFs
-			if (jobName.equals(((JDFJob) job).getName())) {
-				return (JDFJob) job;
+			if (jobName.equals(job.getName())) {
+				return job;
 			}
 		}
 		return null;
@@ -192,7 +190,7 @@ public class ArrebolController {
 
 	public Task getTaskById(String taskId, String owner) {
 		for (JDFJob job : getAllJobs(owner)) {
-			JDFJob jdfJob = (JDFJob) job;
+			JDFJob jdfJob = job;
 			Task task = jdfJob.getTaskById(taskId);
 			if (task != null) {
 				return task;
@@ -202,7 +200,6 @@ public class ArrebolController {
 	}
 
 	public TaskState getTaskState(String taskId, String owner) {
-
 		Task task = finishedTasks.get(taskId);
 		if (task != null) {
 			return TaskState.COMPLETED;
@@ -230,7 +227,7 @@ public class ArrebolController {
 			return null;
 		}
 
-		Credential credential = null;
+		Credential credential;
 		try {
 			credential = Credential.fromJSON(new JSONObject(credentials));
 		} catch (JSONException e) {
@@ -239,7 +236,7 @@ public class ArrebolController {
 		}
 
 		LOGGER.debug("Checking nonce");
-		if (credential != null && this.nonces.contains(credential.getNonce())) {
+		if (this.nonces.contains(credential.getNonce())) {
 			return this.auth.authenticateUser(credential);
 		}
 		nonces.remove(credential.getNonce());

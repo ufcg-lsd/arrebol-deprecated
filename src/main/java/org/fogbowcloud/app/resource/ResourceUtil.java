@@ -13,15 +13,11 @@ import org.restlet.util.Series;
 
 public class ResourceUtil {
 
-	private static final Logger LOGGER = Logger
-			.getLogger(ResourceUtil.class);
-	
-	public static User authenticateUser(JDFSchedulerApplication application,
-			@SuppressWarnings("rawtypes") Series headers) throws IOException, GeneralSecurityException {
+	public static User authenticateUser(JDFSchedulerApplication application, Series headers)
+            throws IOException, GeneralSecurityException {
         String credentials = headers.getFirstValue(ArrebolPropertiesConstants.X_CREDENTIALS);
         User user = application.authUser(credentials);
         if (user == null) {
-        
         	throw new ResourceException(HttpStatus.SC_UNAUTHORIZED);
         }
         return user;
