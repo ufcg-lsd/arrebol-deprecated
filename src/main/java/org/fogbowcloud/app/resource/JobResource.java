@@ -36,6 +36,8 @@ public class JobResource extends ServerResource {
 
 	//FIXME: it seems we can make it simpler
 
+	private static final String COMPLETION = "completion";
+
 	private static final Logger LOGGER = Logger.getLogger(JobResource.class);
 	
 	public static final String JOB_LIST = "Jobs";
@@ -43,6 +45,7 @@ public class JobResource extends ServerResource {
 	private static final String JOB_ID = "id";
 	private static final String JOB_FRIENDLY = "name";
 	private static final String STATE = "state";
+	private static final String RETRIES = "retries";
 	private static final String TASK_ID = "taskid";
 	private static final String JOBPATH = "jobpath";
 	public static final String FRIENDLY = "friendly";
@@ -73,9 +76,11 @@ public class JobResource extends ServerResource {
 				if (job.getName() != null) {
 					jJob.put("id", job.getId());
 					jJob.put("name", job.getName());
+					jJob.put(COMPLETION, job.completionPercentage());
 
 				} else {
 					jJob.put("id: ", job.getId());
+					jJob.put(COMPLETION, job.completionPercentage());
 				}
 				jobs.put(jJob);
 			}
@@ -97,9 +102,11 @@ public class JobResource extends ServerResource {
 			}
 			jsonJob.put(JOB_FRIENDLY, jobId);
 			jsonJob.put(JOB_ID, job.getId());
+			jsonJob.put(COMPLETION, job.completionPercentage());
 		} else {
 			jsonJob.put(JOB_ID, jobId);
 			jsonJob.put(JOB_FRIENDLY, job.getName());
+			jsonJob.put(COMPLETION, job.completionPercentage());
 		}
 		LOGGER.debug("JobID " + jobId + " is of job " + job);
 
@@ -108,6 +115,7 @@ public class JobResource extends ServerResource {
 			jTask.put(TASK_ID, task.getId());
 			TaskState ts = application.getTaskState(task.getId(), owner.getUser());
 			jTask.put(STATE, ts != null ? ts.getDesc().toUpperCase() : "UNDEFINED");
+			jTask.put(RETRIES, task.getRetries() >= 0 ? task.getRetries() : "DIDN'T RUN");
 			jobTasks.put(jTask);
 		}
 		jsonJob.put(JOB_TASKS, jobTasks);

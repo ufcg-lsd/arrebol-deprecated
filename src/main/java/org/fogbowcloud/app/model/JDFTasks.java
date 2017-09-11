@@ -329,9 +329,9 @@ public class JDFTasks {
 	}
 
 	private static Command stageOutCommand(String remoteFile, String localFile) {
-		String scpCommand = "su $UUID ; " + "scp " + SSH_SCP_PRECOMMAND + " -P $" + AbstractResource.ENV_SSH_PORT
+		String scpCommand = "scp " + SSH_SCP_PRECOMMAND + " -P $" + AbstractResource.ENV_SSH_PORT
 				+ " -i $" + AbstractResource.ENV_PRIVATE_KEY_FILE + " $" + AbstractResource.ENV_SSH_USER + "@" + "$"
-				+ AbstractResource.ENV_HOST + ":" + remoteFile + " " + localFile;
+				+ AbstractResource.ENV_HOST + ": " + remoteFile + " " + localFile;
 		return new Command(scpCommand, Command.Type.LOCAL);
 	}
 

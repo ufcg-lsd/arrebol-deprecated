@@ -10,7 +10,6 @@ import org.fogbowcloud.blowout.core.model.Job;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskImpl;
 import org.fogbowcloud.blowout.core.model.TaskState;
-import org.hamcrest.core.IsInstanceOf;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,13 +29,16 @@ public class JDFJob extends Job {
 	private String schedPath;
 	private final String owner;
 	private final String userId;
-
+	private List<Task> allTasksOnJobCreation;
+	
+	
 	public JDFJob(String schedPath, String owner, List<Task> taskList, String userID) {
 		super(taskList);
 		this.schedPath = schedPath;
 		this.jobId = UUID.randomUUID().toString();
 		this.owner = owner;
 		this.userId = userID;
+		this.allTasksOnJobCreation = taskList;
 	}
 	
 	public JDFJob(String jobId, String schedPath, 
@@ -63,6 +65,14 @@ public class JDFJob extends Job {
 	public String getOwner() {
 		return this.owner;
 	}
+	
+	public float completionPercentage() {
+		float completedTasks = (float) 0.0;
+		for (Task task : getAllTasksOnJobCreation()) {
+			if(task.isFinished()) completedTasks++;
+		}
+		return (float) (100.0*completedTasks/getAllTasksOnJobCreation().size());
+	}
 
 	public Task getCompletedTask(String taskId) {
 		//TODO remove
@@ -83,12 +93,16 @@ public class JDFJob extends Job {
 		this.name = name;
 	}
 
+	public void setAllTasksOnJobCreation(List<Task> tasks) {
+		this.allTasksOnJobCreation = tasks;
+	}
+	
 	@Override
 	public void finish(Task task) {
 		getTaskById(task.getId()).finish();
 		
 	}
-
+	
 	@Override
 	public void fail(Task task) {
 		// TODO Auto-generated method stub
@@ -122,12 +136,16 @@ public class JDFJob extends Job {
 
 	public static JDFJob fromJSON(JSONObject job) {
 		List<Task> tasks = new ArrayList<Task>();
+		List<Task> allTasks = new ArrayList<Task>();
 		
 		JSONArray tasksJSON = job.optJSONArray("tasks");
 		for (int i = 0; i < tasksJSON.length(); i++) {
 			JSONObject taskJSON = tasksJSON.optJSONObject(i);
 			Task task = TaskImpl.fromJSON(taskJSON);
+			if (!task.isFinished()) {
 			tasks.add(task);
+			}
+			allTasks.add(task);
 		}
 		
 		JDFJob jdfJob = new JDFJob(job.optString("jobId"), 
@@ -135,6 +153,7 @@ public class JDFJob extends Job {
 				job.optString("owner"), tasks, job.optString("uuid"));
 		LOGGER.debug("Job owner is: " +job.optString("owner"));
 		jdfJob.setFriendlyName(job.optString("name"));
+		jdfJob.setAllTasksOnJobCreation(allTasks);
 		return jdfJob;
 	}
 	
@@ -148,4 +167,8 @@ public class JDFJob extends Job {
 		return false;
 	}
 
+	
+	public List<Task> getAllTasksOnJobCreation(){
+		return this.allTasksOnJobCreation;
+	}
 }
