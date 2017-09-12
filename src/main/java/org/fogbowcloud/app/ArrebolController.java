@@ -132,7 +132,7 @@ public class ArrebolController {
 		if (job.getName() != null && !job.getName().trim().isEmpty()
 				&& getJobByName(job.getName(), owner.getUser()) != null) {
 			throw new NameAlreadyInUseException(
-					"The name " + job.getName() + " is already in use for the user " + owner.getUser()
+					"The name '" + job.getName() + "' is already in use for the user '" + owner.getUser() + "'."
 			);
 		}
 

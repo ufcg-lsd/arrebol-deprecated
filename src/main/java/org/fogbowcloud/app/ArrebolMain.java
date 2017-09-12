@@ -3,15 +3,10 @@ package org.fogbowcloud.app;
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.exception.ArrebolException;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
-import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.blowout.core.exception.BlowoutException;
-import org.fogbowcloud.blowout.core.util.AppPropertiesConstants;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
 
 public class ArrebolMain {
@@ -64,9 +59,6 @@ public class ArrebolMain {
                     }
             );
             app.startServer();
-        } catch (ArrebolException e) {
-            LOGGER.error("Failed to initialize Arrebol.", e);
-            System.exit(1);
         } catch (BlowoutException e) {
             LOGGER.error("Failed to initialize Blowout.", e);
             System.exit(1);
