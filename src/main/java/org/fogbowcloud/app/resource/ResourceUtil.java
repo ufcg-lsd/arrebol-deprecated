@@ -11,15 +11,11 @@ import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.restlet.resource.ResourceException;
 import org.restlet.util.Series;
 
-public class ResourceUtil {
+class ResourceUtil {
 
-	public static User authenticateUser(JDFSchedulerApplication application, Series headers)
+	static User authenticateUser(JDFSchedulerApplication application, Series headers)
             throws IOException, GeneralSecurityException {
         String credentials = headers.getFirstValue(ArrebolPropertiesConstants.X_CREDENTIALS);
-        User user = application.authUser(credentials);
-        if (user == null) {
-        	throw new ResourceException(HttpStatus.SC_UNAUTHORIZED);
-        }
-        return user;
+        return application.authUser(credentials);
 	}
 }

@@ -53,7 +53,7 @@ public class LDAPAuthenticator implements ArrebolAuthenticator {
 		try {
 			user = new LDAPUser(ldapAuthenticate(username, password), username);
 		} catch (Exception e) {
-			LOGGER.error("Error while trying to log in with LDAP", e);
+			LOGGER.error("Error while authenticate " + username +" - Error: ", e);
 		}
 		return user;
 	}
@@ -101,9 +101,6 @@ public class LDAPAuthenticator implements ArrebolAuthenticator {
 			enm.close();
 
 			return userName;
-		} catch (Exception e) {
-			LOGGER.error("Error while authenticate " + uid +" - Error: ", e);
- 			throw e;
 		} finally {
 			if (dirContext != null) {
 				dirContext.close();

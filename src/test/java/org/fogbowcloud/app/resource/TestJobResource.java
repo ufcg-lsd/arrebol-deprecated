@@ -104,8 +104,8 @@ public class TestJobResource {
 		String owner = ResourceTestUtil.DEFAULT_OWNER;
 		
 		get.addHeader(new BasicHeader(ArrebolPropertiesConstants.X_AUTH_USER, owner));
-		ArrayList<Task> taskList = new ArrayList<Task>();
-		ArrayList<JDFJob> jobs = new ArrayList<JDFJob>();
+		ArrayList<Task> taskList = new ArrayList<>();
+		ArrayList<JDFJob> jobs = new ArrayList<>();
 		jobs.add(new JDFJob("schedPath", owner, taskList, null));
 		jobs.add(new JDFJob("schedPathTwo", owner, taskList, null));
 		jobs.add(new JDFJob("schedPathThree", owner, taskList, null));
@@ -117,7 +117,7 @@ public class TestJobResource {
 		
 		Assert.assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode()); 
 		Assert.assertTrue(response.getEntity().getContentType().getValue()
-				.contains(MediaType.TEXT_PLAIN.getName()));		
+				.contains(MediaType.TEXT_PLAIN.getName()));
 		JSONArray jsonArrayObject = new JSONObject(responseStr).getJSONArray(JobResource.JOB_LIST);
 		Assert.assertEquals(jobs.size(), jsonArrayObject.length());
 	}	
@@ -134,9 +134,9 @@ public class TestJobResource {
 		
 		HttpResponse response = HttpClients.createMinimal().execute(delete);		
 		
-		Assert.assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode()); 
+		Assert.assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 		Assert.assertTrue(response.getEntity().getContentType().getValue()
-				.contains(MediaType.TEXT_PLAIN.getName()));				
+				.contains(MediaType.TEXT_PLAIN.getName()));
 	}
 	
 	@Test
@@ -154,7 +154,7 @@ public class TestJobResource {
 		
 		HttpResponse response = HttpClients.createMinimal().execute(delete);
 		
-		Assert.assertEquals(HttpStatus.SC_NOT_FOUND, response.getStatusLine().getStatusCode()); 		
+		Assert.assertEquals(HttpStatus.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
 	}
 	
 	@Test
@@ -165,7 +165,7 @@ public class TestJobResource {
 		
 		
 		String jobName = "jobName00";
-		List<Task> taskList = new ArrayList<Task>();
+		List<Task> taskList = new ArrayList<>();
 		JDFJob job = new JDFJob("schedPath", owner, taskList, null);
 		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.eq(jobName), Mockito.eq(owner))).thenReturn(job);
 		String jdfFilePath = "jdfFilePath";
@@ -197,7 +197,7 @@ public class TestJobResource {
 		post.addHeader(new BasicHeader(ArrebolPropertiesConstants.X_AUTH_USER, owner));
 		
 		String jobName = "jobName00";
-		List<Task> taskList = new ArrayList<Task>();
+		List<Task> taskList = new ArrayList<>();
 		JDFJob job = new JDFJob("schedPath", owner, taskList, null);
 		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.eq(jobName), Mockito.eq(owner))).thenReturn(job);
 		String jdfFilePath = "jdfFilePath";
@@ -224,7 +224,7 @@ public class TestJobResource {
 		HttpPost post = new HttpPost(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
 		post.addHeader(new BasicHeader(ArrebolPropertiesConstants.X_AUTH_USER, owner));
 		
-		List<Task> taskList = new ArrayList<Task>();
+		List<Task> taskList = new ArrayList<>();
 		JDFJob job = new JDFJob("", owner, taskList, null);
 		job.setFriendlyName("friendlyName");
 		Mockito.when(resourceTestUtil.getArrebolController().addJob(Mockito.anyString(), Mockito.anyString(), Mockito.any(User.class))).thenThrow(new NameAlreadyInUseException("in user"));
@@ -250,7 +250,7 @@ public class TestJobResource {
 		post.addHeader(new BasicHeader(ArrebolPropertiesConstants.X_AUTH_USER, owner));
 		
 		String jobName = "jobName00";
-		List<Task> taskList = new ArrayList<Task>();
+		List<Task> taskList = new ArrayList<>();
 		JDFJob job = new JDFJob("schedPath", owner, taskList, null);
 		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.eq(jobName), Mockito.anyString())).thenReturn(job);
 		String jdfFilePath = "jdfFilePath";
@@ -268,19 +268,19 @@ public class TestJobResource {
 		
 		HttpResponse response = HttpClients.createMinimal().execute(post);
 		
-		Assert.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, response.getStatusLine().getStatusCode()); 
+		Assert.assertEquals(HttpStatus.SC_BAD_REQUEST, response.getStatusLine().getStatusCode());
 	}	
 	
 	@Test
 	public void testPostJobMediaTypeError() throws Exception {
 		HttpPost post = new HttpPost(ResourceTestUtil.DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
-		List<NameValuePair> params = new ArrayList<NameValuePair>(2);
+		List<NameValuePair> params = new ArrayList<>(2);
 		params.add(new BasicNameValuePair("", ""));
 		post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
 		
 		HttpResponse response = HttpClients.createMinimal().execute(post);
 		
-		Assert.assertEquals(HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE, response.getStatusLine().getStatusCode()); 
+		Assert.assertEquals(HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE, response.getStatusLine().getStatusCode());
 	}	
 		
 }

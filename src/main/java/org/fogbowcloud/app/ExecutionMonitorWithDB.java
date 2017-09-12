@@ -7,7 +7,6 @@ import java.util.concurrent.Executors;
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.datastore.JobDataStore;
 import org.fogbowcloud.app.model.JDFJob;
-import org.fogbowcloud.app.model.Job;
 import org.fogbowcloud.blowout.core.BlowoutController;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskState;
@@ -46,6 +45,9 @@ public class ExecutionMonitorWithDB implements Runnable {
 		LOGGER.debug("Submitting monitoring tasks");
 
 		for (JDFJob aJob : jobMap) {
+			LOGGER.debug("Starting monitoring of job " + aJob.getName() +
+					"[" + aJob.getId() + "]."
+			);
 			for (Task task : aJob.getTasks()) {
 				LOGGER.debug("Task: " +task +" is being treated");
 				if (!task.isFinished()) {
