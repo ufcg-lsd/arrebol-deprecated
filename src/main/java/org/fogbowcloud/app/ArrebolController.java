@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.datastore.JobDataStore;
+import org.fogbowcloud.app.exception.ArrebolException;
 import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.JDFTasks;
@@ -44,12 +47,16 @@ public class ArrebolController {
 
     private static ManagerTimer executionMonitorTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
 
-	public ArrebolController(Properties properties) {
+	public ArrebolController(Properties properties)
+			throws BlowoutException, ArrebolException {
 		if (properties == null) {
-			throw new IllegalArgumentException("Properties cannot be null");
+			throw new IllegalArgumentException("Properties cannot be null.");
+		} else if (!checkProperties(properties)) {
+			throw new ArrebolException("Error while initializing Arrebol Controller.");
 		}
 		this.finishedTasks = new HashMap<>();
 		this.properties = properties;
+		this.blowoutController = new BlowoutController(properties);
 	}
 
 	public Properties getProperties() {
@@ -68,7 +75,6 @@ public class ArrebolController {
 
 		LOGGER.debug("Properties: " + properties.getProperty(ArrebolPropertiesConstants.DEFAULT_SPECS_FILE_PATH));
 
-		this.blowoutController = new BlowoutController(this.properties);
 		blowoutController.start(removePreviousResources);
 
 		LOGGER.debug("Application to be started on port: " + properties.getProperty(ArrebolPropertiesConstants.REST_SERVER_PORT));
@@ -278,5 +284,72 @@ public class ArrebolController {
 
 	public void setFinishedTasks(HashMap<String, Task> finishedTasks) {
 		this.finishedTasks = finishedTasks;
+	}
+
+
+	private static String requiredPropertyMessage(String property) {
+		return "Required property " + property + " was not set";
+	}
+
+	//TODO: Maybe this method should be separate in some utils classes, one to each plugin in use
+	// Each plugin must responsible to check the value of its properties
+	private static boolean checkProperties(Properties properties) {
+		// Arrebol required properties
+		if (!properties.containsKey(ArrebolPropertiesConstants.REST_SERVER_PORT)) {
+			LOGGER.error(requiredPropertyMessage(ArrebolPropertiesConstants.REST_SERVER_PORT));
+			return false;
+		}
+		if (!properties.containsKey(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD)) {
+			LOGGER.error(requiredPropertyMessage(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD));
+			return false;
+		}
+		if (!properties.containsKey(ArrebolPropertiesConstants.PUBLIC_KEY_CONSTANT)) {
+			LOGGER.error(requiredPropertyMessage(ArrebolPropertiesConstants.PUBLIC_KEY_CONSTANT));
+			return false;
+		}
+		if (!properties.containsKey(ArrebolPropertiesConstants.PRIVATE_KEY_FILEPATH)) {
+			LOGGER.error(requiredPropertyMessage(ArrebolPropertiesConstants.PRIVATE_KEY_FILEPATH));
+			return false;
+		}
+		if (!properties.containsKey(ArrebolPropertiesConstants.REMOTE_OUTPUT_FOLDER)) {
+			LOGGER.error(requiredPropertyMessage(ArrebolPropertiesConstants.REMOTE_OUTPUT_FOLDER));
+			return false;
+		}
+		if (!properties.containsKey(ArrebolPropertiesConstants.LOCAL_OUTPUT_FOLDER)) {
+			LOGGER.error(requiredPropertyMessage(ArrebolPropertiesConstants.LOCAL_OUTPUT_FOLDER));
+			return false;
+		}
+		if (properties.containsKey(ArrebolPropertiesConstants.ENCRYPTION_TYPE)) {
+			try {
+				MessageDigest.getInstance(properties.getProperty(ArrebolPropertiesConstants.ENCRYPTION_TYPE));
+			} catch (NoSuchAlgorithmException e) {
+				String builder = "Property " +
+						ArrebolPropertiesConstants.ENCRYPTION_TYPE +
+						"(" +
+						properties.getProperty(ArrebolPropertiesConstants.ENCRYPTION_TYPE) +
+						") does not refer to a valid encryption algorithm." +
+						" Valid options are 'MD5', 'SHA-1' and 'SHA-256'.";
+				LOGGER.error(builder);
+				return false;
+			}
+		}
+		if (!properties.containsKey(ArrebolPropertiesConstants.AUTHENTICATION_PLUGIN)) {
+			LOGGER.error(requiredPropertyMessage(ArrebolPropertiesConstants.AUTHENTICATION_PLUGIN));
+			return false;
+		} else {
+			String authenticationPlugin = properties.getProperty(ArrebolPropertiesConstants.AUTHENTICATION_PLUGIN);
+			if (authenticationPlugin.equals("org.fogbowcloud.app.utils.LDAPAuthenticator")) {
+				if (!properties.containsKey(ArrebolPropertiesConstants.LDAP_AUTHENTICATION_URL)) {
+					LOGGER.error(requiredPropertyMessage(ArrebolPropertiesConstants.LDAP_AUTHENTICATION_URL));
+					return false;
+				}
+				if (!properties.containsKey(ArrebolPropertiesConstants.LDAP_AUTHENTICATION_BASE)) {
+					LOGGER.error(requiredPropertyMessage(ArrebolPropertiesConstants.LDAP_AUTHENTICATION_BASE));
+					return false;
+				}
+			}
+		}
+		LOGGER.debug("All properties are set");
+		return true;
 	}
 }

@@ -84,17 +84,19 @@ public class JDFTasks {
 					}
 				}
 
-				Specification spec = new Specification(image,
+				Specification spec = new Specification(
+						image,
 						properties.getProperty(ArrebolPropertiesConstants.INFRA_RESOURCE_USERNAME),
 						properties.getProperty(ArrebolPropertiesConstants.PUBLIC_KEY_CONSTANT),
 						properties.getProperty(ArrebolPropertiesConstants.PRIVATE_KEY_FILEPATH),
 						"",
-						"");
+						""
+				);
 				LOGGER.debug(properties.getProperty(ArrebolPropertiesConstants.INFRA_RESOURCE_USERNAME));
 
 				int i = 0;
 				for (String req : jobRequirementes.split("and")) {
-				if (i == 0 && !req.trim().startsWith("image")) {
+					if (i == 0 && !req.trim().startsWith("image")) {
 						i++;
 						LOGGER.debug("NEW REQUIREMENT: " +req);
 						spec.addRequirement(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS, req);
