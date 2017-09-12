@@ -293,4 +293,19 @@ public class ArrebolController {
 	public void setFinishedTasks(HashMap<String, Task> finishedTasks) {
 		this.finishedTasks = finishedTasks;
 	}
+
+	public int getTaskRetries(String taskId, String owner) {
+		Task task = finishedTasks.get(taskId);
+		if (task != null) {
+			return task.getRetries();
+		} else {
+			task = getTaskById(taskId, owner);
+			if (task != null) {
+				int taskState = blowoutController.getTaskRetries(task.getId());
+				return taskState;
+				
+			}
+			return 0;
+		}
+	}
 }

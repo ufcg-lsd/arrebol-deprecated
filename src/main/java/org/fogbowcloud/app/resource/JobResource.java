@@ -115,7 +115,8 @@ public class JobResource extends ServerResource {
 			jTask.put(TASK_ID, task.getId());
 			TaskState ts = application.getTaskState(task.getId(), owner.getUser());
 			jTask.put(STATE, ts != null ? ts.getDesc().toUpperCase() : "UNDEFINED");
-			jTask.put(RETRIES, task.getRetries() >= 0 ? task.getRetries() : "DIDN'T RUN");
+			int retries = application.getTaskRetries(task.getId(), owner.getUser());
+			jTask.put(RETRIES, retries >= 0 ? task.getRetries() : "DIDN'T RUN");
 			jobTasks.put(jTask);
 		}
 		jsonJob.put(JOB_TASKS, jobTasks);
