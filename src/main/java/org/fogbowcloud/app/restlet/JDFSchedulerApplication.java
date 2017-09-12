@@ -14,7 +14,6 @@ import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.resource.AuthenticationResource;
 import org.fogbowcloud.app.resource.JobResource;
 import org.fogbowcloud.app.resource.NonceResource;
-import org.fogbowcloud.app.resource.TaskResource4JDF;
 import org.fogbowcloud.app.resource.UserResource;
 import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.blowout.core.exception.BlowoutException;
@@ -31,8 +30,6 @@ public class JDFSchedulerApplication extends Application {
 
 	private static final String ARREBOL_JOB_PATH = "/arrebol/job";
 	private static final String ARREBOL_JOB_ID_PATH = "/arrebol/job/{jobpath}";
-	private static final String ARREBOL_TASK_PATH = "/arrebol/task/{taskId}";
-	private static final String ARREBOL_TASK_VAR_NAME_PATH = "/arrebol/task/{taskId}/{varName}";
 	private static final String ARREBOL_NONCE_PATH = "/arrebol/nonce";
 	private static final String ARREBOL_AUTHENTICATOR_PATH = "/arrebol/authenticator";
 	private static final String ARREBOL_USER_PATH = "/arrebol/user";
@@ -78,12 +75,9 @@ public class JDFSchedulerApplication extends Application {
 		Router router = new Router(getContext());
 		router.attach(ARREBOL_JOB_PATH, JobResource.class);
 		router.attach(ARREBOL_JOB_ID_PATH, JobResource.class);
-		router.attach(ARREBOL_TASK_PATH, TaskResource4JDF.class);
-		router.attach(ARREBOL_TASK_VAR_NAME_PATH, TaskResource4JDF.class);
 		router.attach(ARREBOL_NONCE_PATH, NonceResource.class);
 		router.attach(ARREBOL_AUTHENTICATOR_PATH, AuthenticationResource.class);
 		router.attach(ARREBOL_USER_PATH, UserResource.class);
-
 		return router;
 	}
 
