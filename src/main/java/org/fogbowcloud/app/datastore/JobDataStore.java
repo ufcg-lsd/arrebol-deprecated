@@ -110,7 +110,7 @@ public class JobDataStore {
 	}
 
 	public boolean update(JDFJob job) {
-		LOGGER.debug("Updating job [" + job.getId() + "] with owner [" + job.getOwner() + "]");
+		LOGGER.debug("Updating job [" + job.getId() + "] from owner [" + job.getOwner() + "]");
 
 		if (job.getId() == null || job.getId().isEmpty()
 				|| job.getOwner() == null || job.getOwner().isEmpty()) {

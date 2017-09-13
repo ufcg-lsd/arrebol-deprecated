@@ -18,7 +18,7 @@ public class ExecutionMonitorWithDB implements Runnable {
 	private BlowoutController blowoutController;
 	private ArrebolController arrebolController;
 	private ExecutorService service;
-    private ArrayList<JDFJob> jobMap;
+	private JobDataStore datastore;
 
 	ExecutionMonitorWithDB(BlowoutController blowoutController,
                            ArrebolController arrebolController,
@@ -37,24 +37,28 @@ public class ExecutionMonitorWithDB implements Runnable {
 		} else {
 			this.service = service;
 		}
-        this.jobMap = (ArrayList<JDFJob>) db.getAll();
+		this.datastore = db;
 	}
 
 	@Override
 	public void run() {
 		LOGGER.debug("Submitting monitoring tasks");
+		ArrayList<JDFJob> jobMap = (ArrayList<JDFJob>) this.datastore.getAll();
 
 		for (JDFJob aJob : jobMap) {
-			LOGGER.debug("Starting monitoring of job " + aJob.getName() +
-					"[" + aJob.getId() + "]."
-			);
+			LOGGER.debug("Starting monitoring of job " + aJob.getName() + "[" + aJob.getId() + "].");
+			int count = 0;
 			for (Task task : aJob.getTasks()) {
-				LOGGER.debug("Task: " +task +" is being treated");
 				if (!task.isFinished()) {
+					count++;
+					LOGGER.debug("Task: " + task +" is being treated");
 					TaskState taskState = blowoutController.getTaskState(task.getId());
 					LOGGER.debug("Process " + task.getId() + " has state " + taskState.getDesc());
 					service.submit(new TaskExecutionChecker(task));
 				}
+			}
+			if (count == 0) {
+				LOGGER.debug("Job has no active tasks.");
 			}
 		}
 	}

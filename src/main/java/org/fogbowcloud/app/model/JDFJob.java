@@ -6,10 +6,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-import org.fogbowcloud.blowout.core.model.Job;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskImpl;
-import org.fogbowcloud.blowout.core.model.TaskState;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,7 +19,6 @@ public class JDFJob extends Job {
 
 	//FIXME: do we need this implementation?
 	//FIXME: maybe, we should have name and id in the default Job abstraction.
-	// Also, i think we do not need schedpath here
 
 	private static final long serialVersionUID = 7780896231796955706L;
 	private final String jobId;
@@ -79,7 +76,6 @@ public class JDFJob extends Job {
 	@Override
 	public void finish(Task task) {
 		getTaskById(task.getId()).finish();
-		
 	}
 
 	@Override

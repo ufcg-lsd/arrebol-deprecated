@@ -14,7 +14,7 @@ public abstract class Job implements Serializable {
 
 	private static final long serialVersionUID = -6111900503095749695L;
 
-	protected Map<String, Task> taskList = new HashMap<String, Task>();
+	protected Map<String, Task> taskList = new HashMap<>();
 	
 	public enum TaskState{
 		
@@ -33,12 +33,21 @@ public abstract class Job implements Serializable {
 	
 	public static final Logger LOGGER = Logger.getLogger(Job.class);
 	
-	protected ReentrantReadWriteLock taskReadyLock = new ReentrantReadWriteLock();
-	protected ReentrantReadWriteLock taskCompletedLock = new ReentrantReadWriteLock();
+	private ReentrantReadWriteLock taskReadyLock = new ReentrantReadWriteLock();
 	
 	private String UUID = "";
 
 	private boolean isCreated = false;
+
+	public Job(List<Task> tasks) {
+		for(Task task : tasks){
+			addTask(task);
+		}
+	}
+
+	public Job() {
+
+	}
 
 	//TODO: not sure that we need to guarantee thread safety at the job level
 	public void addTask(Task task) {

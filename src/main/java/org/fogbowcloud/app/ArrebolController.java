@@ -16,7 +16,7 @@ import org.fogbowcloud.app.datastore.JobDataStore;
 import org.fogbowcloud.app.exception.ArrebolException;
 import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
-import org.fogbowcloud.app.model.JDFTasks;
+import org.fogbowcloud.app.model.JDFJobBuilder;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.app.utils.authenticator.ArrebolAuthenticator;
@@ -79,19 +79,20 @@ public class ArrebolController {
 
 		this.nonces = new ArrayList<>();
 
-		LOGGER.debug(
-				"Starting Scheduler and Execution Monitor, execution monitor period: "
-				+ properties.getProperty(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD)
-		);
-        ExecutionMonitorWithDB executionMonitor = new ExecutionMonitorWithDB(blowoutController, this, jobDataStore);
-        int schedulerPeriod = Integer.valueOf(properties.getProperty(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD));
-        LOGGER.info("Starting scheduler with period: " + schedulerPeriod);
-		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0, schedulerPeriod);
-
+		LOGGER.debug("Restarting jobs");
 		restartAllJobs();
+
+		int schedulerPeriod = Integer.valueOf(properties.getProperty(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD));
+		LOGGER.debug("Starting Execution Monitor, with period: " + schedulerPeriod);
+        ExecutionMonitorWithDB executionMonitor = new ExecutionMonitorWithDB(
+        		blowoutController,
+				this,
+				jobDataStore
+		);
+		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0, schedulerPeriod);
 	}
 
-	public void restartAllJobs() throws BlowoutException {
+	void restartAllJobs() throws BlowoutException {
 		for (JDFJob job : this.jobDataStore.getAll()) {
 			ArrayList<Task> taskList = new ArrayList<>();
 			for (Task task : job.getTasks()) {
@@ -100,6 +101,8 @@ public class ArrebolController {
 					LOGGER.debug("Specification of Recovered task: " + task.getSpecification().toJSON().toString());
 					LOGGER.debug("Task Requirements: " + task.getSpecification()
 							.getRequirementValue(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS));
+				} else {
+					finishedTasks.put(task.getId(), task);
 				}
 			}
 			blowoutController.addTaskList(taskList);
@@ -123,11 +126,8 @@ public class ArrebolController {
 
 	public String addJob(String jdfFilePath, User owner)
 			throws CompilerException, NameAlreadyInUseException, BlowoutException, IOException {
-		JDFJob tmpJob = new JDFJob(owner.getUser(), new ArrayList<Task>(), owner.getUsername());
 		LOGGER.debug("Adding job  of owner " +owner.getUsername()+" to scheduler" );
-		List<Task> taskList = getTasksFromJDFFile(jdfFilePath, tmpJob);
-		JDFJob job = new JDFJob(tmpJob.getId(), tmpJob.getOwner(), taskList, owner.getUsername());
-		job.setFriendlyName(tmpJob.getName());
+		JDFJob job = createJobFromJDFFile(jdfFilePath, owner);
 
 		if (job.getName() != null && !job.getName().trim().isEmpty()
 				&& getJobByName(job.getName(), owner.getUser()) != null) {
@@ -151,21 +151,15 @@ public class ArrebolController {
 
 	public String stopJob(String jobReference, String owner) {
 		JDFJob jobToRemove = getJobByName(jobReference, owner);
+		if (jobToRemove == null) {
+			jobToRemove = getJobById(jobReference, owner);
+		}
 		if (jobToRemove != null) {
 			this.jobDataStore.deleteByJobId(jobToRemove.getId(), owner);
 			for (Task task : jobToRemove.getTasks()) {
 				blowoutController.cleanTask(task);
 			}
 			return jobToRemove.getId();
-		} else {
-			jobToRemove = getJobById(jobReference, owner);
-			if (jobToRemove != null) {
-				this.jobDataStore.deleteByJobId(jobToRemove.getId(), owner);
-				for (Task task : jobToRemove.getTasks()) {
-					blowoutController.cleanTask(task);
-				}
-				return jobToRemove.getId();
-			}
 		}
 		return null;
 	}
@@ -210,8 +204,12 @@ public class ArrebolController {
 	}
 
 	public void moveTaskToFinished(Task task) {
-		JDFJob job = this.jobDataStore.getByJobId(task.getMetadata(ArrebolPropertiesConstants.JOB_ID),
-				task.getMetadata(ArrebolPropertiesConstants.OWNER));
+		JDFJob job = this.jobDataStore.getByJobId(
+				task.getMetadata(ArrebolPropertiesConstants.JOB_ID),
+				task.getMetadata(ArrebolPropertiesConstants.OWNER)
+		);
+		LOGGER.debug("Moving task " + task.getId() + "from job " + job.getName() +" to finished");
+		finishedTasks.put(task.getId(), task);
 		job.finish(task);
 		updateJob(job);
 	}
@@ -243,8 +241,8 @@ public class ArrebolController {
 		return nonce;
 	}
 
-	protected List<Task> getTasksFromJDFFile(String jdfFilePath, JDFJob job) throws CompilerException, IOException {
-        return JDFTasks.getTasksFromJDFFile(job, jdfFilePath, this.properties);
+	protected JDFJob createJobFromJDFFile(String jdfFilePath, User owner) throws CompilerException, IOException {
+        return JDFJobBuilder.createJobFromJDFFile(jdfFilePath, owner, this.properties);
 	}
 
 	public User getUser(String username) {
@@ -274,15 +272,6 @@ public class ArrebolController {
 	public void setDataStore(JobDataStore dataStore) {
 		this.jobDataStore = dataStore;
 	}
-
-	public HashMap<String, Task> getFinishedTasks() {
-		return finishedTasks;
-	}
-
-	public void setFinishedTasks(HashMap<String, Task> finishedTasks) {
-		this.finishedTasks = finishedTasks;
-	}
-
 
 	private static String requiredPropertyMessage(String property) {
 		return "Required property " + property + " was not set";

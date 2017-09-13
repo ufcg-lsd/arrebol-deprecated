@@ -27,29 +27,28 @@ import org.fogbowcloud.blowout.core.model.TaskImpl;
 import org.fogbowcloud.blowout.infrastructure.provider.fogbow.FogbowRequirementsHelper;
 import org.fogbowcloud.blowout.pool.AbstractResource;
 
-public class JDFTasks {
+public class JDFJobBuilder {
 
 	// FIXME: what is this?
 	private static final String SANDBOX = "sandbox";
 	private static final String standardImage = "fogbow-ubuntu";
 	private static final String SSH_SCP_PRECOMMAND = "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no";
 
-	private static final Logger LOGGER = Logger.getLogger(JDFTasks.class);
+	private static final Logger LOGGER = Logger.getLogger(JDFJobBuilder.class);
 
 	/**
 	 *
-	 * @param job
 	 * @param jdfFilePath
+	 * @param owner
 	 * @param properties
 	 * @return
 	 * @throws IllegalArgumentException
 	 * @throws CompilerException
-	 * @throws IOException 
+	 * @throws IOException
 	 */
-	public static List<Task> getTasksFromJDFFile(JDFJob job, String jdfFilePath, Properties properties)
+	public static JDFJob createJobFromJDFFile(String jdfFilePath, User owner, Properties properties)
 			throws CompilerException, IOException {
-
-		ArrayList<Task> taskList = new ArrayList<>();
+		JDFJob job = new JDFJob(owner.getUser(), new ArrayList<Task>(), owner.getUsername());
 
 		if (jdfFilePath == null) {
 			throw new IllegalArgumentException("jdfFilePath cannot be null");
@@ -65,7 +64,7 @@ public class JDFTasks {
 
 				JobSpecification jobSpec = (JobSpecification) commonCompiler.getResult().get(0);
 
-					
+
 				job.setFriendlyName(jobSpec.getLabel());
 
 				String schedPath = jobSpec.getSchedPath();
@@ -75,7 +74,7 @@ public class JDFTasks {
 				// FIXME: what does this block do?
 				String jobRequirementes = jobSpec.getRequirements();
 				LOGGER.debug("JobReq: " + jobRequirementes);
-				
+
 				jobRequirementes = jobRequirementes.replace("(", "").replace(")", "");
 				String image = standardImage;
 				for (String req : jobRequirementes.split("and")) {
@@ -100,36 +99,26 @@ public class JDFTasks {
 						i++;
 						LOGGER.debug("NEW REQUIREMENT: " +req);
 						spec.addRequirement(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS, req);
-
 					} else if (!req.trim().startsWith("image")) {
-						spec.addRequirement(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS,
-								spec.getRequirementValue(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS) + " && "
-										+ req);
+						spec.addRequirement(
+								FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS,
+								spec.getRequirementValue(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS) + " && " + req
+						);
 					}
 				}
 
 				spec.addRequirement(FogbowRequirementsHelper.METADATA_FOGBOW_REQUEST_TYPE, "one-time");
 				int taskID = 0;
 				for (TaskSpecification taskSpec : jobSpec.getTaskSpecs()) {
-					Runtime r = Runtime.getRuntime();                    
-
-//					Process p = r.exec("id -u "+ job.getOwner());
-//					try {
-//						p.waitFor();
-//					} catch (InterruptedException e) {
-//						LOGGER.debug("could not finish the query on user UUID", e);
-//					} 
-//					BufferedReader in =
-//					        new BufferedReader(new InputStreamReader(p.getInputStream()));
 					LOGGER.debug("========================================================" + job.getUserId());
-					ProcessBuilder   ps=new ProcessBuilder("id","-u", job.getUserId());
+					ProcessBuilder ps = new ProcessBuilder("id","-u", job.getUserId());
 
-					//From the DOC:  Initially, this property is false, meaning that the 
-					//standard output and error output of a subprocess are sent to two 
+					//From the DOC:  Initially, this property is false, meaning that the
+					//standard output and error output of a subprocess are sent to two
 					//separate streams
 					ps.redirectErrorStream(true);
 
-					Process pr = ps.start();  
+					Process pr = ps.start();
 
 					BufferedReader in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 					try {
@@ -146,9 +135,11 @@ public class JDFTasks {
 					String result = resultBuilder.toString();
 
 					LOGGER.debug("========================================================" +result);
-					if (result.contains("no such user")) throw new SecurityException("User "+job.getUserId()+" is not part of this security group");
+					if (result.contains("no such user")) {
+						throw new SecurityException("User "+job.getUserId()+" is not part of this security group");
+					}
 					in.close();
-					 
+
 					Task task = new TaskImpl("TaskNumber" + "-" + taskID + "-" + UUID.randomUUID(), spec, result);
 					task.putMetadata(TaskImpl.METADATA_REMOTE_OUTPUT_FOLDER,
 							properties.getProperty(ArrebolPropertiesConstants.REMOTE_OUTPUT_FOLDER));
@@ -164,21 +155,21 @@ public class JDFTasks {
 					parseTaskCommands(job.getId(), taskSpec, task, schedPath);
 					parseFinalCommands(job.getId(), taskSpec, task, schedPath);
 
-					taskList.add(task);
+					job.addTask(task);
 					LOGGER.debug("Task spec: " + task.getSpecification().toString());
-				
+
 					taskID++;
 				}
-
 			} else {
 				throw new IllegalArgumentException(
-						"Unable to read file: " + file.getAbsolutePath() + " check your permissions.");
+						"Unable to read file: " + file.getAbsolutePath() + " check your permissions."
+				);
 			}
 		} else {
 			throw new IllegalArgumentException("File: " + file.getAbsolutePath() + " does not exists.");
 		}
 
-		return taskList;
+		return job;
 	}
 
 	/**

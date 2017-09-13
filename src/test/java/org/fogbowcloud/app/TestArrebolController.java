@@ -135,17 +135,19 @@ public class TestArrebolController {
 
 	@Test
 	public void testAddJob() throws Exception {
-		List<Task> tasks = new ArrayList<>();
-		Mockito.doReturn(tasks).when(this.arrebolController).getTasksFromJDFFile(Mockito.anyString(),
-				Mockito.any(JDFJob.class));
-
 		String jdfFilePath = "";
-		String schedPath = "";
 		User user = Mockito.mock(User.class);
+
+		JDFJob job = new JDFJob(user.getUser(), new ArrayList<Task>(), user.getUsername());
+		Mockito.doReturn(job).when(this.arrebolController).createJobFromJDFFile(
+				Mockito.anyString(),
+				Mockito.any(User.class)
+		);
+
 		BlowoutController controller = mock(BlowoutController.class);
 		arrebolController.setBlowoutController(controller);
 		this.arrebolController.addJob(jdfFilePath, user);
-		Mockito.verify(controller).addTaskList(tasks);
+		Mockito.verify(controller).addTaskList(job.getTasks());
 	}
 
 	@Test
