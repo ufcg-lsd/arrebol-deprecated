@@ -26,23 +26,20 @@ public class JDFJob extends Job {
 	private static final long serialVersionUID = 7780896231796955706L;
 	private final String jobId;
 	private String name;
-	private String schedPath;
 	private final String owner;
 	private final String userId;
 
-	public JDFJob(String schedPath, String owner, List<Task> taskList, String userID) {
+	public JDFJob(String owner, List<Task> taskList, String userID) {
 		super(taskList);
 		this.name = "";
-		this.schedPath = schedPath;
 		this.jobId = UUID.randomUUID().toString();
 		this.owner = owner;
 		this.userId = userID;
 	}
 	
-	public JDFJob(String jobId, String schedPath, String owner, List<Task> taskList, String userID) {
+	public JDFJob(String jobId, String owner, List<Task> taskList, String userID) {
 		super(taskList);
 		this.name = "";
-		this.schedPath = schedPath;
 		this.jobId = jobId;
 		this.owner = owner;
 		this.userId = userID;
@@ -54,10 +51,6 @@ public class JDFJob extends Job {
 
 	public String getName() {
 		return this.name;
-	}
-
-	public String getSchedPath() {
-		return this.schedPath;
 	}
 
 	public String getOwner() {
@@ -104,7 +97,6 @@ public class JDFJob extends Job {
 			JSONObject job = new JSONObject();
 			job.put("jobId", this.getId());
 			job.put("name", this.getName());
-			job.put("schedPath", this.getSchedPath());
 			job.put("owner", this.getOwner());
 			job.put("uuid", this.getUserId());
 			JSONArray tasks = new JSONArray();
@@ -121,8 +113,9 @@ public class JDFJob extends Job {
 	}
 
 	public static JDFJob fromJSON(JSONObject job) {
-		List<Task> tasks = new ArrayList<Task>();
-		
+		LOGGER.info("Reading Job from JSON");
+		List<Task> tasks = new ArrayList<>();
+
 		JSONArray tasksJSON = job.optJSONArray("tasks");
 		for (int i = 0; i < tasksJSON.length(); i++) {
 			JSONObject taskJSON = tasksJSON.optJSONObject(i);
@@ -130,11 +123,14 @@ public class JDFJob extends Job {
 			tasks.add(task);
 		}
 		
-		JDFJob jdfJob = new JDFJob(job.optString("jobId"), 
-				job.optString("schedPath"), 
-				job.optString("owner"), tasks, job.optString("uuid"));
-		LOGGER.debug("Job owner is: " +job.optString("owner"));
+		JDFJob jdfJob = new JDFJob(
+				job.optString("jobId"),
+				job.optString("owner"),
+				tasks,
+				job.optString("uuid")
+		);
 		jdfJob.setFriendlyName(job.optString("name"));
+		LOGGER.debug("Job read from JSON is from owner: " + job.optString("owner"));
 		return jdfJob;
 	}
 	

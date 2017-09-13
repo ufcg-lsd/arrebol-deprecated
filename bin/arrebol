@@ -9,9 +9,8 @@ print_menu() {
 	echo "Get a job from <username>, using either it's <job_id> or it's <friendly_name>,"
 	echo "if neither are defined, returns a list with all jobs the <username> has registered."
 	echo
-	echo "POST <jdffilepath> [(-s | --schedpath) <path>] (-u | --username) <username>"
+	echo "POST <jdffilepath> (-u | --username) <username>"
     echo "Posts a job defined by a JDF file at the path <jdffilepath> for <username>"
-    echo "at the scheduler at <path>, if no scheduler is specified, one will be chosen automatically."
     echo
 	echo "STOP (<job_id> | <friendly_name>) (-u | --username) <username>"
 	echo "Stops and deletes a job from <username>, identified by it's <job_id> or <friendly name>."

@@ -172,10 +172,9 @@ public class TestJobResource {
 		String schedPath = "schedPath";
 		String friendlyName = "friendly";
 		String jobId = "jobId00";
-		Mockito.when(resourceTestUtil.getArrebolController().addJob(Mockito.eq(jdfFilePath), Mockito.eq(schedPath), Mockito.any(User.class))).thenReturn(jobId);
+		Mockito.when(resourceTestUtil.getArrebolController().addJob(Mockito.eq(jdfFilePath), Mockito.any(User.class))).thenReturn(jobId);
 		
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-		builder.addTextBody(JobResource.SCHED_PATH, schedPath, ContentType.TEXT_PLAIN);
 		builder.addTextBody(JobResource.FRIENDLY, friendlyName, ContentType.TEXT_PLAIN);
 		builder.addTextBody(JobResource.JDF_FILE_PATH, jdfFilePath, ContentType.TEXT_PLAIN);
 		HttpEntity multipart = builder.build();		
@@ -198,17 +197,19 @@ public class TestJobResource {
 		
 		String jobName = "jobName00";
 		List<Task> taskList = new ArrayList<>();
-		JDFJob job = new JDFJob("schedPath", owner, taskList, null);
+		JDFJob job = new JDFJob(owner, taskList, null);
 		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.eq(jobName), Mockito.eq(owner))).thenReturn(job);
 		String jdfFilePath = "jdfFilePath";
-		String schedPath = "schedPath";
 		String friendlyName = "friendly";
 		String jobId = "jobId00";
-		Mockito.when(resourceTestUtil.getArrebolController().addJob(Mockito.eq(jdfFilePath), Mockito.eq(
-				schedPath),Mockito.any(User.class))).thenReturn(jobId);
+		Mockito.when(
+				resourceTestUtil.getArrebolController().addJob(
+						Mockito.eq(jdfFilePath),
+						Mockito.any(User.class)
+				)
+		).thenReturn(jobId);
 		
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-		builder.addTextBody(JobResource.SCHED_PATH, schedPath, ContentType.TEXT_PLAIN);
 		builder.addTextBody(JobResource.FRIENDLY, friendlyName, ContentType.TEXT_PLAIN);
 		HttpEntity multipart = builder.build();		
 		post.setEntity(multipart);
@@ -227,12 +228,13 @@ public class TestJobResource {
 		List<Task> taskList = new ArrayList<>();
 		JDFJob job = new JDFJob("", owner, taskList, null);
 		job.setFriendlyName("friendlyName");
-		Mockito.when(resourceTestUtil.getArrebolController().addJob(Mockito.anyString(), Mockito.anyString(), Mockito.any(User.class))).thenThrow(new NameAlreadyInUseException("in user"));
+		Mockito.when(resourceTestUtil.getArrebolController().addJob(
+				Mockito.anyString(),
+				Mockito.any(User.class)
+		)).thenThrow(new NameAlreadyInUseException("in user"));
 		String jdfFilePath = "jdfFilePath";
-		String schedPath = "schedPath";
 		
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-		builder.addTextBody(JobResource.SCHED_PATH, schedPath, ContentType.TEXT_PLAIN);
 		builder.addTextBody(JobResource.FRIENDLY, "friendlyName", ContentType.TEXT_PLAIN);
 		builder.addTextBody(JobResource.JDF_FILE_PATH, jdfFilePath, ContentType.TEXT_PLAIN);
 		HttpEntity multipart = builder.build();		
@@ -251,16 +253,16 @@ public class TestJobResource {
 		
 		String jobName = "jobName00";
 		List<Task> taskList = new ArrayList<>();
-		JDFJob job = new JDFJob("schedPath", owner, taskList, null);
+		JDFJob job = new JDFJob(owner, taskList, null);
 		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.eq(jobName), Mockito.anyString())).thenReturn(job);
 		String jdfFilePath = "jdfFilePath";
-		String schedPath = "schedPath";
 		String friendlyName = "friendly";
-		Mockito.when(resourceTestUtil.getArrebolController().addJob(Mockito.eq(jdfFilePath), Mockito.eq(
-				schedPath), Mockito.any(User.class))).thenThrow(new CompilerException(""));
+		Mockito.when(resourceTestUtil.getArrebolController().addJob(
+				Mockito.eq(jdfFilePath),
+				Mockito.any(User.class))
+		).thenThrow(new CompilerException(""));
 		
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-		builder.addTextBody(JobResource.SCHED_PATH, schedPath, ContentType.TEXT_PLAIN);
 		builder.addTextBody(JobResource.FRIENDLY, friendlyName, ContentType.TEXT_PLAIN);
 		builder.addTextBody(JobResource.JDF_FILE_PATH, jdfFilePath, ContentType.TEXT_PLAIN);
 		HttpEntity multipart = builder.build();		

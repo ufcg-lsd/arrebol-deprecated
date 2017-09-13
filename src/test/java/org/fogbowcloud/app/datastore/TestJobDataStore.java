@@ -13,14 +13,9 @@ import org.junit.Test;
 
 public class TestJobDataStore {
 
-	private static final String SCHED_PATH = "";
-
 	private static final String OWNER2 = "owner2";
-
 	private static final String OWNER = "owner";
-
 	private static final String FAKE_ID = "fakeId";
-
 	private final static String DATASTOREURL = "jdbc:h2:/tmp/blowoutdb";
 	
 	private JobDataStore datastore;
@@ -37,7 +32,7 @@ public class TestJobDataStore {
 	
 	@Test
 	public void testAddJob() {
-		JDFJob job = new JDFJob(SCHED_PATH, OWNER, new ArrayList<Task>(), null);
+		JDFJob job = new JDFJob(OWNER, new ArrayList<Task>(), null);
 		this.datastore.insert(job);
 		assertEquals(1, this.datastore.getAll().size());
 		assertEquals(job.getId(), this.datastore.getAll().get(0).getId());
@@ -45,9 +40,9 @@ public class TestJobDataStore {
 	
 	@Test
 	public void testGetAllJobs() {
-		JDFJob job = new JDFJob(SCHED_PATH, OWNER, new ArrayList<Task>(), null);
-		JDFJob job2 = new JDFJob(SCHED_PATH, OWNER, new ArrayList<Task>(), null);
-		JDFJob job3 = new JDFJob(SCHED_PATH, OWNER, new ArrayList<Task>(), null);
+		JDFJob job = new JDFJob(OWNER, new ArrayList<Task>(), null);
+		JDFJob job2 = new JDFJob(OWNER, new ArrayList<Task>(), null);
+		JDFJob job3 = new JDFJob(OWNER, new ArrayList<Task>(), null);
 		
 		this.datastore.insert(job);
 		this.datastore.insert(job2);
@@ -62,9 +57,9 @@ public class TestJobDataStore {
 	
 	@Test
 	public void testDeleteJob (){
-		JDFJob job = new JDFJob(SCHED_PATH, OWNER, new ArrayList<Task>(), null);
-		JDFJob job2 = new JDFJob(SCHED_PATH, OWNER, new ArrayList<Task>(), null);
-		JDFJob job3 = new JDFJob(SCHED_PATH, OWNER, new ArrayList<Task>(), null);
+		JDFJob job = new JDFJob(OWNER, new ArrayList<Task>(), null);
+		JDFJob job2 = new JDFJob(OWNER, new ArrayList<Task>(), null);
+		JDFJob job3 = new JDFJob(OWNER, new ArrayList<Task>(), null);
 		
 		this.datastore.insert(job);
 		this.datastore.insert(job2);

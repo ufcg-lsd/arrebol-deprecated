@@ -121,12 +121,12 @@ public class ArrebolController {
         return this.jobDataStore.getByJobId(jobId, owner);
 	}
 
-	public String addJob(String jdfFilePath, String schedPath, User owner)
+	public String addJob(String jdfFilePath, User owner)
 			throws CompilerException, NameAlreadyInUseException, BlowoutException, IOException {
-		JDFJob tmpJob = new JDFJob(schedPath, owner.getUser(), new ArrayList<Task>(), owner.getUsername());
+		JDFJob tmpJob = new JDFJob(owner.getUser(), new ArrayList<Task>(), owner.getUsername());
 		LOGGER.debug("Adding job  of owner " +owner.getUsername()+" to scheduler" );
 		List<Task> taskList = getTasksFromJDFFile(jdfFilePath, tmpJob);
-		JDFJob job = new JDFJob(tmpJob.getId(), tmpJob.getSchedPath(), tmpJob.getOwner(), taskList, owner.getUsername());
+		JDFJob job = new JDFJob(tmpJob.getId(), tmpJob.getOwner(), taskList, owner.getUsername());
 		job.setFriendlyName(tmpJob.getName());
 
 		if (job.getName() != null && !job.getName().trim().isEmpty()

@@ -81,14 +81,11 @@ public class ArrebolControllerIT {
 		Credential cred = new Credential(owner, "blabla", this.ac.getNonce());
 		post.addHeader(new BasicHeader(ArrebolPropertiesConstants.X_CREDENTIALS, cred.toJSON().toString()));
 
-		String jdfFilePath = EXSIMPLE_JOB;
-		String schedPath = "schedPath";
 		String friendlyName = "friendly";
 		
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-		builder.addTextBody(JobResource.SCHED_PATH, schedPath, ContentType.TEXT_PLAIN);
 		builder.addTextBody(JobResource.FRIENDLY, friendlyName, ContentType.TEXT_PLAIN);
-		builder.addTextBody(JobResource.JDF_FILE_PATH, jdfFilePath, ContentType.TEXT_PLAIN);
+		builder.addTextBody(JobResource.JDF_FILE_PATH, EXSIMPLE_JOB, ContentType.TEXT_PLAIN);
 		HttpEntity multipart = builder.build();		
 		post.setEntity(multipart);
 		
@@ -101,12 +98,6 @@ public class ArrebolControllerIT {
 		
 			System.out.println("Chegou aqui");
 			this.app.stop();
-		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

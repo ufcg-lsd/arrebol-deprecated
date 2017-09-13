@@ -43,7 +43,6 @@ public class JobResource extends ServerResource {
 	private static final String TASK_ID = "taskid";
 	private static final String JOBPATH = "jobpath";
 	public static final String FRIENDLY = "friendly";
-	public static final String SCHED_PATH = "schedpath";
 	public static final String JDF_FILE_PATH = "jdffilepath";
 
 	private JSONArray jobTasks = new JSONArray();
@@ -147,20 +146,19 @@ public class JobResource extends ServerResource {
 		Map<String, String> fieldMap = new HashMap<>();
 		fieldMap.put(JDF_FILE_PATH, null);
 		fieldMap.put(ArrebolPropertiesConstants.X_CREDENTIALS, null);
-		fieldMap.put(SCHED_PATH, null);
 
 		try {
 			ServerResourceUtils.loadFields(entity, fieldMap, new HashMap<String, File>());
 		} catch (FileUploadException e) {
 			LOGGER.error("Failed receiving file from client.", e);
 			throw new ResourceException(
-					Status.CLIENT_ERROR_UNPROCESSABLE_ENTITY,
+					Status.SERVER_ERROR_INTERNAL,
 					"JDF upload failed.\nTry again later."
 			);
 		} catch (IOException e) {
 			LOGGER.error("Failed reading JDF file.", e);
 			throw new ResourceException(
-					Status.CLIENT_ERROR_UNPROCESSABLE_ENTITY,
+					Status.SERVER_ERROR_INTERNAL,
 					"Failed reading JDF file.\nTry again later."
 			);
 		}
@@ -174,13 +172,12 @@ public class JobResource extends ServerResource {
 		if (jdf == null) {
 			throw new ResourceException(Status.CLIENT_ERROR_BAD_REQUEST);
 		}
-		String schedPath = fieldMap.get(SCHED_PATH);
 
 		String jdfAbsolutePath = fieldMap.get(JDF_FILE_PATH);
 		try {
 			String jobId;
-			LOGGER.debug("jdfpath <" + jdfAbsolutePath + ">" + " schedPath <" + schedPath + ">");
-			jobId = application.addJob(jdfAbsolutePath, schedPath, owner);
+			LOGGER.debug("jdfpath <" + jdfAbsolutePath + ">");
+			jobId = application.addJob(jdfAbsolutePath, owner);
 			return new StringRepresentation(jobId, MediaType.TEXT_PLAIN);
 		} catch (CompilerException ce) {
 			LOGGER.error(ce.getMessage(), ce);

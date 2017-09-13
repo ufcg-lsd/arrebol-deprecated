@@ -94,7 +94,7 @@ public class TestArrebolController {
 		Task task = new TaskImpl(testtaskid, spec, FAKE_UUID);
 		taskList.add(task);
 		
-		JDFJob job = new JDFJob("", testowner, taskList, "");
+		JDFJob job = new JDFJob(testowner, taskList, "");
 		this.arrebolController.getJobDataStore().insert(job);
 		
 		try {
@@ -144,7 +144,7 @@ public class TestArrebolController {
 		User user = Mockito.mock(User.class);
 		BlowoutController controller = mock(BlowoutController.class);
 		arrebolController.setBlowoutController(controller);
-		this.arrebolController.addJob(jdfFilePath, schedPath, user);
+		this.arrebolController.addJob(jdfFilePath, user);
 		Mockito.verify(controller).addTaskList(tasks);
 	}
 
@@ -171,10 +171,10 @@ public class TestArrebolController {
 	public void testGetAllJobsWithoutAnotherUser() {
 		ArrayList<JDFJob> jobs = new ArrayList<>();
 		ArrayList<Task> task = new ArrayList<>();
-		jobs.add(new JDFJob("", testowner, task, null));
-		jobs.add(new JDFJob("", testowner, task, null));
-		jobs.add(new JDFJob("", testowner, task, null));
-		jobs.add(new JDFJob("", testowner, task, null));
+		jobs.add(new JDFJob(testowner, task, null));
+		jobs.add(new JDFJob(testowner, task, null));
+		jobs.add(new JDFJob(testowner, task, null));
+		jobs.add(new JDFJob(testowner, task, null));
 		// Mockito.when(this.arrebolController.getScheduler().getJobs()).thenReturn(jobs);
 		BlowoutController controller = mock(BlowoutController.class);
 		arrebolController.setBlowoutController(controller);
@@ -182,10 +182,10 @@ public class TestArrebolController {
 
 		Assert.assertEquals(0, this.arrebolController.getAllJobs("wrong user owner").size());
 
-		jobs.add(new JDFJob("", testowner, new ArrayList<Task>(), null));
-		jobs.add(new JDFJob("", testowner, new ArrayList<Task>(), null));
-		jobs.add(new JDFJob("", testowner, new ArrayList<Task>(), null));
-		jobs.add(new JDFJob("", testowner, new ArrayList<Task>(), null));
+		jobs.add(new JDFJob(testowner, task, null));
+		jobs.add(new JDFJob(testowner, task, null));
+		jobs.add(new JDFJob(testowner, task, null));
+		jobs.add(new JDFJob(testowner, task, null));
 
 		Assert.assertEquals(0, this.arrebolController.getAllJobs("wrong user owner").size());
 
@@ -198,16 +198,16 @@ public class TestArrebolController {
 		String jobName = "jobName00";
 		ArrayList<JDFJob> jobs = new ArrayList<>();
 		ArrayList<Task> task = new ArrayList<>();
-		JDFJob jdfJob = new JDFJob("", testowner, new ArrayList<Task>(), null);
+		JDFJob jdfJob = new JDFJob(testowner, task, null);
 		jdfJob.setFriendlyName(jobName);
 		jobs.add(jdfJob);
-		jobs.add(new JDFJob("", testowner, task, null));
-		jobs.add(new JDFJob("", testowner, task, null));
+		jobs.add(new JDFJob(testowner, task, null));
+		jobs.add(new JDFJob(testowner, task, null));
 		BlowoutController controller = mock(BlowoutController.class);
 		arrebolController.setBlowoutController(controller);
 
-		jobs.add(new JDFJob("", testowner, new ArrayList<Task>(), null));
-		jobs.add(new JDFJob("", testowner, new ArrayList<Task>(), null));
+		jobs.add(new JDFJob(testowner, task, null));
+		jobs.add(new JDFJob(testowner, task, null));
 
 		doReturn(jobs).when(this.dataStore).getAllByOwner(testowner);
 
@@ -219,12 +219,12 @@ public class TestArrebolController {
 	public void testStopJob() {
 		String jobName = "jobName00";
 		ArrayList<JDFJob> jobs = new ArrayList<>();
-		JDFJob jdfJob = new JDFJob("", testowner, new ArrayList<Task>(), null);
-		ArrayList<Task> task = new ArrayList<Task>();
+		JDFJob jdfJob = new JDFJob(testowner, new ArrayList<Task>(), null);
+		ArrayList<Task> task = new ArrayList<>();
 		jdfJob.setFriendlyName(jobName);
 		jobs.add(jdfJob);
-		jobs.add(new JDFJob("", testowner, task, null));
-		jobs.add(new JDFJob("", testowner, task, null));
+		jobs.add(new JDFJob(testowner, task, null));
+		jobs.add(new JDFJob(testowner, task, null));
 		doReturn(true).when(this.dataStore).deleteByJobId(jdfJob.getId(), testowner);
 		doNothing().when(arrebolController).updateJob(any(JDFJob.class));
 		doNothing().when(blowoutController).cleanTask(any(Task.class));
@@ -238,9 +238,9 @@ public class TestArrebolController {
 	@Test
 	public void testStopJobWithId() {
 		ArrayList<JDFJob> jobs = new ArrayList<>();
-		JDFJob jdfJob = new JDFJob("", testowner, new ArrayList<Task>(), null);
+		ArrayList<Task> task = new ArrayList<>();
+		JDFJob jdfJob = new JDFJob(testowner, task, null);
 		jobs.add(jdfJob);
-		ArrayList<Task> task = new ArrayList<Task>();
 		jobs.add(new JDFJob("job1", testowner, task, null));
 		jobs.add(new JDFJob("job2", testowner, task, null));
 
@@ -269,7 +269,7 @@ public class TestArrebolController {
 		tasks.add(task);
 
 		ArrayList<JDFJob> jobs = new ArrayList<>();
-		JDFJob jdfJob = new JDFJob("", testowner, tasks, null);
+		JDFJob jdfJob = new JDFJob(testowner, tasks, null);
 		jobs.add(jdfJob);
 
 		doReturn(jobs).when(this.dataStore).getAllByOwner(testowner);
