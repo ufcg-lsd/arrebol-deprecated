@@ -11,7 +11,7 @@ import org.restlet.resource.ServerResource;
 public class NonceResource extends ServerResource {
 
 	@Get
-	public Representation getNonce() throws IOException {
+	public Representation getNonce() {
 		JDFSchedulerApplication app = (JDFSchedulerApplication) getApplication();
 		int nonce = app.getNonce();
 		return new StringRepresentation(String.valueOf(nonce));
