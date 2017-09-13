@@ -51,10 +51,8 @@ public class JobResource extends ServerResource {
 	private User authenticateUser(JDFSchedulerApplication application, Series headers) {
 		User owner;
 		try {
-			owner = ResourceUtil.authenticateUser(
-					application,
-					headers
-			);
+			String credentials = headers.getFirstValue(ArrebolPropertiesConstants.X_CREDENTIALS);
+			owner = application.authUser(credentials);
 		} catch (GeneralSecurityException e) {
 			LOGGER.error("Error trying to authenticate", e);
 			throw new ResourceException(
