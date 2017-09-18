@@ -4,11 +4,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
@@ -188,19 +184,12 @@ public class ArrebolController {
 		return null;
 	}
 
-	public TaskState getTaskState(String taskId, String owner) {
+	public TaskState getTaskState(String taskId) {
 		Task task = finishedTasks.get(taskId);
 		if (task != null) {
 			return TaskState.COMPLETED;
 		} else {
-			task = getTaskById(taskId, owner);
-			if (task != null) {
-				TaskState taskState = blowoutController.getTaskState(task.getId());
-				if (taskState != null) {
-					return taskState;
-				}
-			}
-			return TaskState.NOT_CREATED;
+			return blowoutController.getTaskState(taskId);
 		}
 	}
 
@@ -229,16 +218,17 @@ public class ArrebolController {
 			return null;
 		}
 
+		User user = null;
 		LOGGER.debug("Checking nonce");
 		if (this.nonces.contains(credential.getNonce())) {
-			return this.auth.authenticateUser(credential);
+			nonces.remove(credential.getNonce());
+			user = this.auth.authenticateUser(credential);
 		}
-		nonces.remove(credential.getNonce());
-		return null;
+		return user;
 	}
 
 	public int getNonce() {
-		int nonce = new Random().nextInt(999999);
+		int nonce = UUID.randomUUID().hashCode();
 		this.nonces.add(nonce);
 		return nonce;
 	}

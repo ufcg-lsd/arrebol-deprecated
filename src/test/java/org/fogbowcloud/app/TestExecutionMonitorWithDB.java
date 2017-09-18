@@ -60,7 +60,7 @@ public class TestExecutionMonitorWithDB {
 		ArrayList<Task> tasks = new ArrayList<>();
 		tasks.add(task);
 		doReturn(tasks).when(job).getTasks();
-		doReturn(TaskState.COMPLETED).when(arrebol).getTaskState(Mockito.anyString(), Mockito.anyString());
+		doReturn(TaskState.COMPLETED).when(arrebol).getTaskState(FAKE_TASK_ID);
 		doNothing().when(arrebol).moveTaskToFinished(task);
 		jdfJobs.add(job);
 		doReturn(jdfJobs).when(db).getAll();
@@ -82,7 +82,7 @@ public class TestExecutionMonitorWithDB {
 		ArrayList<Task> tasks = new ArrayList<>();
 		tasks.add(task);
 		doReturn(tasks).when(job).getTasks();
-		doReturn(TaskState.FAILED).when(arrebol).getTaskState(Mockito.anyString(), Mockito.anyString());
+		doReturn(TaskState.FAILED).when(arrebol).getTaskState(FAKE_TASK_ID);
 		jdfJobs.add(job);
 		doReturn(jdfJobs).when(db).getAll();
 		ExecutionMonitorWithDB monitor = new ExecutionMonitorWithDB(arrebol,executorService, db);
@@ -104,7 +104,7 @@ public class TestExecutionMonitorWithDB {
 		ArrayList<Task> tasks = new ArrayList<>();
 		tasks.add(task);
 		doReturn(tasks).when(job).getTasks();
-		doReturn(TaskState.RUNNING).when(arrebol).getTaskState(Mockito.anyString(), Mockito.anyString());
+		doReturn(TaskState.RUNNING).when(arrebol).getTaskState(FAKE_TASK_ID);
 		jdfJobs.add(job);
 		doReturn(jdfJobs).when(db).getAll();
 		ExecutionMonitorWithDB monitor = new ExecutionMonitorWithDB(arrebol,executorService, db);

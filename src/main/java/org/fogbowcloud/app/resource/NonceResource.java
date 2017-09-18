@@ -1,7 +1,5 @@
 package org.fogbowcloud.app.resource;
 
-import java.io.IOException;
-
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;

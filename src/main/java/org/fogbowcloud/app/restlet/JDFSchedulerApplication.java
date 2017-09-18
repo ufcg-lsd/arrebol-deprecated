@@ -106,8 +106,8 @@ public class JDFSchedulerApplication extends Application {
 		return this.arrebolController.getTaskById(taskId, owner);
 	}
 
-	public TaskState getTaskState(String taskId, String owner) {
-		return this.arrebolController.getTaskState(taskId, owner);
+	public TaskState getTaskState(String taskId) {
+		return this.arrebolController.getTaskState(taskId);
 	}
 
 	public int getNonce() {

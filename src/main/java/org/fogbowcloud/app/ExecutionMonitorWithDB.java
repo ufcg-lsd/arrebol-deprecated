@@ -48,7 +48,7 @@ public class ExecutionMonitorWithDB implements Runnable {
 				if (!task.isFinished()) {
 					count++;
 					LOGGER.debug("Task: " + task +" is being treated");
-					TaskState taskState = arrebolController.getTaskState(task.getId(), aJob.getOwner());
+					TaskState taskState = arrebolController.getTaskState(task.getId());
 					LOGGER.debug("Process " + task.getId() + " has state " + taskState.getDesc());
 					service.submit(new TaskExecutionChecker(task, aJob.getOwner()));
 				}
@@ -71,7 +71,7 @@ public class ExecutionMonitorWithDB implements Runnable {
 
 		@Override
 		public void run() {
-			TaskState state = arrebolController.getTaskState(task.getId(), owner);
+			TaskState state = arrebolController.getTaskState(task.getId());
 
 			if (TaskState.COMPLETED.equals(state)) {
 				arrebolController.moveTaskToFinished(task);
