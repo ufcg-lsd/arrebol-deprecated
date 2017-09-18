@@ -2,8 +2,10 @@
 DIRNAME=`dirname $0`
 . ${DIRNAME}/arrebol.properties
 
+x="dotest"
+
 print_menu() {
-	echo "Usage: $0 COMMAND [OPTIONS]"
+	echo "Usage: $0 COMMAND"
 	echo "Commands are:"
 	echo "GET [<job_id> | <friendly_name>] (-u | --username) <username>"
 	echo "Get a job from <username>, using either it's <job_id> or it's <friendly_name>,"
@@ -23,7 +25,22 @@ print_menu() {
 
 do_get() {
 	define_parameters $@
+
+    if [ -z ${username:+x} ]
+    then
+	    echo "Missing username"
+        print_menu
+        exit 1
+    fi
+
 	authenticator=$(curl -G "${host}/arrebol/authenticator" 2> /dev/null)
+
+    if [ -z ${authenticator:+x} ]
+    then
+        echo "Failed to connect to authentication server"
+        exit 1
+    fi
+
 	${authenticator}
 	if [ $# -eq 2 ]
 	then
@@ -83,23 +100,45 @@ define_parameters() {
 
 do_post() {
 	local jdffilepath=$1
+	if [[ ${jdffilepath} == -* ]]
+	then
+	    echo "Missing path to JDF file"
+	    print_menu
+	    exit 1
+	fi
     if [ -f ${jdffilepath} ]
 	then
 		shift
         define_parameters $@
-		if [[ "${jdffilepath}" != /* ]];
+
+        if [ -z ${username:+x} ]
+        then
+	        echo "Missing username"
+            print_menu
+            exit 1
+        fi
+
+	    authenticator=$(curl -G "${host}/arrebol/authenticator" 2> /dev/null)
+	    ${authenticator}
+
+        if [ -z ${authenticator:+x} ]
+        then
+            echo "Failed to connect to authentication server"
+            exit 1
+        fi
+
+        if [[ "${jdffilepath}" != /* ]];
 		then
-			echo "${jdffilepath} file path is relative, adding ${PWD} to the path"
-			jdffilepath="${PWD}/${jdffilepath}"
-		fi
-		authenticator=$(curl -G "${host}/arrebol/authenticator" 2> /dev/null)
-		${authenticator}
-		base_curl_cmd="curl -X POST --form jdffilepath=${jdffilepath} --form X-auth-credentials={username:'${username}',password:'${password}',nonce:'${nonce}'}"
-		if [[ ${schedpath} ]]
-		then
-			base_curl_cmd="${base_curl_cmd} --form schedpath=${schedpath}"
-		fi
-		base_curl_cmd="${base_curl_cmd} $host/arrebol/job"
+		    echo "${jdffilepath} file path is relative, adding ${PWD} to the path"
+		    jdffilepath="${PWD}/${jdffilepath}"
+	    fi
+
+	    base_curl_cmd="curl -X POST --form jdffilepath=${jdffilepath} --form X-auth-credentials={username:'${username}',password:'${password}',nonce:'${nonce}'}"
+	    if [[ ${schedpath} ]]
+	    then
+		    base_curl_cmd="${base_curl_cmd} --form schedpath=${schedpath}"
+	    fi
+	    base_curl_cmd="${base_curl_cmd} ${host}/arrebol/job"
         response=$(${base_curl_cmd} 2> /dev/null)
         echo ${response}
 	else
@@ -112,8 +151,16 @@ do_stop() {
 	if [ $# -eq 3 ]
 	then
 		define_parameters $@
+
 		authenticator=$(curl -G "${host}/arrebol/authenticator" 2> /dev/null)
 		${authenticator}
+
+        if [ -z ${authenticator:+x} ]
+        then
+            echo "Failed to connect to authentication server"
+            exit 1
+        fi
+
         response=$(curl -X DELETE -H "X-auth-credentials: { username: '${username}', password: '${password}', nonce: '${nonce}' }" "${host}/arrebol/job/$1" 2> /dev/null)
         echo ${response}
     else
