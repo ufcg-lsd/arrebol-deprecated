@@ -138,7 +138,7 @@ do_post() {
 	    then
 		    base_curl_cmd="${base_curl_cmd} --form schedpath=${schedpath}"
 	    fi
-	    base_curl_cmd="${base_curl_cmd} $host/arrebol/job"
+	    base_curl_cmd="${base_curl_cmd} ${host}/arrebol/job"
         response=$(${base_curl_cmd} 2> /dev/null)
         echo ${response}
 	else

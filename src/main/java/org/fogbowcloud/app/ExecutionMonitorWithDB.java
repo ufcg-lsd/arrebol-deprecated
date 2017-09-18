@@ -49,8 +49,8 @@ public class ExecutionMonitorWithDB implements Runnable {
 					"[" + aJob.getId() + "]."
 			);
 			for (Task task : aJob.getTasks()) {
-				LOGGER.debug("Task: " +task +" is being treated");
 				if (!task.isFinished()) {
+					LOGGER.debug("Task: " +task +" is being treated");
 					TaskState taskState = blowoutController.getTaskState(task.getId());
 					LOGGER.debug("Process " + task.getId() + " has state " + taskState.getDesc());
 					service.submit(new TaskExecutionChecker(task));
