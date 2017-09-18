@@ -56,7 +56,7 @@ public class TestArrebolController {
 
 		properties.put(AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT, "300000000");
 		properties.put(AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME, "30000");
-		properties.put(AppPropertiesConstants.INFRA_IS_ELASTIC, "true");
+		properties.put(AppPropertiesConstants.INFRA_IS_STATIC, "true");
 		properties.put(
 				AppPropertiesConstants.INFRA_AUTH_TOKEN_UPDATE_PLUGIN,
 				"org.fogbowcloud.blowout.infrastructure.token.LDAPTokenUpdatePlugin"

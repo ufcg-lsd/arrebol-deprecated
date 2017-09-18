@@ -25,27 +25,24 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.amazonaws.auth.policy.Resource;
+import org.mockito.Mockito;
 
 public class TestExecutionMonitorWithDB {
 
 	private static final String FAKE_UUID = "1234";
-	public Task task;
-	public BlowoutController blowout;
-	public ArrebolController arrebol;
-	public JDFJob job;
-	public InfrastructureManager IM;
-	public Resource resource;
-	public String FAKE_TASK_ID = "FAKE_TASK_ID";
+	private Task task;
+	private BlowoutController blowout;
+	private ArrebolController arrebol;
+	private JDFJob job;
+	private String FAKE_TASK_ID = "FAKE_TASK_ID";
 	private CurrentThreadExecutorService executorService;
-	public JobDataStore db;
+	private JobDataStore db;
 	private HashMap<String, JDFJob> jobDB;
 
 	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp() {
 		task = spy(new TaskImpl(FAKE_TASK_ID, null, FAKE_UUID));
-		IM = mock(InfrastructureManager.class);
-		resource = mock(Resource.class);
 		db = mock(JobDataStore.class);
 		jobDB = mock(HashMap.class);
 		job = mock(JDFJob.class);
@@ -56,73 +53,66 @@ public class TestExecutionMonitorWithDB {
 
 	@Test
 	public void testExecutionMonitor() throws InfrastructureException, InterruptedException {
-		List<JDFJob> jdfJobs = new ArrayList<JDFJob>();
+		List<JDFJob> jdfJobs = new ArrayList<>();
 		doReturn("jobId").when(job).getId();
 		doReturn(job).when(jobDB).put("jobId", job);
 		
-		ArrayList<Task> tasks = new ArrayList<Task>();
+		ArrayList<Task> tasks = new ArrayList<>();
 		tasks.add(task);
 		doReturn(tasks).when(job).getTasks();
-		doReturn(TaskState.COMPLETED).when(blowout).getTaskState(FAKE_TASK_ID);
-		doNothing().when(blowout).cleanTask(task);
+		doReturn(TaskState.COMPLETED).when(arrebol).getTaskState(Mockito.anyString(), Mockito.anyString());
 		doNothing().when(arrebol).moveTaskToFinished(task);
 		jdfJobs.add(job);
 		doReturn(jdfJobs).when(db).getAll();
-		ExecutionMonitorWithDB monitor = new ExecutionMonitorWithDB(blowout, arrebol, executorService, db);
+		ExecutionMonitorWithDB monitor = new ExecutionMonitorWithDB(arrebol, executorService, db);
 		monitor.run();
-		verify(blowout).cleanTask(task);
 		verify(arrebol).moveTaskToFinished(task);
 		TaskProcess tp = mock(TaskProcess.class);
-		List<TaskProcess> processes = new ArrayList<TaskProcess>();
+		List<TaskProcess> processes = new ArrayList<>();
 		processes.add(tp);
 		doReturn(TaskState.FINNISHED).when(tp).getStatus();
-		Thread.sleep(500);
 	}
 
 	@Test
 	public void testExecutionMonitorTaskFails() throws InterruptedException {
-		ExecutorService exec = mock(ExecutorService.class);
-		List<JDFJob> jdfJobs = new ArrayList<JDFJob>();
+		List<JDFJob> jdfJobs = new ArrayList<>();
 		doReturn("jobId").when(job).getId();
 		doReturn(job).when(jobDB).put("jobId", job);
 		
-		ArrayList<Task> tasks = new ArrayList<Task>();
+		ArrayList<Task> tasks = new ArrayList<>();
 		tasks.add(task);
 		doReturn(tasks).when(job).getTasks();
-		doReturn(TaskState.FAILED).when(blowout).getTaskState(FAKE_TASK_ID);
+		doReturn(TaskState.FAILED).when(arrebol).getTaskState(Mockito.anyString(), Mockito.anyString());
 		jdfJobs.add(job);
 		doReturn(jdfJobs).when(db).getAll();
-		ExecutionMonitorWithDB monitor = new ExecutionMonitorWithDB(blowout, arrebol,executorService, db);
+		ExecutionMonitorWithDB monitor = new ExecutionMonitorWithDB(arrebol,executorService, db);
 		monitor.run();
-		verify(blowout, never()).cleanTask(task);
 		verify(arrebol, never()).moveTaskToFinished(task);
 		
 		TaskProcess tp = mock(TaskProcess.class);
-		List<TaskProcess> processes = new ArrayList<TaskProcess>();
+		List<TaskProcess> processes = new ArrayList<>();
 		processes.add(tp);
 		doNothing().when(job).finish(task);
-		Thread.sleep(500);
 	}
 
 	@Test
 	public void testExecutionIsNotOver() throws InfrastructureException, InterruptedException {
-		List<JDFJob> jdfJobs = new ArrayList<JDFJob>();
+		List<JDFJob> jdfJobs = new ArrayList<>();
 		doReturn("jobId").when(job).getId();
 		doReturn(job).when(jobDB).put("jobId", job);
 		
-		ArrayList<Task> tasks = new ArrayList<Task>();
+		ArrayList<Task> tasks = new ArrayList<>();
 		tasks.add(task);
 		doReturn(tasks).when(job).getTasks();
-		doReturn(TaskState.RUNNING).when(blowout).getTaskState(FAKE_TASK_ID);
+		doReturn(TaskState.RUNNING).when(arrebol).getTaskState(Mockito.anyString(), Mockito.anyString());
 		jdfJobs.add(job);
 		doReturn(jdfJobs).when(db).getAll();
-		ExecutionMonitorWithDB monitor = new ExecutionMonitorWithDB(blowout, arrebol,executorService, db);
+		ExecutionMonitorWithDB monitor = new ExecutionMonitorWithDB(arrebol,executorService, db);
 		monitor.run();
-		verify(blowout, never()).cleanTask(task);
 		verify(arrebol, never()).moveTaskToFinished(task);
 		TaskProcess tp = mock(TaskProcess.class);
 		doReturn(TaskState.RUNNING).when(tp).getStatus();
-		List<TaskProcess> processes = new ArrayList<TaskProcess>();
+		List<TaskProcess> processes = new ArrayList<>();
 		processes.add(tp);
 	}
 

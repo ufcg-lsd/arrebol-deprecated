@@ -38,19 +38,19 @@ public class JDFJobBuilder {
 
 	/**
 	 *
-	 * @param jdfFilePath
-	 * @param owner
-	 * @param properties
-	 * @return
-	 * @throws IllegalArgumentException
-	 * @throws CompilerException
-	 * @throws IOException
+	 * @param jdfFilePath Path to the jdf file that describes the job
+	 * @param owner Owner of the Job
+	 * @param properties Arrebol config
+	 * @return Job object
+	 * @throws IllegalArgumentException If path to jdf is empty
+	 * @throws CompilerException If file does not describe a jdf Job
+	 * @throws IOException If a problem during the reading of the file occurs
 	 */
 	public static JDFJob createJobFromJDFFile(String jdfFilePath, User owner, Properties properties)
 			throws CompilerException, IOException {
 		JDFJob job = new JDFJob(owner.getUser(), new ArrayList<Task>(), owner.getUsername());
 
-		if (jdfFilePath == null) {
+		if (jdfFilePath == null || jdfFilePath.isEmpty()) {
 			throw new IllegalArgumentException("jdfFilePath cannot be null");
 		}
 
@@ -63,7 +63,6 @@ public class JDFJobBuilder {
 				commonCompiler.compile(jdfFilePath, FileType.JDF);
 
 				JobSpecification jobSpec = (JobSpecification) commonCompiler.getResult().get(0);
-
 
 				job.setFriendlyName(jobSpec.getLabel());
 
@@ -176,16 +175,12 @@ public class JDFJobBuilder {
 	 * This method translates the JDF remote executable command into the JDL
 	 * format
 	 *
-	 * @param jobId
-	 * @param taskSpec
-	 *            The task specification {@link TaskSpecification}
-	 * @param task
-	 *            The output expression containing the JDL job
-	 * @throws IllegalArgumentException
+	 * @param jobId ID of the Job
+	 * @param taskSpec The task specification {@link TaskSpecification}
+	 * @param task The output expression containing the JDL job
+	 * @param schedPath Root path where commands should be executed
 	 */
-	private static void parseTaskCommands(String jobId, TaskSpecification taskSpec, Task task, String schedPath)
-			throws IllegalArgumentException {
-
+	private static void parseTaskCommands(String jobId, TaskSpecification taskSpec, Task task, String schedPath) {
 		List<JDLCommand> initBlocks = taskSpec.getTaskBlocks();
 		if (initBlocks == null) {
 			return;
@@ -194,7 +189,7 @@ public class JDFJobBuilder {
 			if (jdlCommand.getBlockType().equals(JDLCommandType.IO)) {
 				addIOCommand(jobId, task, (IOCommand) jdlCommand, schedPath);
 			} else {
-				addRemoteCommand(jobId, task, (RemoteCommand) jdlCommand, schedPath);
+				addRemoteCommand(jobId, task, (RemoteCommand) jdlCommand);
 			}
 		}
 	}
@@ -202,15 +197,12 @@ public class JDFJobBuilder {
 	/**
 	 * It translates the input IOBlocks to JDL InputSandbox
 	 *
-	 * @param jobId
-	 * @param taskSpec
-	 *            The task specification {@link TaskSpecification}
-	 * @param task
-	 *            The output expression containing the JDL job
-	 * @param schedPath
+	 * @param jobId ID of the Job
+	 * @param taskSpec The task specification {@link TaskSpecification}
+	 * @param task The output expression containing the JDL job
+	 * @param schedPath Root path where commands should be executed
 	 */
 	private static void parseInitCommands(String jobId, TaskSpecification taskSpec, Task task, String schedPath) {
-
 		List<JDLCommand> initBlocks = taskSpec.getInitBlocks();
 		if (initBlocks == null) {
 			return;
@@ -219,12 +211,12 @@ public class JDFJobBuilder {
 			if (jdlCommand.getBlockType().equals(JDLCommandType.IO)) {
 				addIOCommand(jobId, task, (IOCommand) jdlCommand, schedPath);
 			} else {
-				addRemoteCommand(jobId, task, (RemoteCommand) jdlCommand, schedPath);
+				addRemoteCommand(jobId, task, (RemoteCommand) jdlCommand);
 			}
 		}
 	}
 
-	public static void addIOCommand(String jobId, Task task, IOCommand command, String schedPath) {
+	private static void addIOCommand(String jobId, Task task, IOCommand command, String schedPath) {
 		String sourceFile = command.getEntry().getSourceFile();
 		String destination = command.getEntry().getDestination();
 		String IOType = command.getEntry().getCommand();
@@ -252,13 +244,13 @@ public class JDFJobBuilder {
 
 	}
 
-	public static void addRemoteCommand(String jobId, Task task, RemoteCommand remCommand, String schedPath) {
+	private static void addRemoteCommand(String jobId, Task task, RemoteCommand remCommand) {
 		Command command = new Command("\"" + remCommand.getContent() + "\"", Command.Type.REMOTE);
 		LOGGER.debug("JobId: " + jobId + " task: " + task.getId() + " remote command: " + remCommand.getContent());
 		task.addCommand(command);
 	}
 
-	public static String getDirectoryTree(String destination) {
+	private static String getDirectoryTree(String destination) {
 		int lastDir = destination.lastIndexOf(File.separator);
 		if (lastDir == -1 ) {
 			return "";
@@ -285,14 +277,12 @@ public class JDFJobBuilder {
 	/**
 	 * This method translates the Ourgrid output IOBlocks to JDL InputSandbox
 	 *
-	 * @param jobId
-	 * @param taskSpec
-	 *            The task specification {@link TaskSpecification}
-	 * @param task
-	 *            The output expression containing the JDL job
+	 * @param jobId ID of the Job
+	 * @param taskSpec The task specification {@link TaskSpecification}
+	 * @param task The output expression containing the JDL job
+	 * @param schedPath Root path where commands should be executed
 	 */
 	private static void parseFinalCommands(String jobId, TaskSpecification taskSpec, Task task, String schedPath) {
-
 		List<JDLCommand> initBlocks = taskSpec.getFinalBlocks();
 		if (initBlocks == null) {
 			return;
@@ -301,7 +291,7 @@ public class JDFJobBuilder {
 			if (jdlCommand.getBlockType().equals(JDLCommandType.IO)) {
 				addIOCommand(jobId, task, (IOCommand) jdlCommand, schedPath);
 			} else {
-				addRemoteCommand(jobId, task, (RemoteCommand) jdlCommand, schedPath);
+				addRemoteCommand(jobId, task, (RemoteCommand) jdlCommand);
 			}
 		}
 	}

@@ -54,19 +54,8 @@ public class JDFJob extends Job {
 		return this.owner;
 	}
 
-	public Task getCompletedTask(String taskId) {
-		//TODO remove
-		return null;
-	}
-
 	public Task getTaskById(String taskId) {
-		//TODO
 		return this.getTaskList().get(taskId);
-	}
-
-	public TaskState getTaskState(String taskId) {
-		//TODO remove
-		return null;
 	}
 
 	public void setFriendlyName(String name) {

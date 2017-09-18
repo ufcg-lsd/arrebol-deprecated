@@ -59,7 +59,7 @@ public class ArrebolControllerIT {
 		properties.setProperty(AppPropertiesConstants.IMPLEMENTATION_SCHEDULER, "org.fogbowcloud.blowout.core.StandardScheduler");
 		properties.setProperty(AppPropertiesConstants.INFRA_RESOURCE_IDLE_LIFETIME, "0");
 		properties.setProperty(AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_TIMEOUT, "20000");
-		properties.setProperty(AppPropertiesConstants.INFRA_IS_ELASTIC, "false");
+		properties.setProperty(AppPropertiesConstants.INFRA_IS_STATIC, "false");
 		properties.setProperty(AppPropertiesConstants.INFRA_AUTH_TOKEN_UPDATE_PLUGIN, "org.fogbowcloud.app.integration.FakeTokenUpdatePlugin");
 		properties.setProperty(AppPropertiesConstants.INFRA_MONITOR_PERIOD, "30000");
 		properties.setProperty(AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_RETRY, "1");

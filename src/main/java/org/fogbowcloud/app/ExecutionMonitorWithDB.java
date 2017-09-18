@@ -15,46 +15,42 @@ public class ExecutionMonitorWithDB implements Runnable {
 
     private static final Logger LOGGER = Logger.getLogger(ExecutionMonitorWithDB.class);
 
-	private BlowoutController blowoutController;
 	private ArrebolController arrebolController;
 	private ExecutorService service;
-    private ArrayList<JDFJob> jobMap;
+    private JobDataStore db;
 
-	ExecutionMonitorWithDB(BlowoutController blowoutController,
-                           ArrebolController arrebolController,
+	ExecutionMonitorWithDB(ArrebolController arrebolController,
                            JobDataStore dataStore) {
-		this(blowoutController, arrebolController, Executors.newFixedThreadPool(3), dataStore);
+		this(arrebolController, Executors.newFixedThreadPool(3), dataStore);
 	}
 
-	ExecutionMonitorWithDB(BlowoutController blowoutController,
-                           ArrebolController arrebolController,
+	ExecutionMonitorWithDB(ArrebolController arrebolController,
                            ExecutorService service,
                            JobDataStore db) {
-		this.blowoutController = blowoutController;
 		this.arrebolController = arrebolController;
 		if (service == null) {
 			this.service = Executors.newFixedThreadPool(3);
 		} else {
 			this.service = service;
 		}
-        this.jobMap = (ArrayList<JDFJob>) db.getAll();
+        this.db = db;
 	}
 
 	@Override
 	public void run() {
 		LOGGER.debug("Submitting monitoring tasks");
+		ArrayList<JDFJob> jobMap = (ArrayList<JDFJob>) db.getAll();
 
 		for (JDFJob aJob : jobMap) {
 			LOGGER.debug("Starting monitoring of job " + aJob.getName() + "[" + aJob.getId() + "].");
 			int count = 0;
 			for (Task task : aJob.getTasks()) {
 				if (!task.isFinished()) {
-					LOGGER.debug("Task: " +task +" is being treated");
 					count++;
 					LOGGER.debug("Task: " + task +" is being treated");
-					TaskState taskState = blowoutController.getTaskState(task.getId());
+					TaskState taskState = arrebolController.getTaskState(task.getId(), aJob.getOwner());
 					LOGGER.debug("Process " + task.getId() + " has state " + taskState.getDesc());
-					service.submit(new TaskExecutionChecker(task));
+					service.submit(new TaskExecutionChecker(task, aJob.getOwner()));
 				}
 			}
 			if (count == 0) {
@@ -66,17 +62,18 @@ public class ExecutionMonitorWithDB implements Runnable {
 	class TaskExecutionChecker implements Runnable {
 
 		private Task task;
+		private String owner;
 
-		TaskExecutionChecker(Task task) {
+		TaskExecutionChecker(Task task, String owner) {
 			this.task = task;
+			this.owner = owner;
 		}
 
 		@Override
 		public void run() {
-			TaskState state = blowoutController.getTaskState(task.getId());
+			TaskState state = arrebolController.getTaskState(task.getId(), owner);
 
 			if (TaskState.COMPLETED.equals(state)) {
-				blowoutController.cleanTask(task);
 				arrebolController.moveTaskToFinished(task);
 			}
 		}

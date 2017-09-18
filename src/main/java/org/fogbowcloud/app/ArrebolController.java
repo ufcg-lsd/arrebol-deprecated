@@ -85,7 +85,6 @@ public class ArrebolController {
 		int schedulerPeriod = Integer.valueOf(properties.getProperty(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD));
 		LOGGER.debug("Starting Execution Monitor, with period: " + schedulerPeriod);
         ExecutionMonitorWithDB executionMonitor = new ExecutionMonitorWithDB(
-        		blowoutController,
 				this,
 				jobDataStore
 		);
@@ -155,8 +154,10 @@ public class ArrebolController {
 			jobToRemove = getJobById(jobReference, owner);
 		}
 		if (jobToRemove != null) {
+			LOGGER.debug("Removing job " + jobToRemove.getName() + ".");
 			this.jobDataStore.deleteByJobId(jobToRemove.getId(), owner);
 			for (Task task : jobToRemove.getTasks()) {
+				LOGGER.debug("Removing task " + task.getId() + " from job.");
 				blowoutController.cleanTask(task);
 			}
 			return jobToRemove.getId();
@@ -199,7 +200,7 @@ public class ArrebolController {
 					return taskState;
 				}
 			}
-			return null;
+			return TaskState.NOT_CREATED;
 		}
 	}
 
@@ -212,6 +213,7 @@ public class ArrebolController {
 		finishedTasks.put(task.getId(), task);
 		job.finish(task);
 		updateJob(job);
+		blowoutController.cleanTask(task);
 	}
 
 	public User authUser(String credentials) throws IOException, GeneralSecurityException {
