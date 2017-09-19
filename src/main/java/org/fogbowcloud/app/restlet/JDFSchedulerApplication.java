@@ -131,4 +131,8 @@ public class JDFSchedulerApplication extends Application {
 		
 		return this.arrebolController.getAuthenticatorName();
 	}
+
+	public int getTaskRetries(String taskId, String owner) {
+		return this.arrebolController.getTaskRetries(taskId, owner);
+	}
 }

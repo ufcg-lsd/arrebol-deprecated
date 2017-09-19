@@ -330,4 +330,19 @@ public class ArrebolController {
 		LOGGER.debug("All properties are set");
 		return true;
 	}
+
+	public int getTaskRetries(String taskId, String owner) {
+		Task task = finishedTasks.get(taskId);
+		if (task != null) {
+			return task.getRetries();
+		} else {
+			task = getTaskById(taskId, owner);
+			if (task != null) {
+				int taskState = blowoutController.getTaskRetries(task.getId());
+				return taskState;
+				
+			}
+			return 0;
+		}
+	}
 }

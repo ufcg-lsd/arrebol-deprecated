@@ -25,6 +25,7 @@ public class JDFJob extends Job {
 	private String name;
 	private final String owner;
 	private final String userId;
+    private List<Task> allTasksOnJobCreation;
 
 	public JDFJob(String owner, List<Task> taskList, String userID) {
 		super(taskList);
@@ -32,6 +33,7 @@ public class JDFJob extends Job {
 		this.jobId = UUID.randomUUID().toString();
 		this.owner = owner;
 		this.userId = userID;
+		this.allTasksOnJobCreation = taskList;
 	}
 	
 	public JDFJob(String jobId, String owner, List<Task> taskList, String userID) {
@@ -54,12 +56,24 @@ public class JDFJob extends Job {
 		return this.owner;
 	}
 
+	public float completionPercentage() {
+		float completedTasks = (float) 0.0;
+		for (Task task : getAllTasksOnJobCreation()) {
+			if(task.isFinished()) completedTasks++;
+		}
+		return (float) (100.0*completedTasks/getAllTasksOnJobCreation().size());
+	}
+
 	public Task getTaskById(String taskId) {
 		return this.getTaskList().get(taskId);
 	}
 
 	public void setFriendlyName(String name) {
 		this.name = name;
+	}
+
+	public void setAllTasksOnJobCreation(List<Task> tasks) {
+		this.allTasksOnJobCreation = tasks;
 	}
 
 	@Override
@@ -98,14 +112,18 @@ public class JDFJob extends Job {
 	}
 
 	public static JDFJob fromJSON(JSONObject job) {
-		LOGGER.info("Reading Job from JSON");
-		List<Task> tasks = new ArrayList<>();
-
+        LOGGER.info("Reading Job from JSON");
+        List<Task> tasks = new ArrayList<>();
+        List<Task> allTasks = new ArrayList<Task>();
+		
 		JSONArray tasksJSON = job.optJSONArray("tasks");
 		for (int i = 0; i < tasksJSON.length(); i++) {
 			JSONObject taskJSON = tasksJSON.optJSONObject(i);
 			Task task = TaskImpl.fromJSON(taskJSON);
+			if (!task.isFinished()) {
 			tasks.add(task);
+			}
+			allTasks.add(task);
 		}
 		
 		JDFJob jdfJob = new JDFJob(
@@ -115,8 +133,9 @@ public class JDFJob extends Job {
 				job.optString("uuid")
 		);
 		jdfJob.setFriendlyName(job.optString("name"));
-		LOGGER.debug("Job read from JSON is from owner: " + job.optString("owner"));
-		return jdfJob;
+        jdfJob.setAllTasksOnJobCreation(allTasks);
+        LOGGER.debug("Job read from JSON is from owner: " + job.optString("owner"));
+        return jdfJob;
 	}
 	
 	@Override
@@ -129,4 +148,8 @@ public class JDFJob extends Job {
 		return false;
 	}
 
+
+	public List<Task> getAllTasksOnJobCreation(){
+		return this.allTasksOnJobCreation;
+	}
 }
