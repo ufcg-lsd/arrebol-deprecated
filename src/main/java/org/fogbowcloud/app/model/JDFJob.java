@@ -25,7 +25,6 @@ public class JDFJob extends Job {
 	private String name;
 	private final String owner;
 	private final String userId;
-    private List<Task> allTasksOnJobCreation;
 
 	public JDFJob(String owner, List<Task> taskList, String userID) {
 		super(taskList);
@@ -33,7 +32,6 @@ public class JDFJob extends Job {
 		this.jobId = UUID.randomUUID().toString();
 		this.owner = owner;
 		this.userId = userID;
-		this.allTasksOnJobCreation = taskList;
 	}
 	
 	public JDFJob(String jobId, String owner, List<Task> taskList, String userID) {
@@ -57,11 +55,12 @@ public class JDFJob extends Job {
 	}
 
 	public float completionPercentage() {
-		float completedTasks = (float) 0.0;
-		for (Task task : getAllTasksOnJobCreation()) {
+		if (getTasks().size() == 0) return 100.0f;
+		float completedTasks = 0.0f;
+		for (Task task : getTasks()) {
 			if(task.isFinished()) completedTasks++;
 		}
-		return (float) (100.0*completedTasks/getAllTasksOnJobCreation().size());
+		return (float) (100.0*completedTasks/getTasks().size());
 	}
 
 	public Task getTaskById(String taskId) {
@@ -70,10 +69,6 @@ public class JDFJob extends Job {
 
 	public void setFriendlyName(String name) {
 		this.name = name;
-	}
-
-	public void setAllTasksOnJobCreation(List<Task> tasks) {
-		this.allTasksOnJobCreation = tasks;
 	}
 
 	@Override
@@ -133,7 +128,6 @@ public class JDFJob extends Job {
 				job.optString("uuid")
 		);
 		jdfJob.setFriendlyName(job.optString("name"));
-        jdfJob.setAllTasksOnJobCreation(allTasks);
         LOGGER.debug("Job read from JSON is from owner: " + job.optString("owner"));
         return jdfJob;
 	}
@@ -146,10 +140,5 @@ public class JDFJob extends Job {
 			}
 		}
 		return false;
-	}
-
-
-	public List<Task> getAllTasksOnJobCreation(){
-		return this.allTasksOnJobCreation;
 	}
 }
