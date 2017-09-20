@@ -1,7 +1,6 @@
 package org.fogbowcloud.app;
 
 import org.apache.log4j.Logger;
-import org.fogbowcloud.app.exception.ArrebolException;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.blowout.core.exception.BlowoutException;
 

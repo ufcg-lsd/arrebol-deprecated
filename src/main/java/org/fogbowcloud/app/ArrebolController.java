@@ -338,8 +338,7 @@ public class ArrebolController {
 		} else {
 			task = getTaskById(taskId, owner);
 			if (task != null) {
-				int taskState = blowoutController.getTaskRetries(task.getId());
-				return taskState;
+				return blowoutController.getTaskRetries(task.getId());
 				
 			}
 			return 0;

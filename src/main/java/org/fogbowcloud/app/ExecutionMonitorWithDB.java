@@ -62,11 +62,9 @@ public class ExecutionMonitorWithDB implements Runnable {
 	class TaskExecutionChecker implements Runnable {
 
 		private Task task;
-		private String owner;
 
 		TaskExecutionChecker(Task task, String owner) {
 			this.task = task;
-			this.owner = owner;
 		}
 
 		@Override

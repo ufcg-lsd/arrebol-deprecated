@@ -9,10 +9,6 @@ public class Credential {
 	private String password;
 	private Integer nonce;
 	
-	public Credential(String username, String password) {
-		this(username, password, null);
-	}
-	
 	public Credential(String username, String password, Integer nonce) {
 		this.username = username;
 		this.password = password;

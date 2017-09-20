@@ -22,15 +22,9 @@ import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 public class LDAPAuthenticator implements ArrebolAuthenticator {
 
 	public static final String AUTH_NAME = "ldapauth";
-//	public static final String CRED_AUTH_URL = "authUrl";
-//	public static final String CRED_LDAP_BASE = "base";
-//	public static final String CRED_LDAP_ENCRYPT = "encrypt";
-//	public static final String CRED_PRIVATE_KEY = "privateKey";
-//	public static final String CRED_PUBLIC_KEY = "publicKey";
 	private static final String ENCRYPT_TYPE = ":TYPE:";
 	private static final String ENCRYPT_PASS = ":PASS:";
 	private static final String PASSWORD_ENCRYPTED = "{" + ENCRYPT_TYPE + "}" + ENCRYPT_PASS;
-//	public static final String ACCESSID_SEPARATOR = "!#!";
 
 	private String ldapBase;
 	private String encryptType;
