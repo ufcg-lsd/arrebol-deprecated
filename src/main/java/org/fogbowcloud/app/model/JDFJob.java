@@ -109,16 +109,14 @@ public class JDFJob extends Job {
 	public static JDFJob fromJSON(JSONObject job) {
         LOGGER.info("Reading Job from JSON");
         List<Task> tasks = new ArrayList<>();
-        List<Task> allTasks = new ArrayList<Task>();
 		
 		JSONArray tasksJSON = job.optJSONArray("tasks");
 		for (int i = 0; i < tasksJSON.length(); i++) {
 			JSONObject taskJSON = tasksJSON.optJSONObject(i);
 			Task task = TaskImpl.fromJSON(taskJSON);
 			if (!task.isFinished()) {
-			tasks.add(task);
+				tasks.add(task);
 			}
-			allTasks.add(task);
 		}
 		
 		JDFJob jdfJob = new JDFJob(
