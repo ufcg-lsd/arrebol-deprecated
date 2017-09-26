@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -20,14 +21,16 @@ public class TestJDFJobBuilder {
 	public static final String EXSIMPLE_JOB = RESOURCE_DIR + File.separator + "SimpleJob2.jdf";
 
 	@Test
-	public void testJDFCompilation () throws CompilerException, IOException {
+	public void testJDFCompilation () throws CompilerException, IOException, InterruptedException {
 		Properties properties = new Properties();
 		properties.setProperty(ArrebolPropertiesConstants.INFRA_RESOURCE_USERNAME, "infraname");
 		properties.setProperty(ArrebolPropertiesConstants.PUBLIC_KEY_CONSTANT, "public_key");
 		properties.setProperty(ArrebolPropertiesConstants.PRIVATE_KEY_FILEPATH, "file path");
-		JDFJob testJob = JDFJobBuilder.createJobFromJDFFile(
+		User owner = new LDAPUser("arrebolservice", "arrebolservice");
+		JDFJob testJob = new JDFJob(owner.getUser(), new ArrayList<Task>(), owner.getUsername());
+		JDFJobBuilder.createJobFromJDFFile(
+				testJob,
 				EXSIMPLE_JOB,
-				new LDAPUser("arrebolservice", "arrebolservice"),
 				properties
 		);
 		List<Task> tasks = testJob.getTasks();

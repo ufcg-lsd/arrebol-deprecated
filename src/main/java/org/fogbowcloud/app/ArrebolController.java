@@ -29,12 +29,48 @@ import org.json.JSONObject;
 
 public class ArrebolController {
 
+	private class AsyncJobBuilder implements Runnable {
+
+		private JDFJob job;
+		private String jdfFilePath;
+		private Properties properties;
+		private BlowoutController blowoutController;
+		private JobDataStore db;
+
+		AsyncJobBuilder(JDFJob job,
+						String jdfFilePath,
+						Properties properties,
+						BlowoutController blowoutController,
+						JobDataStore db) {
+			this.job = job;
+			this.jdfFilePath = jdfFilePath;
+			this.properties = properties;
+			this.blowoutController = blowoutController;
+			this.db = db;
+		}
+
+		@Override
+		public void run() {
+			try {
+				JDFJobBuilder.createJobFromJDFFile(job, jdfFilePath, properties);
+				blowoutController.addTaskList(job.getTasks());
+				LOGGER.debug("Finished creating job " + job.getId());
+				job.finishCreation();
+			} catch (Exception e) {
+				LOGGER.debug("Failed creating job " + job.getId(), e);
+				job.failCreation();
+			}
+			db.update(job);
+		}
+	}
+
 	private static final Logger LOGGER = Logger.getLogger(ArrebolController.class);
 
 	private BlowoutController blowoutController;
 	private Properties properties;
 	private List<Integer> nonces;
 	private HashMap<String, Task> finishedTasks;
+	private HashMap<String, Thread> creatingJobs;
 	private JobDataStore jobDataStore;
 	private ArrebolAuthenticator auth;
 
@@ -50,6 +86,7 @@ public class ArrebolController {
 		this.finishedTasks = new HashMap<>();
 		this.properties = properties;
 		this.blowoutController = new BlowoutController(properties);
+		this.creatingJobs = new HashMap<>();
 	}
 
 	public Properties getProperties() {
@@ -87,8 +124,18 @@ public class ArrebolController {
 		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0, schedulerPeriod);
 	}
 
+	public void stop() {
+		for (Thread t : creatingJobs.values()) {
+			t.interrupt();
+		}
+	}
+
 	void restartAllJobs() throws BlowoutException {
 		for (JDFJob job : this.jobDataStore.getAll()) {
+			if (job.getState().equals(JDFJob.JDFJobState.SUBMITTED)) {
+				job.failCreation();
+				this.jobDataStore.update(job);
+			}
 			ArrayList<Task> taskList = new ArrayList<>();
 			for (Task task : job.getTasks()) {
 				if (!task.isFinished()) {
@@ -131,7 +178,6 @@ public class ArrebolController {
 			);
 		}
 
-		blowoutController.addTaskList(job.getTasks());
 		jobDataStore.insert(job);
 		return job.getId();
 	}
@@ -151,6 +197,13 @@ public class ArrebolController {
 		}
 		if (jobToRemove != null) {
 			LOGGER.debug("Removing job " + jobToRemove.getName() + ".");
+			Thread creatingThread = creatingJobs.get(jobToRemove.getId());
+			if (creatingThread != null) {
+				if (creatingThread.isAlive())
+					LOGGER.info("Job was still being created.");
+				creatingThread.interrupt();
+				creatingJobs.remove(jobToRemove.getId());
+			}
 			this.jobDataStore.deleteByJobId(jobToRemove.getId(), owner);
 			for (Task task : jobToRemove.getTasks()) {
 				LOGGER.debug("Removing task " + task.getId() + " from job.");
@@ -166,7 +219,6 @@ public class ArrebolController {
 			return null;
 		}
 		for (JDFJob job : this.jobDataStore.getAllByOwner(owner)) {
-			// TODO review this IFs
 			if (jobName.equals(job.getName())) {
 				return job;
 			}
@@ -233,8 +285,12 @@ public class ArrebolController {
 		return nonce;
 	}
 
-	protected JDFJob createJobFromJDFFile(String jdfFilePath, User owner) throws CompilerException, IOException {
-        return JDFJobBuilder.createJobFromJDFFile(jdfFilePath, owner, this.properties);
+	JDFJob createJobFromJDFFile(String jdfFilePath, User owner) throws CompilerException, IOException {
+		JDFJob job = new JDFJob(owner.getUser(), new ArrayList<Task>(), owner.getUsername());
+		Thread t = new Thread(new AsyncJobBuilder(job, jdfFilePath, properties, blowoutController, jobDataStore));
+		t.start();
+		creatingJobs.put(job.getId(), t);
+		return job;
 	}
 
 	public User getUser(String username) {
@@ -269,8 +325,6 @@ public class ArrebolController {
 		return "Required property " + property + " was not set";
 	}
 
-	//TODO: Maybe this method should be separate in some utils classes, one to each plugin in use
-	// Each plugin must responsible to check the value of its properties
 	private static boolean checkProperties(Properties properties) {
 		// Arrebol required properties
 		if (!properties.containsKey(ArrebolPropertiesConstants.REST_SERVER_PORT)) {

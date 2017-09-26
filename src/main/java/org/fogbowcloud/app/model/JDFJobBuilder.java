@@ -37,19 +37,15 @@ public class JDFJobBuilder {
 	private static final Logger LOGGER = Logger.getLogger(JDFJobBuilder.class);
 
 	/**
-	 *
+	 * @param job Job being created
 	 * @param jdfFilePath Path to the jdf file that describes the job
-	 * @param owner Owner of the Job
 	 * @param properties Arrebol config
-	 * @return Job object
 	 * @throws IllegalArgumentException If path to jdf is empty
 	 * @throws CompilerException If file does not describe a jdf Job
 	 * @throws IOException If a problem during the reading of the file occurs
 	 */
-	public static JDFJob createJobFromJDFFile(String jdfFilePath, User owner, Properties properties)
-			throws CompilerException, IOException {
-		JDFJob job = new JDFJob(owner.getUser(), new ArrayList<Task>(), owner.getUsername());
-
+	public static void createJobFromJDFFile(JDFJob job, String jdfFilePath, Properties properties)
+			throws CompilerException, IOException, InterruptedException {
 		if (jdfFilePath == null || jdfFilePath.isEmpty()) {
 			throw new IllegalArgumentException("jdfFilePath cannot be null");
 		}
@@ -68,15 +64,12 @@ public class JDFJobBuilder {
 
 				String schedPath = jobSpec.getSchedPath();
 
-				// Mapping attributes
+				String jobRequirements = jobSpec.getRequirements();
+				LOGGER.debug("JobReq: " + jobRequirements);
 
-				// FIXME: what does this block do?
-				String jobRequirementes = jobSpec.getRequirements();
-				LOGGER.debug("JobReq: " + jobRequirementes);
-
-				jobRequirementes = jobRequirementes.replace("(", "").replace(")", "");
+				jobRequirements = jobRequirements.replace("(", "").replace(")", "");
 				String image = standardImage;
-				for (String req : jobRequirementes.split("and")) {
+				for (String req : jobRequirements.split("and")) {
 					if (req.trim().startsWith("image")) {
 						image = req.split("==")[1].trim();
 					}
@@ -93,7 +86,7 @@ public class JDFJobBuilder {
 				LOGGER.debug(properties.getProperty(ArrebolPropertiesConstants.INFRA_RESOURCE_USERNAME));
 
 				int i = 0;
-				for (String req : jobRequirementes.split("and")) {
+				for (String req : jobRequirements.split("and")) {
 					if (i == 0 && !req.trim().startsWith("image")) {
 						i++;
 						LOGGER.debug("NEW REQUIREMENT: " +req);
@@ -109,6 +102,8 @@ public class JDFJobBuilder {
 				spec.addRequirement(FogbowRequirementsHelper.METADATA_FOGBOW_REQUEST_TYPE, "one-time");
 				int taskID = 0;
 				for (TaskSpecification taskSpec : jobSpec.getTaskSpecs()) {
+					if (Thread.interrupted())
+						throw new InterruptedException();
 					LOGGER.debug("========================================================" + job.getUserId());
 					ProcessBuilder ps = new ProcessBuilder("id","-u", job.getUserId());
 
@@ -155,7 +150,7 @@ public class JDFJobBuilder {
 					parseFinalCommands(job.getId(), taskSpec, task, schedPath);
 
 					job.addTask(task);
-					LOGGER.debug("Task spec: " + task.getSpecification().toString());
+					LOGGER.debug("Task spec:\n" + task.getSpecification().toString());
 
 					taskID++;
 				}
@@ -167,8 +162,6 @@ public class JDFJobBuilder {
 		} else {
 			throw new IllegalArgumentException("File: " + file.getAbsolutePath() + " does not exists.");
 		}
-
-		return job;
 	}
 
 	/**

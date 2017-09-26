@@ -17,14 +17,45 @@ import org.json.JSONObject;
  */
 public class JDFJob extends Job {
 
-	//FIXME: do we need this implementation?
-	//FIXME: maybe, we should have name and id in the default Job abstraction.
+	private static final String JSON_HEADER_JOB_ID = "jobId";
+	private static final String JSON_HEADER_NAME = "name";
+	private static final String JSON_HEADER_UUID = "uuid";
+	private static final String JSON_HEADER_STATE = "state";
+	private static final String JSON_HEADER_OWNER = "owner";
+	private static final String JSON_HEADER_TASKS = "tasks";
+
+	public enum JDFJobState {
+		SUBMITTED("Submitted"),
+		RUNNING("Running"),
+		FAILED("Failed"),
+		COMPLETE("Complete");
+
+		private String desc;
+
+		JDFJobState(String desc) {
+			this.desc = desc;
+		}
+
+		public String value() {
+			return this.desc;
+		}
+
+		public static JDFJobState create(String desc) throws Exception{
+			for (JDFJobState ts : values()) {
+				if(ts.value().equals(desc)){
+					return ts;
+				}
+			}
+			throw new Exception("Invalid task state");
+		}
+	}
 
 	private static final long serialVersionUID = 7780896231796955706L;
 	private final String jobId;
 	private String name;
 	private final String owner;
 	private final String userId;
+	private JDFJobState state;
 
 	public JDFJob(String owner, List<Task> taskList, String userID) {
 		super(taskList);
@@ -32,6 +63,7 @@ public class JDFJob extends Job {
 		this.jobId = UUID.randomUUID().toString();
 		this.owner = owner;
 		this.userId = userID;
+		this.state = JDFJobState.SUBMITTED;
 	}
 	
 	public JDFJob(String jobId, String owner, List<Task> taskList, String userID) {
@@ -40,6 +72,7 @@ public class JDFJob extends Job {
 		this.jobId = jobId;
 		this.owner = owner;
 		this.userId = userID;
+		this.state = JDFJobState.SUBMITTED;
 	}
 
 	public String getId() {
@@ -55,12 +88,15 @@ public class JDFJob extends Job {
 	}
 
 	public float completionPercentage() {
-		if (getTasks().size() == 0) return 100.0f;
+		List<Task> tasks = getTasks();
+		if (tasks.size() == 0) return 100.0f;
 		float completedTasks = 0.0f;
-		for (Task task : getTasks()) {
-			if(task.isFinished()) completedTasks++;
+		for (Task task : tasks) {
+			if (task.isFinished()) completedTasks++;
 		}
-		return (float) (100.0*completedTasks/getTasks().size());
+		if (completedTasks == tasks.size())
+			this.state = JDFJobState.COMPLETE;
+		return (float) (100.0*completedTasks/tasks.size());
 	}
 
 	public Task getTaskById(String taskId) {
@@ -69,6 +105,18 @@ public class JDFJob extends Job {
 
 	public void setFriendlyName(String name) {
 		this.name = name;
+	}
+
+	public JDFJobState getState() {
+		return this.state;
+	}
+
+	public void finishCreation() {
+		this.state = JDFJobState.RUNNING;
+	}
+
+	public void failCreation() {
+		this.state = JDFJobState.FAILED;
 	}
 
 	@Override
@@ -89,16 +137,17 @@ public class JDFJob extends Job {
 	public JSONObject toJSON() {
 		try {
 			JSONObject job = new JSONObject();
-			job.put("jobId", this.getId());
-			job.put("name", this.getName());
-			job.put("owner", this.getOwner());
-			job.put("uuid", this.getUserId());
+			job.put(JSON_HEADER_JOB_ID, this.getId());
+			job.put(JSON_HEADER_NAME, this.getName());
+			job.put(JSON_HEADER_OWNER, this.getOwner());
+			job.put(JSON_HEADER_UUID, this.getUserId());
+			job.put(JSON_HEADER_STATE, this.getState().value());
 			JSONArray tasks = new JSONArray();
 			Map<String, Task> taskList = this.getTaskList();
 			for (Entry<String, Task> entry : taskList.entrySet()) {
 				tasks.put(entry.getValue().toJSON());
 			}
-			job.put("tasks", tasks);
+			job.put(JSON_HEADER_TASKS, tasks);
 			return job;
 		} catch (JSONException e) {
 			LOGGER.debug("Error while trying to create a JSONObject from JDFJob", e);
@@ -110,23 +159,26 @@ public class JDFJob extends Job {
         LOGGER.info("Reading Job from JSON");
         List<Task> tasks = new ArrayList<>();
 		
-		JSONArray tasksJSON = job.optJSONArray("tasks");
+		JSONArray tasksJSON = job.optJSONArray(JSON_HEADER_TASKS);
 		for (int i = 0; i < tasksJSON.length(); i++) {
 			JSONObject taskJSON = tasksJSON.optJSONObject(i);
 			Task task = TaskImpl.fromJSON(taskJSON);
-			if (!task.isFinished()) {
-				tasks.add(task);
-			}
+			tasks.add(task);
 		}
 		
 		JDFJob jdfJob = new JDFJob(
-				job.optString("jobId"),
-				job.optString("owner"),
+				job.optString(JSON_HEADER_JOB_ID),
+				job.optString(JSON_HEADER_OWNER),
 				tasks,
-				job.optString("uuid")
+				job.optString(JSON_HEADER_UUID)
 		);
-		jdfJob.setFriendlyName(job.optString("name"));
-        LOGGER.debug("Job read from JSON is from owner: " + job.optString("owner"));
+		jdfJob.setFriendlyName(job.optString(JSON_HEADER_NAME));
+		try {
+			jdfJob.state = JDFJobState.create(job.optString(JSON_HEADER_STATE));
+		} catch (Exception e) {
+			LOGGER.debug("JSON had bad state", e);
+		}
+        LOGGER.debug("Job read from JSON is from owner: " + job.optString(JSON_HEADER_OWNER));
         return jdfJob;
 	}
 	

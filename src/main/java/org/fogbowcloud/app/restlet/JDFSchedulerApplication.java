@@ -68,6 +68,7 @@ public class JDFSchedulerApplication extends Application {
 
 	public void stopServer() throws Exception {
 		this.restletComponent.stop();
+		this.arrebolController.stop();
 	}
 
 	@Override

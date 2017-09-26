@@ -11,6 +11,7 @@ import java.util.Properties;
 
 import org.fogbowcloud.app.datastore.JobDataStore;
 import org.fogbowcloud.app.model.JDFJob;
+import org.fogbowcloud.app.model.LDAPUser;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.blowout.core.BlowoutController;
@@ -95,6 +96,7 @@ public class TestArrebolController {
 		taskList.add(task);
 		
 		JDFJob job = new JDFJob(testowner, taskList, "");
+		job.finishCreation();
 		this.arrebolController.getJobDataStore().insert(job);
 		
 		try {
@@ -136,7 +138,7 @@ public class TestArrebolController {
 	@Test
 	public void testAddJob() throws Exception {
 		String jdfFilePath = "";
-		User user = Mockito.mock(User.class);
+		User user = new LDAPUser("testuser", "'this is a test user'");
 
 		JDFJob job = new JDFJob(user.getUser(), new ArrayList<Task>(), user.getUsername());
 		Mockito.doReturn(job).when(this.arrebolController).createJobFromJDFFile(
@@ -146,8 +148,10 @@ public class TestArrebolController {
 
 		BlowoutController controller = mock(BlowoutController.class);
 		arrebolController.setBlowoutController(controller);
-		this.arrebolController.addJob(jdfFilePath, user);
-		Mockito.verify(controller).addTaskList(job.getTasks());
+		String id = this.arrebolController.addJob(jdfFilePath, user);
+		Assert.assertEquals(id, job.getId());
+		Mockito.verify(this.dataStore).insert(job);
+		Assert.assertTrue(this.dataStore.getByJobId(id, user.getUser()).equals(job));
 	}
 
 	@Test

@@ -126,10 +126,12 @@ public class JobResource extends ServerResource {
 				}
 				jsonJob.put(JOB_FRIENDLY, jobId);
 				jsonJob.put(JOB_ID, job.getId());
+				jsonJob.put(STATE, job.getState());
                 jsonJob.put(COMPLETION, job.completionPercentage());
             } else {
 				jsonJob.put(JOB_ID, jobId);
 				jsonJob.put(JOB_FRIENDLY, job.getName());
+				jsonJob.put(STATE, job.getState());
                 jsonJob.put(COMPLETION, job.completionPercentage());
             }
 			LOGGER.debug("JobID " + jobId + " is of job " + job);
@@ -150,10 +152,12 @@ public class JobResource extends ServerResource {
 
 	@Post
 	public StringRepresentation addJob(Representation entity) {
+		// Check if form is malformed
 		if (entity != null && !MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
 			throw new ResourceException(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE);
 		}
 
+		// Credentials
 		Map<String, String> fieldMap = new HashMap<>();
 		fieldMap.put(JDF_FILE_PATH, null);
 		fieldMap.put(ArrebolPropertiesConstants.X_CREDENTIALS, null);
@@ -179,6 +183,7 @@ public class JobResource extends ServerResource {
 		headers.add(ArrebolPropertiesConstants.X_CREDENTIALS, fieldMap.get(ArrebolPropertiesConstants.X_CREDENTIALS));
 		User owner = authenticateUser(application, headers);
 
+		// Creating job
 		String jdf = fieldMap.get(JDF_FILE_PATH);
 		if (jdf == null) {
 			throw new ResourceException(Status.CLIENT_ERROR_BAD_REQUEST);
