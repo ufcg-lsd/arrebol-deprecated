@@ -26,9 +26,8 @@ public class JDFJob extends Job {
 
 	public enum JDFJobState {
 		SUBMITTED("Submitted"),
-		RUNNING("Running"),
 		FAILED("Failed"),
-		COMPLETE("Complete");
+		CREATED("Created");
 
 		private String desc;
 
@@ -94,8 +93,6 @@ public class JDFJob extends Job {
 		for (Task task : tasks) {
 			if (task.isFinished()) completedTasks++;
 		}
-		if (completedTasks == tasks.size())
-			this.state = JDFJobState.COMPLETE;
 		return (float) (100.0*completedTasks/tasks.size());
 	}
 
@@ -112,7 +109,7 @@ public class JDFJob extends Job {
 	}
 
 	public void finishCreation() {
-		this.state = JDFJobState.RUNNING;
+		this.state = JDFJobState.CREATED;
 	}
 
 	public void failCreation() {

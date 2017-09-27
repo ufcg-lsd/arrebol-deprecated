@@ -170,18 +170,31 @@ public class ArrebolController {
 
 	public String addJob(String jdfFilePath, User owner)
 			throws CompilerException, NameAlreadyInUseException, BlowoutException, IOException {
-		LOGGER.debug("Adding job  of owner " +owner.getUsername()+" to scheduler" );
+		LOGGER.debug("Adding job  of owner " + owner.getUsername() + " to scheduler" );
 		JDFJob job = createJobFromJDFFile(jdfFilePath, owner);
 
-		if (job.getName() != null && !job.getName().trim().isEmpty()
-				&& getJobByName(job.getName(), owner.getUser()) != null) {
+		if (job.getName() != null &&
+				!job.getName().trim().isEmpty() &&
+				getJobByName(job.getName(), owner.getUser()) != null) {
 			throw new NameAlreadyInUseException(
-					"The name '" + job.getName() + "' is already in use for the user '" + owner.getUser() + "'."
+					"The job name '" + job.getName() + "' is already in use for the user '" + owner.getUser() + "'."
 			);
 		}
 
 		jobDataStore.insert(job);
 		return job.getId();
+	}
+
+	void waitForJobCreation(String jobId) throws InterruptedException {
+		creatingJobs.get(jobId).join();
+	}
+
+	JDFJob createJobFromJDFFile(String jdfFilePath, User owner) throws CompilerException, IOException {
+		JDFJob job = new JDFJob(owner.getUser(), new ArrayList<Task>(), owner.getUsername());
+		Thread t = new Thread(new AsyncJobBuilder(job, jdfFilePath, properties, blowoutController, jobDataStore));
+		t.start();
+		creatingJobs.put(job.getId(), t);
+		return job;
 	}
 
 	public ArrayList<JDFJob> getAllJobs(String owner) {
@@ -288,14 +301,6 @@ public class ArrebolController {
 		int nonce = UUID.randomUUID().hashCode();
 		this.nonces.add(nonce);
 		return nonce;
-	}
-
-	JDFJob createJobFromJDFFile(String jdfFilePath, User owner) throws CompilerException, IOException {
-		JDFJob job = new JDFJob(owner.getUser(), new ArrayList<Task>(), owner.getUsername());
-		Thread t = new Thread(new AsyncJobBuilder(job, jdfFilePath, properties, blowoutController, jobDataStore));
-		t.start();
-		creatingJobs.put(job.getId(), t);
-		return job;
 	}
 
 	public User getUser(String username) {
