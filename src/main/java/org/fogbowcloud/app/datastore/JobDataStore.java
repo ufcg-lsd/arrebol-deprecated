@@ -209,7 +209,7 @@ public class JobDataStore {
 	}
 
 	public boolean deleteByJobId(String jobId, String owner) {
-		LOGGER.debug("Deleting all jobs with id");
+		LOGGER.debug("Deleting all jobs with id [" + jobId + "]");
 
 		PreparedStatement statement = null;
 		Connection conn = null;

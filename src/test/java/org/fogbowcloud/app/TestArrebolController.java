@@ -1,13 +1,9 @@
 package org.fogbowcloud.app;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 import org.fogbowcloud.app.datastore.JobDataStore;
 import org.fogbowcloud.app.model.JDFJob;
@@ -19,6 +15,7 @@ import org.fogbowcloud.blowout.core.exception.BlowoutException;
 import org.fogbowcloud.blowout.core.model.Specification;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskImpl;
+import org.fogbowcloud.blowout.core.model.TaskState;
 import org.fogbowcloud.blowout.core.util.AppPropertiesConstants;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -146,8 +143,6 @@ public class TestArrebolController {
 				Mockito.any(User.class)
 		);
 
-		BlowoutController controller = mock(BlowoutController.class);
-		arrebolController.setBlowoutController(controller);
 		String id = this.arrebolController.addJob(jdfFilePath, user);
 		Assert.assertEquals(id, job.getId());
 		Mockito.verify(this.dataStore).insert(job);
@@ -163,8 +158,6 @@ public class TestArrebolController {
 		jobs.add(new JDFJob("job3", testowner, task, null));
 		jobs.add(new JDFJob("job4", testowner, task, null));
 
-		BlowoutController controller = mock(BlowoutController.class);
-		arrebolController.setBlowoutController(controller);
 		doReturn(jobs).when(this.dataStore).getAllByOwner(testowner);
 		doNothing().when(this.arrebolController).updateJob(any(JDFJob.class));
 
@@ -181,9 +174,6 @@ public class TestArrebolController {
 		jobs.add(new JDFJob(testowner, task, null));
 		jobs.add(new JDFJob(testowner, task, null));
 		jobs.add(new JDFJob(testowner, task, null));
-		// Mockito.when(this.arrebolController.getScheduler().getJobs()).thenReturn(jobs);
-		BlowoutController controller = mock(BlowoutController.class);
-		arrebolController.setBlowoutController(controller);
 		doReturn(jobs).when(this.dataStore).getAllByOwner(testowner);
 
 		Assert.assertEquals(0, this.arrebolController.getAllJobs("wrong user owner").size());
@@ -209,8 +199,6 @@ public class TestArrebolController {
 		jobs.add(jdfJob);
 		jobs.add(new JDFJob(testowner, task, null));
 		jobs.add(new JDFJob(testowner, task, null));
-		BlowoutController controller = mock(BlowoutController.class);
-		arrebolController.setBlowoutController(controller);
 
 		jobs.add(new JDFJob(testowner, task, null));
 		jobs.add(new JDFJob(testowner, task, null));
@@ -224,13 +212,8 @@ public class TestArrebolController {
 	@Test
 	public void testStopJob() {
 		String jobName = "jobName00";
-		ArrayList<JDFJob> jobs = new ArrayList<>();
 		JDFJob jdfJob = new JDFJob(testowner, new ArrayList<Task>(), null);
-		ArrayList<Task> task = new ArrayList<>();
 		jdfJob.setFriendlyName(jobName);
-		jobs.add(jdfJob);
-		jobs.add(new JDFJob(testowner, task, null));
-		jobs.add(new JDFJob(testowner, task, null));
 		doReturn(true).when(this.dataStore).deleteByJobId(jdfJob.getId(), testowner);
 		doNothing().when(arrebolController).updateJob(any(JDFJob.class));
 		doNothing().when(blowoutController).cleanTask(any(Task.class));
@@ -286,12 +269,84 @@ public class TestArrebolController {
 		// jdfJob.run(task);
 		tasks.add(task);
 
-		BlowoutController controller = mock(BlowoutController.class);
-		arrebolController.setBlowoutController(controller);
 		doNothing().when(arrebolController).updateJob(any(JDFJob.class));
 		// update DB Map
 
 		Assert.assertEquals(jobs, this.arrebolController.getAllJobs(testowner));
 		Assert.assertEquals(task, this.arrebolController.getTaskById(testtaskid, testowner));
+	}
+
+	@Test
+	public void testTaskStateAfterControllerRestart() {
+		doReturn(TaskState.READY).when(this.blowoutController).getTaskState(anyString());
+		Specification spec = new Specification(
+				testimage,
+				testowner,
+				testPublicKey,
+				testPrivateKeyPath,
+				"",
+				""
+		);
+		List<String> taskIds = new ArrayList<>();
+		JDFJob job = new JDFJob("testuser", new ArrayList<Task>(), "'this is a test user");
+		Task task = new TaskImpl("TaskNumber-" + 0 + "-" + UUID.randomUUID(), spec, "0000");
+		task.setState(TaskState.READY);
+		taskIds.add(task.getId());
+		job.addTask(task);
+
+		task = new TaskImpl("TaskNumber-" + 1 + "-" + UUID.randomUUID(), spec, "0000");
+		task.setState(TaskState.RUNNING);
+		taskIds.add(task.getId());
+		job.addTask(task);
+
+		task = new TaskImpl("TaskNumber-" + 2 + "-" + UUID.randomUUID(), spec, "0000");
+		task.setState(TaskState.FINNISHED);
+		taskIds.add(task.getId());
+		task.finish();
+		job.addTask(task);
+
+		task = new TaskImpl("TaskNumber-" + 3 + "-" + UUID.randomUUID(), spec, "0000");
+		task.setState(TaskState.COMPLETED);
+		taskIds.add(task.getId());
+		task.finish();
+		job.addTask(task);
+
+		task = new TaskImpl("TaskNumber-" + 4 + "-" + UUID.randomUUID(), spec, "0000");
+		task.setState(TaskState.NOT_CREATED);
+		taskIds.add(task.getId());
+		job.addTask(task);
+
+		task = new TaskImpl("TaskNumber-" + 5 + "-" + UUID.randomUUID(), spec, "0000");
+		task.setState(TaskState.FAILED);
+		taskIds.add(task.getId());
+		job.addTask(task);
+
+		task = new TaskImpl("TaskNumber-" + 6 + "-" + UUID.randomUUID(), spec, "0000");
+		task.setState(TaskState.TIMEDOUT);
+		taskIds.add(task.getId());
+		job.addTask(task);
+
+		this.dataStore.insert(job);
+		try {
+			this.arrebolController.restartAllJobs();
+		} catch (BlowoutException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		System.out.println(taskIds.get(0));
+		Assert.assertEquals(TaskState.READY, this.arrebolController.getTaskState(taskIds.get(0)));
+		System.out.println(taskIds.get(1));
+		Assert.assertEquals(TaskState.READY, this.arrebolController.getTaskState(taskIds.get(1)));
+		System.out.println(taskIds.get(2));
+		Assert.assertEquals(TaskState.COMPLETED, this.arrebolController.getTaskState(taskIds.get(2)));
+		System.out.println(taskIds.get(3));
+		Assert.assertEquals(TaskState.COMPLETED, this.arrebolController.getTaskState(taskIds.get(3)));
+		System.out.println(taskIds.get(4));
+		Assert.assertEquals(TaskState.READY, this.arrebolController.getTaskState(taskIds.get(4)));
+		System.out.println(taskIds.get(5));
+		Assert.assertEquals(TaskState.READY, this.arrebolController.getTaskState(taskIds.get(5)));
+		System.out.println(taskIds.get(6));
+		Assert.assertEquals(TaskState.READY, this.arrebolController.getTaskState(taskIds.get(6)));
 	}
 }

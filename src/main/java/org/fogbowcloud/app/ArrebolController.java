@@ -126,7 +126,9 @@ public class ArrebolController {
 
 	public void stop() {
 		for (Thread t : creatingJobs.values()) {
-			t.interrupt();
+		    while (t.isAlive()) {
+                t.interrupt();
+            }
 		}
 	}
 
