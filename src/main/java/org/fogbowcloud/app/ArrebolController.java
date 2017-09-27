@@ -199,9 +199,12 @@ public class ArrebolController {
 			LOGGER.debug("Removing job " + jobToRemove.getName() + ".");
 			Thread creatingThread = creatingJobs.get(jobToRemove.getId());
 			if (creatingThread != null) {
-				if (creatingThread.isAlive())
+				if (creatingThread.isAlive()) {
 					LOGGER.info("Job was still being created.");
-				creatingThread.interrupt();
+					while (creatingThread.isAlive()) {
+						creatingThread.interrupt();
+					}
+				}
 				creatingJobs.remove(jobToRemove.getId());
 			}
 			this.jobDataStore.deleteByJobId(jobToRemove.getId(), owner);
