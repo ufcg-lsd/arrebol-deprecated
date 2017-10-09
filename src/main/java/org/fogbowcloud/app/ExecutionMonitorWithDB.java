@@ -41,14 +41,14 @@ public class ExecutionMonitorWithDB implements Runnable {
 
 	@Override
 	public void run() {
-		LOGGER.debug("Submitting monitoring tasks");
+		LOGGER.info("Submitting monitoring tasks");
 
 		for (JDFJob aJob : jobMap) {
 			for (Task task : aJob.getTasks()) {
-				LOGGER.debug("Task: " +task +" is being treated");
+				LOGGER.info("Task: " +task +" is being treated");
 				if (!task.isFinished()) {
 					TaskState taskState = blowoutController.getTaskState(task.getId());
-					LOGGER.debug("Process " + task.getId() + " has state " + taskState.getDesc());
+					LOGGER.info("Process " + task.getId() + " has state " + taskState.getDesc());
 					service.submit(new TaskExecutionChecker(task));
 				}
 			}
@@ -71,7 +71,8 @@ public class ExecutionMonitorWithDB implements Runnable {
 
 			if (TaskState.COMPLETED.equals(state)) {
 				blowoutController.cleanTask(task);
-				arrebolController.moveTaskToFinished(task);
+				Task actualTask = blowoutController.getBlowoutPool().getTaskById(task.getId());
+				arrebolController.moveTaskToFinished(actualTask);
 				return;
 			}
 		}

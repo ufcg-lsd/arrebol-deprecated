@@ -100,7 +100,7 @@ public class JDFJob extends Job {
 	@Override
 	public void finish(Task task) {
 		getTaskById(task.getId()).finish();
-		
+		getTaskById(task.getId()).setRetries(task.getRetries());
 	}
 	
 	@Override
@@ -129,7 +129,7 @@ public class JDFJob extends Job {
 			job.put("tasks", tasks);
 			return job;
 		} catch (JSONException e) {
-			LOGGER.debug("Error while trying to create a JSONObject from JDFJob", e);
+			LOGGER.error("Error while trying to create a JSONObject from JDFJob", e);
 			return null;
 		}
 	}
@@ -151,7 +151,6 @@ public class JDFJob extends Job {
 		JDFJob jdfJob = new JDFJob(job.optString("jobId"), 
 				job.optString("schedPath"), 
 				job.optString("owner"), tasks, job.optString("uuid"));
-		LOGGER.debug("Job owner is: " +job.optString("owner"));
 		jdfJob.setFriendlyName(job.optString("name"));
 		jdfJob.setAllTasksOnJobCreation(allTasks);
 		return jdfJob;

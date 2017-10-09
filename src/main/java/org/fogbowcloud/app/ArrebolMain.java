@@ -111,7 +111,7 @@ public class ArrebolMain {
 				}
 			}
 		}
-		LOGGER.debug("All properties are set");
+		LOGGER.info("All properties are set");
 		return true;
 	}
 }

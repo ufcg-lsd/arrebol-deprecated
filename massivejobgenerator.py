@@ -7,14 +7,14 @@ req = requests.Session()
 
 
 jobs_dir = "/home/igorvcs/git/arrebol/massivejobs"
-cloud = "servers.lsd.ufcg.edu.br"
+cloud = "tu.dresden.manager.naf.lsd.ufcg.edu.br	"
 
 
 if not os.path.exists(jobs_dir):
     os.makedirs(jobs_dir)
 
 def create_job(suffix, path, cloud):
-   jdf_file = open(path+"/job"+str(suffix), "a")
+   jdf_file = open(path+"/job"+str(suffix)+".jdf", "w")
    jdf_file.write("job: \n")
    jdf_file.write("label: job"+str(suffix) + "\n")
    jdf_file.write("requirements: Glue2RAM >= 1024 AND Glue2CloudComputeManagerID==\""+cloud+ "\"\n")
@@ -30,11 +30,11 @@ def create_multiple_jobs(quantity):
 def postjob(suffix, path) :
     
     n = req.get("http://10.11.5.160:44444/arrebol/nonce")
-    header = { "X-auth-credentials":"{ username: arrebolservice,  password: 4rr3b0l, nonce: "+ n.text+" }"}
+    header = { "X-auth-credentials":"{ username: arrebolservice, password: 4rr3b0l, nonce: "+ n.text+" }"}
     r = req.post("http://10.11.5.160:44444/arrebol/job",
          files={
-             "jdffilepath": ("", path+"/job"+str(suffix)),
-             "X-auth-credentials": ("", "{ username: arrebolservice,  password: 4rr3b0l, nonce: "+ n.text+ "}")}, headers=header)
+             "jdffilepath": ("", path+"/job"+str(suffix)+".jdf"),
+             "X-auth-credentials": ("", "{ username: arrebolservice, password: 4rr3b0l, nonce: "+ n.text+ "}")}, headers=header)
     return r
 
 

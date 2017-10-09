@@ -73,8 +73,10 @@ public class JDFTasks {
 			if (file.canRead()) {
 				// Compiling JDF
 				CommonCompiler commonCompiler = new CommonCompiler();
+				LOGGER.debug("Job "+ job.getId()+ "compilation started at time "+ System.currentTimeMillis());
 				commonCompiler.compile(jdfFilePath, FileType.JDF);
-
+				LOGGER.debug("Job "+ job.getId()+ "compilation ended at time"+ System.currentTimeMillis());
+				
 				JobSpecification jobSpec = (JobSpecification) commonCompiler.getResult().get(0);
 
 					
@@ -100,7 +102,6 @@ public class JDFTasks {
 						properties.getProperty(PropertiesConstants.INFRA_RESOURCE_USERNAME),
 						properties.getProperty(PUBLIC_KEY_CONSTANT), properties.getProperty(PRIVATE_KEY_FILEPATH), "",
 						"");
-				LOGGER.debug(properties.getProperty(PropertiesConstants.INFRA_RESOURCE_USERNAME));
 
 				int i = 0;
 				for (String req : jobRequirementes.split("and")) {
@@ -148,10 +149,8 @@ public class JDFTasks {
 					String inputLine;
 					String result = "";
 					while ((inputLine = in.readLine()) != null) {
-				        System.out.println(inputLine);
 				        result += inputLine;
 				    }
-					LOGGER.debug("========================================================" +result);
 					if (result.contains("no such user")) throw new SecurityException("User "+job.getUserId()+" is not part of this security group");
 					in.close();
 					 
@@ -215,21 +214,15 @@ public class JDFTasks {
 	}
 
 	/**
-<<<<<<< HEAD
 	 * This method translates the Ourgrid input IOBlocks to JDL InputSandbox
-=======
 	 * It translates the input IOBlocks to JDL InputSandbox
->>>>>>> Fixed most of the FIXMEs
 	 *
 	 * @param jobId
 	 * @param taskSpec
 	 *            The task specification {@link TaskSpecification}
 	 * @param task
 	 *            The output expression containing the JDL job
-<<<<<<< HEAD
-=======
 	 * @param schedPath
->>>>>>> Fixed most of the FIXMEs
 	 */
 	private static void parseInitCommands(String jobId, TaskSpecification taskSpec, Task task, String schedPath) {
 

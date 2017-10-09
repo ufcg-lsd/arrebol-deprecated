@@ -21,6 +21,7 @@ import org.fogbowcloud.blowout.core.model.TaskProcess;
 import org.fogbowcloud.blowout.core.model.TaskState;
 import org.fogbowcloud.blowout.infrastructure.exception.InfrastructureException;
 import org.fogbowcloud.blowout.infrastructure.manager.InfrastructureManager;
+import org.fogbowcloud.blowout.pool.BlowoutPool;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,6 +33,7 @@ public class TestExecutionMonitorWithDB {
 	public Task task;
 	public BlowoutController blowout;
 	public ArrebolController arrebol;
+	public BlowoutPool blowoutPool;
 	public JDFJob job;
 	public InfrastructureManager IM;
 	public Resource resource;
@@ -52,6 +54,8 @@ public class TestExecutionMonitorWithDB {
 		executorService = new CurrentThreadExecutorService();
 		arrebol = mock(ArrebolController.class);
 		blowout = mock(BlowoutController.class);
+		blowoutPool = mock(BlowoutPool.class);
+		doReturn(blowoutPool).when(blowout).getBlowoutPool();
 	}
 
 	@Test
@@ -64,6 +68,7 @@ public class TestExecutionMonitorWithDB {
 		tasks.add(task);
 		doReturn(tasks).when(job).getTasks();
 		doReturn(TaskState.COMPLETED).when(blowout).getTaskState(FAKE_TASK_ID);
+		doReturn(task).when(blowoutPool).getTaskById(FAKE_TASK_ID);
 		doNothing().when(blowout).cleanTask(task);
 		doNothing().when(arrebol).moveTaskToFinished(task);
 		jdfJobs.add(job);

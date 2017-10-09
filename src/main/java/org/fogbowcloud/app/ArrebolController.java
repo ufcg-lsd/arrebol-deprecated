@@ -78,13 +78,13 @@ public class ArrebolController {
 		this.blowoutController = new BlowoutController(this.properties);
 		blowoutController.start(removePreviousResources);
 
-		LOGGER.debug(
+		LOGGER.info(
 				"Application to be started on port: " + properties.getProperty(PropertiesConstants.REST_SERVER_PORT));
-		LOGGER.info("Properties: " + properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
+		LOGGER.debug("Properties: " + properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
 
 		this.nonces = new ArrayList<Integer>();
 
-		LOGGER.debug("Starting Scheduler and Execution Monitor, execution monitor period: "
+		LOGGER.info("Starting Scheduler and Execution Monitor, execution monitor period: "
 				+ properties.getProperty(PropertiesConstants.EXECUTION_MONITOR_PERIOD));
 		executionMonitor = new ExecutionMonitorWithDB(blowoutController, this, jobDataStore);
 		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0, DEFAULT_EXECUTION_MONITOR_INTERVAL);
@@ -104,6 +104,8 @@ public class ArrebolController {
 					LOGGER.debug("Specification of Recovered task: " + task.getSpecification().toJSON().toString());
 					LOGGER.debug("Task Requirements: " + task.getSpecification()
 							.getRequirementValue(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS));
+				} else {
+					finishedTasks.put(task.getId(), task);
 				}
 			}
 			blowoutController.addTaskList(taskList);
@@ -129,7 +131,7 @@ public class ArrebolController {
 	public String addJob(String jdfFilePath, String schedPath, User owner)
 			throws CompilerException, NameAlreadyInUseException, BlowoutException, IOException {
 		JDFJob tmpJob = new JDFJob(schedPath, owner.getUser(), new ArrayList<Task>(), owner.getUsername());
-		LOGGER.debug("Adding job  of owner" +owner.getUsername()+" to scheduler" );
+		LOGGER.info("Adding job  of owner" +owner.getUsername()+" to scheduler" );
 		List<Task> taskList = getTasksFromJDFFile(jdfFilePath, tmpJob);
 		JDFJob job = new JDFJob(tmpJob.getId(), tmpJob.getSchedPath(), tmpJob.getOwner(), taskList, owner.getUsername());
 		job.setFriendlyName(tmpJob.getName());
@@ -143,6 +145,7 @@ public class ArrebolController {
 
 
 		blowoutController.addTaskList(job.getTasks());
+		LOGGER.debug("Job "+ job.getId()+ "was submitted to blowout at time "+ System.currentTimeMillis());
 		jobDataStore.insert(job);
 		return job.getId();
 	}
@@ -224,6 +227,8 @@ public class ArrebolController {
 				task.getMetadata(ArrebolPropertiesConstants.OWNER));
 		job.finish(task);
 		updateJob(job);
+		finishedTasks.put(task.getId(), task);
+		
 	}
 
 	public User authUser(String credentials) throws IOException, GeneralSecurityException {

@@ -34,7 +34,7 @@ public class TaskResource4JDF extends ServerResource {
 				.get("org.restlet.http.headers"));		
 		
 		Task task = application.getTaskById(taskId, owner.getUser());
-		LOGGER.debug("TaskId " + taskId + " is of task " + task);
+		LOGGER.info("TaskId " + taskId + " is of task " + task);
 		if (task == null) {
 			throw new ResourceException(404, new Exception("Task id not found"));
 		}

@@ -76,11 +76,9 @@ public class JobResource extends ServerResource {
 				if (job.getName() != null) {
 					jJob.put("id", job.getId());
 					jJob.put("name", job.getName());
-					jJob.put(COMPLETION, job.completionPercentage());
 
 				} else {
 					jJob.put("id: ", job.getId());
-					jJob.put(COMPLETION, job.completionPercentage());
 				}
 				jobs.put(jJob);
 			}
@@ -102,13 +100,11 @@ public class JobResource extends ServerResource {
 			}
 			jsonJob.put(JOB_FRIENDLY, jobId);
 			jsonJob.put(JOB_ID, job.getId());
-			jsonJob.put(COMPLETION, job.completionPercentage());
 		} else {
 			jsonJob.put(JOB_ID, jobId);
 			jsonJob.put(JOB_FRIENDLY, job.getName());
-			jsonJob.put(COMPLETION, job.completionPercentage());
 		}
-		LOGGER.debug("JobID " + jobId + " is of job " + job);
+		LOGGER.info("JobID " + jobId + " is of job " + job);
 
 		for (Task task : job.getTasks()) {
 			JSONObject jTask = new JSONObject();
@@ -116,7 +112,7 @@ public class JobResource extends ServerResource {
 			TaskState ts = application.getTaskState(task.getId(), owner.getUser());
 			jTask.put(STATE, ts != null ? ts.getDesc().toUpperCase() : "UNDEFINED");
 			int retries = application.getTaskRetries(task.getId(), owner.getUser());
-			jTask.put(RETRIES, retries >= 0 ? task.getRetries() : "DIDN'T RUN");
+			jTask.put(RETRIES, retries != -1 ? retries : "DIDN'T RUN");
 			jobTasks.put(jTask);
 		}
 		jsonJob.put(JOB_TASKS, jobTasks);
@@ -151,8 +147,8 @@ public class JobResource extends ServerResource {
 		String jdfAbsolutePath = fieldMap.get(JDF_FILE_PATH);
 		try {
 			String jobId;
-			LOGGER.debug("jdfpath <" + jdfAbsolutePath + ">" + " schedPath <" + schedPath + ">");
 			jobId = application.addJob(jdfAbsolutePath, schedPath, owner);
+			LOGGER.debug("Job "+ jobId + " was created at time" + System.currentTimeMillis() );
 			return new StringRepresentation(jobId, MediaType.TEXT_PLAIN);
 		} catch (CompilerException ce) {
 			LOGGER.debug(ce.getMessage(), ce);
