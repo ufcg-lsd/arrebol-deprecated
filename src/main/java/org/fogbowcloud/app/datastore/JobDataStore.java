@@ -16,13 +16,13 @@ import org.json.JSONObject;
 
 public class JobDataStore {
 
-	public static final String JOB_DATASTORE_DRIVER = "org.sqlite.JDBC";
-	public static final String JOBS_TABLE_NAME = "arrebol_jobs";
-	public static final String JOB_ID = "job_id";
-	public static final String JOB_JSON = "job_json";
-	public static final String JOB_OWNER = "job_owner";
+	private static final String JOB_DATASTORE_DRIVER = "org.sqlite.JDBC";
+	private static final String JOBS_TABLE_NAME = "arrebol_jobs";
+	private static final String JOB_ID = "job_id";
+	private static final String JOB_JSON = "job_json";
+	private static final String JOB_OWNER = "job_owner";
 
-	private final String CREATE_TABLE_STATEMENT = "CREATE TABLE IF NOT EXISTS " + JOBS_TABLE_NAME + "("
+	private static final String CREATE_TABLE_STATEMENT = "CREATE TABLE IF NOT EXISTS " + JOBS_TABLE_NAME + "("
 					+ JOB_ID + " VARCHAR(255) PRIMARY KEY, "
 					+ JOB_OWNER + " VARCHAR(255), "
 					+ JOB_JSON + " TEXT)";
@@ -44,13 +44,12 @@ public class JobDataStore {
 			+ JOB_ID + " = ? AND " + JOB_OWNER + " = ?";
 
 	private static final Logger LOGGER = Logger.getLogger(JobDataStore.class);
-	protected static final String ERROR_WHILE_INITIALIZING_THE_DATA_STORE = "Error while initializing the Job DataStore.";
+	private static final String ERROR_WHILE_INITIALIZING_THE_DATA_STORE = "Error while initializing the Job DataStore.";
 	private static final String DEFAULT_DATASTORE_NAME = "datastore_jobs.slite";
 
 	private String jobDataStoreURL;
 	
 	public JobDataStore(String jobDataStoreURL) {
-		
 		this.jobDataStoreURL = DataStoreHelper.getDataStoreUrl(jobDataStoreURL,
 				DEFAULT_DATASTORE_NAME);
 
@@ -65,7 +64,6 @@ public class JobDataStore {
 			statement = connection.createStatement();
 			statement.execute(CREATE_TABLE_STATEMENT);
 			statement.close();
-
 		} catch (Exception e) {
 			LOGGER.error(ERROR_WHILE_INITIALIZING_THE_DATA_STORE, e);
 			throw new Error(ERROR_WHILE_INITIALIZING_THE_DATA_STORE, e);
@@ -75,7 +73,6 @@ public class JobDataStore {
 	}
 
 	public boolean insert(JDFJob job) {
-
 		LOGGER.debug("Inserting job [" + job.getId() + "] with owner [" + job.getOwner() + "]");
 
 		if (job.getId() == null || job.getId().isEmpty()
@@ -97,7 +94,6 @@ public class JobDataStore {
 			preparedStatement.execute();
 			connection.commit();
 			return true;
-
 		} catch (SQLException e) {
 			LOGGER.error("Couldn't execute statement : " + INSERT_JOB_TABLE_SQL, e);
 			try {
@@ -114,8 +110,7 @@ public class JobDataStore {
 	}
 
 	public boolean update(JDFJob job) {
-
-		LOGGER.debug("Updating job [" + job.getId() + "] with owner [" + job.getOwner() + "]");
+		LOGGER.debug("Updating job [" + job.getId() + "] from owner [" + job.getOwner() + "]");
 
 		if (job.getId() == null || job.getId().isEmpty()
 				|| job.getOwner() == null || job.getOwner().isEmpty()) {
@@ -126,7 +121,6 @@ public class JobDataStore {
 		PreparedStatement preparedStatement = null;
 		Connection connection = null;
 		try {
-
 			connection = getConnection();
 			connection.setAutoCommit(false);
 			preparedStatement = connection.prepareStatement(UPDATE_JOB_TABLE_SQL);
@@ -138,7 +132,6 @@ public class JobDataStore {
 			preparedStatement.execute();
 			connection.commit();
 			return true;
-
 		} catch (SQLException e) {
 			LOGGER.error("Couldn't execute statement : " + UPDATE_JOB_TABLE_SQL, e);
 			try {
@@ -155,51 +148,37 @@ public class JobDataStore {
 	}
 
 	public List<JDFJob> getAll() {
-
 		LOGGER.debug("Getting all instances id with related orders.");
-
-		String queryStatement = GET_ALL_JOB;
-
-		return executeQueryStatement(queryStatement);
+		return executeQueryStatement(GET_ALL_JOB);
 	}
 
 	public List<JDFJob> getAllByOwner(String owner) {
-
 		LOGGER.debug("Getting all jobs to owner [" + owner + "]");
-
-		String queryStatement = GET_JOB_BY_OWNER;
-
-		return executeQueryStatement(queryStatement, owner);
+		return executeQueryStatement(GET_JOB_BY_OWNER, owner);
 	}
 
 	public JDFJob getByJobId(String jobId, String owner) {
-
 		LOGGER.debug("Getting jobs by job ID [" + jobId + "]");
 
-		String queryStatement = GET_JOB_BY_JOB_ID;
-		List<JDFJob> jdfJobList = executeQueryStatement(queryStatement, jobId, owner);
+		List<JDFJob> jdfJobList = executeQueryStatement(GET_JOB_BY_JOB_ID, jobId, owner);
 		if (jdfJobList != null && !jdfJobList.isEmpty()) {
 			return jdfJobList.get(0);
 		}
 		return null;
-
 	}
 
 	public boolean deleteAll() {
-
 		LOGGER.debug("Deleting all jobs.");
 
 		Statement statement = null;
 		Connection conn = null;
 		try {
-
 			conn = getConnection();
 			statement = conn.createStatement();
 
 			boolean result = statement.execute(DELETE_ALL_JOB_TABLE_SQL);
 			conn.commit();
 			return result;
-
 		} catch (SQLException e) {
 			LOGGER.error("Couldn't delete all registres on " + JOBS_TABLE_NAME, e);
 			return false;
@@ -209,13 +188,11 @@ public class JobDataStore {
 	}
 
 	public boolean deleteAllFromOwner(String owner) {
-
 		LOGGER.debug("Deleting all job from owner [" + owner + "].");
 
 		PreparedStatement statement = null;
 		Connection conn = null;
 		try {
-
 			conn = getConnection();
 			statement = conn.prepareStatement(DELETE_BY_OWNER);
 			statement.setString(1, owner);
@@ -232,21 +209,17 @@ public class JobDataStore {
 	}
 
 	public boolean deleteByJobId(String jobId, String owner) {
-
-		LOGGER.debug("Deleting all jobs with id");
+		LOGGER.debug("Deleting all jobs with id [" + jobId + "]");
 
 		PreparedStatement statement = null;
 		Connection conn = null;
 		try {
-
 			conn = getConnection();
 			statement = conn.prepareStatement(DELETE_BY_JOB_ID_SQL);
 			statement.setString(1, jobId);
 			statement.setString(2, owner);
-			boolean result = statement.execute();
-			conn.commit();
-			return result;
-
+			//			conn.commit(); // database on autocommit
+			return statement.execute();
 		} catch (SQLException e) {
 			LOGGER.error("Couldn't delete registres on " + JOBS_TABLE_NAME + " with Job id ["
 					+ jobId + "]", e);
@@ -257,13 +230,11 @@ public class JobDataStore {
 	}
 
 	private List<JDFJob> executeQueryStatement(String queryStatement, String... params) {
-
 		PreparedStatement preparedStatement = null;
 		Connection conn = null;
-		List<JDFJob> jdfJobList = new ArrayList<JDFJob>();
+		List<JDFJob> jdfJobList = new ArrayList<>();
 
 		try {
-
 			conn = getConnection();
 			preparedStatement = conn.prepareStatement(queryStatement);
 
@@ -288,7 +259,7 @@ public class JobDataStore {
 
 		} catch (SQLException e) {
 			LOGGER.error("Couldn't get Jobs from DB.", e);
-			return new ArrayList<JDFJob>();
+			return new ArrayList<>();
 		} finally {
 			close(preparedStatement, conn);
 		}
@@ -330,5 +301,4 @@ public class JobDataStore {
 			}
 		}
 	}
-
 }

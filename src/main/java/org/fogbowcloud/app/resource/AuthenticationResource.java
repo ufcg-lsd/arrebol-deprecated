@@ -1,7 +1,5 @@
 package org.fogbowcloud.app.resource;
 
-import java.io.IOException;
-
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.restlet.representation.Representation;
@@ -15,7 +13,7 @@ public class AuthenticationResource extends ServerResource{
 			.getLogger(AuthenticationResource.class);
 	
 	@Get
-	public Representation getAuth() throws IOException {
+	public Representation getAuth() {
 		JDFSchedulerApplication app = (JDFSchedulerApplication) getApplication();
 		String authStrt =  app.getAuthenticatorName();
 		LOGGER.debug("authStrat: " + authStrt);

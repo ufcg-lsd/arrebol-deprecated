@@ -20,7 +20,6 @@ import org.fogbowcloud.app.jdfcompiler.semantic.JDLCommand;
 import org.fogbowcloud.app.jdfcompiler.semantic.JDLCommand.JDLCommandType;
 import org.fogbowcloud.app.jdfcompiler.semantic.RemoteCommand;
 import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
-import org.fogbowcloud.app.utils.PropertiesConstants;
 import org.fogbowcloud.blowout.core.model.Command;
 import org.fogbowcloud.blowout.core.model.Specification;
 import org.fogbowcloud.blowout.core.model.Task;
@@ -28,42 +27,26 @@ import org.fogbowcloud.blowout.core.model.TaskImpl;
 import org.fogbowcloud.blowout.infrastructure.provider.fogbow.FogbowRequirementsHelper;
 import org.fogbowcloud.blowout.pool.AbstractResource;
 
-public class JDFTasks {
+public class JDFJobBuilder {
 
 	// FIXME: what is this?
 	private static final String SANDBOX = "sandbox";
+	private static final String standardImage = "fogbow-ubuntu";
+	private static final String SSH_SCP_PRECOMMAND = "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no";
 
-	// FIXME: what is this?
-	private static final String LOCAL_OUTPUT_FOLDER = "local_output";
-
-	private static final String REMOTE_OUTPUT_FOLDER = "remote_output_folder";
-
-	protected static final String PRIVATE_KEY_FILEPATH = "private_key_filepath";
-
-	private static String standardImage = "fogbow-ubuntu";
-
-	protected static final String PUBLIC_KEY_CONSTANT = "public_key";
-	private final static String SSH_SCP_PRECOMMAND = "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no";
-
-	private static final Logger LOGGER = Logger.getLogger(JDFTasks.class);
+	private static final Logger LOGGER = Logger.getLogger(JDFJobBuilder.class);
 
 	/**
-	 *
-	 * @param job
-	 * @param jdfFilePath
-	 * @param schedPath
-	 * @param properties
-	 * @return
-	 * @throws IllegalArgumentException
-	 * @throws CompilerException
-	 * @throws IOException 
+	 * @param job Job being created
+	 * @param jdfFilePath Path to the jdf file that describes the job
+	 * @param properties Arrebol config
+	 * @throws IllegalArgumentException If path to jdf is empty
+	 * @throws CompilerException If file does not describe a jdf Job
+	 * @throws IOException If a problem during the reading of the file occurs
 	 */
-	public static List<Task> getTasksFromJDFFile(JDFJob job, String jdfFilePath, Properties properties)
-			throws CompilerException, IOException {
-
-		ArrayList<Task> taskList = new ArrayList<Task>();
-
-		if (jdfFilePath == null) {
+	public static void createJobFromJDFFile(JDFJob job, String jdfFilePath, Properties properties)
+			throws CompilerException, IOException, InterruptedException {
+		if (jdfFilePath == null || jdfFilePath.isEmpty()) {
 			throw new IllegalArgumentException("jdfFilePath cannot be null");
 		}
 
@@ -77,67 +60,59 @@ public class JDFTasks {
 
 				JobSpecification jobSpec = (JobSpecification) commonCompiler.getResult().get(0);
 
-					
 				job.setFriendlyName(jobSpec.getLabel());
 
 				String schedPath = jobSpec.getSchedPath();
 
-				// Mapping attributes
+				String jobRequirements = jobSpec.getRequirements();
+				LOGGER.debug("JobReq: " + jobRequirements);
 
-				// FIXME: what does this block do?
-				String jobRequirementes = jobSpec.getRequirements();
-				LOGGER.debug("JobReq: " + jobRequirementes);
-				
-				jobRequirementes = jobRequirementes.replace("(", "").replace(")", "");
+				jobRequirements = jobRequirements.replace("(", "").replace(")", "");
 				String image = standardImage;
-				for (String req : jobRequirementes.split("and")) {
+				for (String req : jobRequirements.split("and")) {
 					if (req.trim().startsWith("image")) {
 						image = req.split("==")[1].trim();
 					}
 				}
 
-				Specification spec = new Specification(image,
-						properties.getProperty(PropertiesConstants.INFRA_RESOURCE_USERNAME),
-						properties.getProperty(PUBLIC_KEY_CONSTANT), properties.getProperty(PRIVATE_KEY_FILEPATH), "",
-						"");
-				LOGGER.debug(properties.getProperty(PropertiesConstants.INFRA_RESOURCE_USERNAME));
+				Specification spec = new Specification(
+						image,
+						properties.getProperty(ArrebolPropertiesConstants.INFRA_RESOURCE_USERNAME),
+						properties.getProperty(ArrebolPropertiesConstants.PUBLIC_KEY_CONSTANT),
+						properties.getProperty(ArrebolPropertiesConstants.PRIVATE_KEY_FILEPATH),
+						"",
+						""
+				);
+				LOGGER.debug(properties.getProperty(ArrebolPropertiesConstants.INFRA_RESOURCE_USERNAME));
 
 				int i = 0;
-				for (String req : jobRequirementes.split("and")) {
-				if (i == 0 && !req.trim().startsWith("image")) {
+				for (String req : jobRequirements.split("and")) {
+					if (i == 0 && !req.trim().startsWith("image")) {
 						i++;
 						LOGGER.debug("NEW REQUIREMENT: " +req);
 						spec.addRequirement(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS, req);
-
 					} else if (!req.trim().startsWith("image")) {
-						spec.addRequirement(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS,
-								spec.getRequirementValue(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS) + " && "
-										+ req);
+						spec.addRequirement(
+								FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS,
+								spec.getRequirementValue(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS) + " && " + req
+						);
 					}
 				}
 
 				spec.addRequirement(FogbowRequirementsHelper.METADATA_FOGBOW_REQUEST_TYPE, "one-time");
 				int taskID = 0;
 				for (TaskSpecification taskSpec : jobSpec.getTaskSpecs()) {
-					Runtime r = Runtime.getRuntime();                    
-
-//					Process p = r.exec("id -u "+ job.getOwner());
-//					try {
-//						p.waitFor();
-//					} catch (InterruptedException e) {
-//						LOGGER.debug("could not finish the query on user UUID", e);
-//					} 
-//					BufferedReader in =
-//					        new BufferedReader(new InputStreamReader(p.getInputStream()));
+					if (Thread.interrupted())
+						throw new InterruptedException();
 					LOGGER.debug("========================================================" + job.getUserId());
-					ProcessBuilder   ps=new ProcessBuilder("id","-u", job.getUserId());
+					ProcessBuilder ps = new ProcessBuilder("id","-u", job.getUserId());
 
-					//From the DOC:  Initially, this property is false, meaning that the 
-					//standard output and error output of a subprocess are sent to two 
+					//From the DOC:  Initially, this property is false, meaning that the
+					//standard output and error output of a subprocess are sent to two
 					//separate streams
 					ps.redirectErrorStream(true);
 
-					Process pr = ps.start();  
+					Process pr = ps.start();
 
 					BufferedReader in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 					try {
@@ -146,23 +121,27 @@ public class JDFTasks {
 						LOGGER.debug("could not finish the query on user UUID", e);
 					}
 					String inputLine;
-					String result = "";
+					StringBuilder resultBuilder = new StringBuilder();
 					while ((inputLine = in.readLine()) != null) {
 				        System.out.println(inputLine);
-				        result += inputLine;
+				        resultBuilder.append(inputLine);
 				    }
+					String result = resultBuilder.toString();
+
 					LOGGER.debug("========================================================" +result);
-					if (result.contains("no such user")) throw new SecurityException("User "+job.getUserId()+" is not part of this security group");
+					if (result.contains("no such user")) {
+						throw new SecurityException("User "+job.getUserId()+" is not part of this security group");
+					}
 					in.close();
-					 
+
 					Task task = new TaskImpl("TaskNumber" + "-" + taskID + "-" + UUID.randomUUID(), spec, result);
 					task.putMetadata(TaskImpl.METADATA_REMOTE_OUTPUT_FOLDER,
-							properties.getProperty(REMOTE_OUTPUT_FOLDER));
+							properties.getProperty(ArrebolPropertiesConstants.REMOTE_OUTPUT_FOLDER));
 					task.putMetadata(TaskImpl.METADATA_LOCAL_OUTPUT_FOLDER,
-							schedPath + properties.getProperty(LOCAL_OUTPUT_FOLDER));
+							schedPath + properties.getProperty(ArrebolPropertiesConstants.LOCAL_OUTPUT_FOLDER));
 					task.putMetadata(TaskImpl.METADATA_SANDBOX, SANDBOX);
 					task.putMetadata(TaskImpl.METADATA_REMOTE_COMMAND_EXIT_PATH,
-							properties.getProperty(REMOTE_OUTPUT_FOLDER) + "/exit");
+							properties.getProperty(ArrebolPropertiesConstants.REMOTE_OUTPUT_FOLDER) + "/exit");
 					task.putMetadata(ArrebolPropertiesConstants.JOB_ID, job.getId());
 					task.putMetadata(ArrebolPropertiesConstants.OWNER, job.getOwner());
 
@@ -170,37 +149,31 @@ public class JDFTasks {
 					parseTaskCommands(job.getId(), taskSpec, task, schedPath);
 					parseFinalCommands(job.getId(), taskSpec, task, schedPath);
 
-					taskList.add(task);
-					LOGGER.debug("Task spec: " + task.getSpecification().toString());
-				
+					job.addTask(task);
+					LOGGER.debug("Task spec:\n" + task.getSpecification().toString());
+
 					taskID++;
 				}
-
 			} else {
 				throw new IllegalArgumentException(
-						"Unable to read file: " + file.getAbsolutePath() + " check your permissions.");
+						"Unable to read file: " + file.getAbsolutePath() + " check your permissions."
+				);
 			}
 		} else {
 			throw new IllegalArgumentException("File: " + file.getAbsolutePath() + " does not exists.");
 		}
-
-		return taskList;
 	}
 
 	/**
 	 * This method translates the JDF remote executable command into the JDL
 	 * format
 	 *
-	 * @param jobID
-	 * @param taskSpec
-	 *            The task specification {@link TaskSpecification}
-	 * @param task
-	 *            The output expression containing the JDL job
-	 * @throws IllegalArgumentException
+	 * @param jobId ID of the Job
+	 * @param taskSpec The task specification {@link TaskSpecification}
+	 * @param task The output expression containing the JDL job
+	 * @param schedPath Root path where commands should be executed
 	 */
-	private static void parseTaskCommands(String jobId, TaskSpecification taskSpec, Task task, String schedPath)
-			throws IllegalArgumentException {
-
+	private static void parseTaskCommands(String jobId, TaskSpecification taskSpec, Task task, String schedPath) {
 		List<JDLCommand> initBlocks = taskSpec.getTaskBlocks();
 		if (initBlocks == null) {
 			return;
@@ -209,30 +182,20 @@ public class JDFTasks {
 			if (jdlCommand.getBlockType().equals(JDLCommandType.IO)) {
 				addIOCommand(jobId, task, (IOCommand) jdlCommand, schedPath);
 			} else {
-				addRemoteCommand(jobId, task, (RemoteCommand) jdlCommand, schedPath);
+				addRemoteCommand(jobId, task, (RemoteCommand) jdlCommand);
 			}
 		}
 	}
 
 	/**
-<<<<<<< HEAD
-	 * This method translates the Ourgrid input IOBlocks to JDL InputSandbox
-=======
 	 * It translates the input IOBlocks to JDL InputSandbox
->>>>>>> Fixed most of the FIXMEs
 	 *
-	 * @param jobId
-	 * @param taskSpec
-	 *            The task specification {@link TaskSpecification}
-	 * @param task
-	 *            The output expression containing the JDL job
-<<<<<<< HEAD
-=======
-	 * @param schedPath
->>>>>>> Fixed most of the FIXMEs
+	 * @param jobId ID of the Job
+	 * @param taskSpec The task specification {@link TaskSpecification}
+	 * @param task The output expression containing the JDL job
+	 * @param schedPath Root path where commands should be executed
 	 */
 	private static void parseInitCommands(String jobId, TaskSpecification taskSpec, Task task, String schedPath) {
-
 		List<JDLCommand> initBlocks = taskSpec.getInitBlocks();
 		if (initBlocks == null) {
 			return;
@@ -241,12 +204,12 @@ public class JDFTasks {
 			if (jdlCommand.getBlockType().equals(JDLCommandType.IO)) {
 				addIOCommand(jobId, task, (IOCommand) jdlCommand, schedPath);
 			} else {
-				addRemoteCommand(jobId, task, (RemoteCommand) jdlCommand, schedPath);
+				addRemoteCommand(jobId, task, (RemoteCommand) jdlCommand);
 			}
 		}
 	}
 
-	public static void addIOCommand(String jobId, Task task, IOCommand command, String schedPath) {
+	private static void addIOCommand(String jobId, Task task, IOCommand command, String schedPath) {
 		String sourceFile = command.getEntry().getSourceFile();
 		String destination = command.getEntry().getDestination();
 		String IOType = command.getEntry().getCommand();
@@ -274,13 +237,13 @@ public class JDFTasks {
 
 	}
 
-	public static void addRemoteCommand(String jobId, Task task, RemoteCommand remCommand, String schedPath) {
+	private static void addRemoteCommand(String jobId, Task task, RemoteCommand remCommand) {
 		Command command = new Command("\"" + remCommand.getContent() + "\"", Command.Type.REMOTE);
 		LOGGER.debug("JobId: " + jobId + " task: " + task.getId() + " remote command: " + remCommand.getContent());
 		task.addCommand(command);
 	}
 
-	public static String getDirectoryTree(String destination) {
+	private static String getDirectoryTree(String destination) {
 		int lastDir = destination.lastIndexOf(File.separator);
 		if (lastDir == -1 ) {
 			return "";
@@ -289,7 +252,7 @@ public class JDFTasks {
 	}
 
 	private static Command mkdirRemoteFolder(String folder) {
-		if (folder == "") {
+		if (folder.equals("")) {
 			return null;
 		}
 		String mkdirCommand = "mkdir -p " + folder;
@@ -307,14 +270,12 @@ public class JDFTasks {
 	/**
 	 * This method translates the Ourgrid output IOBlocks to JDL InputSandbox
 	 *
-	 * @param jobID
-	 * @param taskSpec
-	 *            The task specification {@link TaskSpecification}
-	 * @param task
-	 *            The output expression containing the JDL job
+	 * @param jobId ID of the Job
+	 * @param taskSpec The task specification {@link TaskSpecification}
+	 * @param task The output expression containing the JDL job
+	 * @param schedPath Root path where commands should be executed
 	 */
 	private static void parseFinalCommands(String jobId, TaskSpecification taskSpec, Task task, String schedPath) {
-
 		List<JDLCommand> initBlocks = taskSpec.getFinalBlocks();
 		if (initBlocks == null) {
 			return;
@@ -323,20 +284,20 @@ public class JDFTasks {
 			if (jdlCommand.getBlockType().equals(JDLCommandType.IO)) {
 				addIOCommand(jobId, task, (IOCommand) jdlCommand, schedPath);
 			} else {
-				addRemoteCommand(jobId, task, (RemoteCommand) jdlCommand, schedPath);
+				addRemoteCommand(jobId, task, (RemoteCommand) jdlCommand);
 			}
 		}
 	}
 
 	private static Command stageOutCommand(String remoteFile, String localFile) {
-		String scpCommand = "su $UUID ; " + "scp " + SSH_SCP_PRECOMMAND + " -P $" + AbstractResource.ENV_SSH_PORT
+		String scpCommand = "scp " + SSH_SCP_PRECOMMAND + " -P $" + AbstractResource.ENV_SSH_PORT
 				+ " -i $" + AbstractResource.ENV_PRIVATE_KEY_FILE + " $" + AbstractResource.ENV_SSH_USER + "@" + "$"
-				+ AbstractResource.ENV_HOST + ":" + remoteFile + " " + localFile;
+				+ AbstractResource.ENV_HOST + ": " + remoteFile + " " + localFile;
 		return new Command(scpCommand, Command.Type.LOCAL);
 	}
 
 	private static Command mkdirLocalFolder(String folder) {
-		if (folder == "") {
+		if (folder.equals("")) {
 			return null;
 		}
 		String mkdirCommand = "su $UserID ; " + "mkdir -p " + folder;

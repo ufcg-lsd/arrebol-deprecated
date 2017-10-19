@@ -2,6 +2,6 @@ job:
 label: job555
 requirements: Glue2RAM >= 1024 AND Glue2CloudComputeManagerID=="servers.lsd.ufcg.edu.br"
 task:
-PUT /home/igorvcs/fakesim.jdf fakesim.jdf
-GET fakesim.jdf /home/igorvcs/fakesim2.jdf
+PUT /local/ubuntu/filetotransfer transferedfile
+GET transferedfile /local/ubuntu/filetotransfer
 sleep 10

@@ -14,9 +14,8 @@ import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.resource.AuthenticationResource;
 import org.fogbowcloud.app.resource.JobResource;
 import org.fogbowcloud.app.resource.NonceResource;
-import org.fogbowcloud.app.resource.TaskResource4JDF;
 import org.fogbowcloud.app.resource.UserResource;
-import org.fogbowcloud.app.utils.PropertiesConstants;
+import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.blowout.core.exception.BlowoutException;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskState;
@@ -28,6 +27,12 @@ import org.restlet.routing.Router;
 import org.restlet.service.ConnectorService;
 
 public class JDFSchedulerApplication extends Application {
+
+	private static final String ARREBOL_JOB_PATH = "/arrebol/job";
+	private static final String ARREBOL_JOB_ID_PATH = "/arrebol/job/{jobpath}";
+	private static final String ARREBOL_NONCE_PATH = "/arrebol/nonce";
+	private static final String ARREBOL_AUTHENTICATOR_PATH = "/arrebol/authenticator";
+	private static final String ARREBOL_USER_PATH = "/arrebol/user";
 
 	private ArrebolController arrebolController;
 	private Component restletComponent;
@@ -42,13 +47,13 @@ public class JDFSchedulerApplication extends Application {
 
 	public void startServer() throws Exception {
 		Properties properties = this.arrebolController.getProperties();
-		if (!properties.containsKey(PropertiesConstants.REST_SERVER_PORT)) {
+		if (!properties.containsKey(ArrebolPropertiesConstants.REST_SERVER_PORT)) {
 			throw new IllegalArgumentException(
-					PropertiesConstants.REST_SERVER_PORT
+					ArrebolPropertiesConstants.REST_SERVER_PORT
 							+ " is missing on properties.");
 		}
 		Integer restServerPort = Integer.valueOf((String) properties
-				.get(PropertiesConstants.REST_SERVER_PORT));
+				.get(ArrebolPropertiesConstants.REST_SERVER_PORT));
 
 		LOGGER.info("Starting service on port: " + restServerPort);
 
@@ -58,26 +63,22 @@ public class JDFSchedulerApplication extends Application {
 		this.restletComponent = new Component();
 		this.restletComponent.getServers().add(Protocol.HTTP, restServerPort);
 		this.restletComponent.getDefaultHost().attach(this);
-
 		this.restletComponent.start();
 	}
 
 	public void stopServer() throws Exception {
 		this.restletComponent.stop();
+		this.arrebolController.stop();
 	}
 
 	@Override
 	public Restlet createInboundRoot() {
 		Router router = new Router(getContext());
-		router.attach("/arrebol/job", JobResource.class);
-		router.attach("/arrebol/job/{jobpath}", JobResource.class);
-		router.attach("/arrebol/task/{taskId}", TaskResource4JDF.class);
-		router.attach("/arrebol/task/{taskId}/{varName}",
-				TaskResource4JDF.class);
-		router.attach("/arrebol/nonce", NonceResource.class);
-		router.attach("/arrebol/authenticator", AuthenticationResource.class);
-		router.attach("/arrebol/user", UserResource.class);
-
+		router.attach(ARREBOL_JOB_PATH, JobResource.class);
+		router.attach(ARREBOL_JOB_ID_PATH, JobResource.class);
+		router.attach(ARREBOL_NONCE_PATH, NonceResource.class);
+		router.attach(ARREBOL_AUTHENTICATOR_PATH, AuthenticationResource.class);
+		router.attach(ARREBOL_USER_PATH, UserResource.class);
 		return router;
 	}
 
@@ -85,9 +86,9 @@ public class JDFSchedulerApplication extends Application {
 		return this.arrebolController.getJobById(jobId, owner);
 	}
 
-	public String addJob(String jdfFilePath, String schedPath, User owner)
+	public String addJob(String jdfFilePath, User owner)
 			throws CompilerException, NameAlreadyInUseException, BlowoutException, IOException {
-		return this.arrebolController.addJob(jdfFilePath, schedPath, owner);
+		return this.arrebolController.addJob(jdfFilePath, owner);
 	}
 
 	public ArrayList<JDFJob> getAllJobs(String owner) {
@@ -106,8 +107,8 @@ public class JDFSchedulerApplication extends Application {
 		return this.arrebolController.getTaskById(taskId, owner);
 	}
 
-	public TaskState getTaskState(String taskId, String owner) {
-		return this.arrebolController.getTaskState(taskId, owner);
+	public TaskState getTaskState(String taskId) {
+		return this.arrebolController.getTaskState(taskId);
 	}
 
 	public int getNonce() {
@@ -130,5 +131,9 @@ public class JDFSchedulerApplication extends Application {
 	public String getAuthenticatorName() {
 		
 		return this.arrebolController.getAuthenticatorName();
+	}
+
+	public int getTaskRetries(String taskId, String owner) {
+		return this.arrebolController.getTaskRetries(taskId, owner);
 	}
 }

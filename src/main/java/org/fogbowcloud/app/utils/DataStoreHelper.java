@@ -3,11 +3,9 @@ package org.fogbowcloud.app.utils;
 import java.io.File;
 
 public class DataStoreHelper {
-	
-	protected static String dataStoreFolderExecution = null; 
-	public static final String DATASTORES_FOLDER = "datastores";
-	protected static final String DATASTORES_TEST_FOLDER = "datastores_test";
-	protected static final String PREFIX_DATASTORE_URL = "jdbc:sqlite:";
+
+	private static final String DATASTORES_FOLDER = "datastores";
+	private static final String PREFIX_DATASTORE_URL = "jdbc:sqlite:";
 
 	/**
 	 * @param dataStoreUrl coming from properties.

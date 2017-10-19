@@ -2,21 +2,19 @@ package org.fogbowcloud.app;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.datastore.JobDataStore;
+import org.fogbowcloud.app.exception.ArrebolException;
 import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
-import org.fogbowcloud.app.model.JDFTasks;
+import org.fogbowcloud.app.model.JDFJobBuilder;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
-import org.fogbowcloud.app.utils.PropertiesConstants;
 import org.fogbowcloud.app.utils.authenticator.ArrebolAuthenticator;
 import org.fogbowcloud.app.utils.authenticator.Credential;
 import org.fogbowcloud.blowout.core.BlowoutController;
@@ -31,8 +29,40 @@ import org.json.JSONObject;
 
 public class ArrebolController {
 
-	private static final int DEFAULT_EXECUTION_MONITOR_INTERVAL = 30000;
-	private static final int CHECKPOINT_INTERVAL = 30000;
+	private class AsyncJobBuilder implements Runnable {
+
+		private JDFJob job;
+		private String jdfFilePath;
+		private Properties properties;
+		private BlowoutController blowoutController;
+		private JobDataStore db;
+
+		AsyncJobBuilder(JDFJob job,
+						String jdfFilePath,
+						Properties properties,
+						BlowoutController blowoutController,
+						JobDataStore db) {
+			this.job = job;
+			this.jdfFilePath = jdfFilePath;
+			this.properties = properties;
+			this.blowoutController = blowoutController;
+			this.db = db;
+		}
+
+		@Override
+		public void run() {
+			try {
+				JDFJobBuilder.createJobFromJDFFile(job, jdfFilePath, properties);
+				blowoutController.addTaskList(job.getTasks());
+				LOGGER.debug("Finished creating job " + job.getId());
+				job.finishCreation();
+			} catch (Exception e) {
+				LOGGER.debug("Failed creating job " + job.getId(), e);
+				job.failCreation();
+			}
+			db.update(job);
+		}
+	}
 
 	private static final Logger LOGGER = Logger.getLogger(ArrebolController.class);
 
@@ -40,19 +70,23 @@ public class ArrebolController {
 	private Properties properties;
 	private List<Integer> nonces;
 	private HashMap<String, Task> finishedTasks;
+	private HashMap<String, Thread> creatingJobs;
 	private JobDataStore jobDataStore;
 	private ArrebolAuthenticator auth;
-	private ExecutionMonitorWithDB executionMonitor;
 
-	private static ManagerTimer executionMonitorTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
-	private static ManagerTimer checkPointTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
+    private static ManagerTimer executionMonitorTimer = new ManagerTimer(Executors.newScheduledThreadPool(1));
 
-	public ArrebolController(Properties properties) {
+	public ArrebolController(Properties properties)
+			throws BlowoutException, ArrebolException {
 		if (properties == null) {
-			throw new IllegalArgumentException("Properties cannot be null");
+			throw new IllegalArgumentException("Properties cannot be null.");
+		} else if (!checkProperties(properties)) {
+			throw new ArrebolException("Error while initializing Arrebol Controller.");
 		}
-		this.finishedTasks = new HashMap<String, Task>();
+		this.finishedTasks = new HashMap<>();
 		this.properties = properties;
+		this.blowoutController = new BlowoutController(properties);
+		this.creatingJobs = new HashMap<>();
 	}
 
 	public Properties getProperties() {
@@ -60,50 +94,59 @@ public class ArrebolController {
 	}
 
 	public void init() throws Exception {
-
 		// FIXME: add as constructor param?
 		this.auth = createAuthenticatorPluginInstance();
 		// FIXME: replace by a proper
 		this.jobDataStore = new JobDataStore(properties.getProperty(AppPropertiesConstants.DB_DATASTORE_URL));
 
-		Boolean removePreviousResources = new Boolean(
-				this.properties.getProperty(PropertiesConstants.REMOVE_PREVIOUS_RESOURCES)).booleanValue();
+		Boolean removePreviousResources = Boolean.valueOf(
+				this.properties.getProperty(ArrebolPropertiesConstants.REMOVE_PREVIOUS_RESOURCES)
+		);
 
-		LOGGER.debug("Properties: " + properties.getProperty(PropertiesConstants.DEFAULT_SPECS_FILE_PATH));
+		LOGGER.debug("Properties: " + properties.getProperty(ArrebolPropertiesConstants.DEFAULT_SPECS_FILE_PATH));
 
-		// this.scheduler = new Scheduler(infraManager, );
-
-		// legacyJobs.toArray(new JDFJob[legacyJobs.size()])
-
-		this.blowoutController = new BlowoutController(this.properties);
 		blowoutController.start(removePreviousResources);
 
-		LOGGER.debug(
-				"Application to be started on port: " + properties.getProperty(PropertiesConstants.REST_SERVER_PORT));
+		LOGGER.debug("Application to be started on port: " + properties.getProperty(ArrebolPropertiesConstants.REST_SERVER_PORT));
 		LOGGER.info("Properties: " + properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
 
-		this.nonces = new ArrayList<Integer>();
+		this.nonces = new ArrayList<>();
 
-		LOGGER.debug("Starting Scheduler and Execution Monitor, execution monitor period: "
-				+ properties.getProperty(PropertiesConstants.EXECUTION_MONITOR_PERIOD));
-		executionMonitor = new ExecutionMonitorWithDB(blowoutController, this, jobDataStore);
-		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0, DEFAULT_EXECUTION_MONITOR_INTERVAL);
-		int schedulerPeriod = Integer.valueOf(properties.getProperty(PropertiesConstants.EXECUTION_MONITOR_PERIOD));
-
+		LOGGER.debug("Restarting jobs");
 		restartAllJobs();
-		LOGGER.info("Starting scheduler with period: " + schedulerPeriod);
 
+		int schedulerPeriod = Integer.valueOf(properties.getProperty(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD));
+		LOGGER.debug("Starting Execution Monitor, with period: " + schedulerPeriod);
+        ExecutionMonitorWithDB executionMonitor = new ExecutionMonitorWithDB(
+				this,
+				jobDataStore
+		);
+		executionMonitorTimer.scheduleAtFixedRate(executionMonitor, 0, schedulerPeriod);
 	}
 
-	public void restartAllJobs() throws BlowoutException {
+	public void stop() {
+		for (Thread t : creatingJobs.values()) {
+		    while (t.isAlive()) {
+                t.interrupt();
+            }
+		}
+	}
+
+	void restartAllJobs() throws BlowoutException {
 		for (JDFJob job : this.jobDataStore.getAll()) {
-			ArrayList<Task> taskList = new ArrayList<Task>();
+			if (job.getState().equals(JDFJob.JDFJobState.SUBMITTED)) {
+				job.failCreation();
+				this.jobDataStore.update(job);
+			}
+			ArrayList<Task> taskList = new ArrayList<>();
 			for (Task task : job.getTasks()) {
 				if (!task.isFinished()) {
 					taskList.add(task);
 					LOGGER.debug("Specification of Recovered task: " + task.getSpecification().toJSON().toString());
 					LOGGER.debug("Task Requirements: " + task.getSpecification()
 							.getRequirementValue(FogbowRequirementsHelper.METADATA_FOGBOW_REQUIREMENTS));
+				} else {
+					finishedTasks.put(task.getId(), task);
 				}
 			}
 			blowoutController.addTaskList(taskList);
@@ -111,7 +154,7 @@ public class ArrebolController {
 	}
 
 	private ArrebolAuthenticator createAuthenticatorPluginInstance() throws Exception {
-		String providerClassName = this.properties.getProperty(PropertiesConstants.AUTHENTICATION_PLUGIN);
+		String providerClassName = this.properties.getProperty(ArrebolPropertiesConstants.AUTHENTICATION_PLUGIN);
 		Class<?> forName = Class.forName(providerClassName);
 		Object clazz = forName.getConstructor(Properties.class).newInstance(this.properties);
 		if (!(clazz instanceof ArrebolAuthenticator)) {
@@ -122,33 +165,39 @@ public class ArrebolController {
 	}
 
 	public JDFJob getJobById(String jobId, String owner) {
-		JDFJob jdfJob = (JDFJob) this.jobDataStore.getByJobId(jobId, owner);
-		return jdfJob;
+        return this.jobDataStore.getByJobId(jobId, owner);
 	}
 
-	public String addJob(String jdfFilePath, String schedPath, User owner)
+	public String addJob(String jdfFilePath, User owner)
 			throws CompilerException, NameAlreadyInUseException, BlowoutException, IOException {
-		JDFJob tmpJob = new JDFJob(schedPath, owner.getUser(), new ArrayList<Task>(), owner.getUsername());
-		LOGGER.debug("Adding job  of owner" +owner.getUsername()+" to scheduler" );
-		List<Task> taskList = getTasksFromJDFFile(jdfFilePath, tmpJob);
-		JDFJob job = new JDFJob(tmpJob.getId(), tmpJob.getSchedPath(), tmpJob.getOwner(), taskList, owner.getUsername());
-		job.setFriendlyName(tmpJob.getName());
+		LOGGER.debug("Adding job  of owner " + owner.getUsername() + " to scheduler" );
+		JDFJob job = createJobFromJDFFile(jdfFilePath, owner);
 
-		if (job.getName() != null && !job.getName().trim().isEmpty()
-				&& getJobByName(job.getName(), owner.getUser()) != null) {
-
+		if (job.getName() != null &&
+				!job.getName().trim().isEmpty() &&
+				getJobByName(job.getName(), owner.getUser()) != null) {
 			throw new NameAlreadyInUseException(
-					"The name " + job.getName() + " is already in use for the user " + owner);
+					"The job name '" + job.getName() + "' is already in use for the user '" + owner.getUser() + "'."
+			);
 		}
 
-
-		blowoutController.addTaskList(job.getTasks());
 		jobDataStore.insert(job);
 		return job.getId();
 	}
 
-	public ArrayList<JDFJob> getAllJobs(String owner) {
+	void waitForJobCreation(String jobId) throws InterruptedException {
+		creatingJobs.get(jobId).join();
+	}
 
+	JDFJob createJobFromJDFFile(String jdfFilePath, User owner) throws CompilerException, IOException {
+		JDFJob job = new JDFJob(owner.getUser(), new ArrayList<Task>(), owner.getUsername());
+		Thread t = new Thread(new AsyncJobBuilder(job, jdfFilePath, properties, blowoutController, jobDataStore));
+		t.start();
+		creatingJobs.put(job.getId(), t);
+		return job;
+	}
+
+	public ArrayList<JDFJob> getAllJobs(String owner) {
 		return (ArrayList<JDFJob>) this.jobDataStore.getAllByOwner(owner);
 	}
 
@@ -158,21 +207,27 @@ public class ArrebolController {
 
 	public String stopJob(String jobReference, String owner) {
 		JDFJob jobToRemove = getJobByName(jobReference, owner);
+		if (jobToRemove == null) {
+			jobToRemove = getJobById(jobReference, owner);
+		}
 		if (jobToRemove != null) {
+			LOGGER.debug("Removing job " + jobToRemove.getName() + ".");
+			Thread creatingThread = creatingJobs.get(jobToRemove.getId());
+			if (creatingThread != null) {
+				if (creatingThread.isAlive()) {
+					LOGGER.info("Job was still being created.");
+					while (creatingThread.isAlive()) {
+						creatingThread.interrupt();
+					}
+				}
+				creatingJobs.remove(jobToRemove.getId());
+			}
 			this.jobDataStore.deleteByJobId(jobToRemove.getId(), owner);
 			for (Task task : jobToRemove.getTasks()) {
+				LOGGER.debug("Removing task " + task.getId() + " from job.");
 				blowoutController.cleanTask(task);
 			}
 			return jobToRemove.getId();
-		} else {
-			jobToRemove = getJobById(jobReference, owner);
-			if (jobToRemove != null) {
-				this.jobDataStore.deleteByJobId(jobToRemove.getId(), owner);
-				for (Task task : jobToRemove.getTasks()) {
-					blowoutController.cleanTask(task);
-				}
-				return jobToRemove.getId();
-			}
 		}
 		return null;
 	}
@@ -182,10 +237,8 @@ public class ArrebolController {
 			return null;
 		}
 		for (JDFJob job : this.jobDataStore.getAllByOwner(owner)) {
-			JDFJob jdfJob = (JDFJob) job;
-			// TODO review this IFs
-			if (jobName.equals(((JDFJob) job).getName())) {
-				return (JDFJob) job;
+			if (jobName.equals(job.getName())) {
+				return job;
 			}
 		}
 		return null;
@@ -193,8 +246,7 @@ public class ArrebolController {
 
 	public Task getTaskById(String taskId, String owner) {
 		for (JDFJob job : getAllJobs(owner)) {
-			JDFJob jdfJob = (JDFJob) job;
-			Task task = jdfJob.getTaskById(taskId);
+            Task task = job.getTaskById(taskId);
 			if (task != null) {
 				return task;
 			}
@@ -202,28 +254,25 @@ public class ArrebolController {
 		return null;
 	}
 
-	public TaskState getTaskState(String taskId, String owner) {
-
+	public TaskState getTaskState(String taskId) {
 		Task task = finishedTasks.get(taskId);
 		if (task != null) {
 			return TaskState.COMPLETED;
 		} else {
-			task = getTaskById(taskId, owner);
-			if (task != null) {
-				TaskState taskState = blowoutController.getTaskState(task.getId());
-				if (taskState != null) {
-					return taskState;
-				}
-			}
-			return null;
+			return blowoutController.getTaskState(taskId);
 		}
 	}
 
 	public void moveTaskToFinished(Task task) {
-		JDFJob job = this.jobDataStore.getByJobId(task.getMetadata(ArrebolPropertiesConstants.JOB_ID),
-				task.getMetadata(ArrebolPropertiesConstants.OWNER));
+		JDFJob job = this.jobDataStore.getByJobId(
+				task.getMetadata(ArrebolPropertiesConstants.JOB_ID),
+				task.getMetadata(ArrebolPropertiesConstants.OWNER)
+		);
+		LOGGER.debug("Moving task " + task.getId() + "from job " + job.getName() +" to finished");
+		finishedTasks.put(task.getId(), task);
 		job.finish(task);
 		updateJob(job);
+		blowoutController.cleanTask(task);
 	}
 
 	public User authUser(String credentials) throws IOException, GeneralSecurityException {
@@ -231,7 +280,7 @@ public class ArrebolController {
 			return null;
 		}
 
-		Credential credential = null;
+		Credential credential;
 		try {
 			credential = Credential.fromJSON(new JSONObject(credentials));
 		} catch (JSONException e) {
@@ -239,23 +288,19 @@ public class ArrebolController {
 			return null;
 		}
 
+		User user = null;
 		LOGGER.debug("Checking nonce");
-		if (credential != null && this.nonces.contains(credential.getNonce())) {
-			return this.auth.authenticateUser(credential);
+		if (this.nonces.contains(credential.getNonce())) {
+			nonces.remove(credential.getNonce());
+			user = this.auth.authenticateUser(credential);
 		}
-		nonces.remove(credential.getNonce());
-		return null;
+		return user;
 	}
 
 	public int getNonce() {
-		int nonce = new Random().nextInt(999999);
+		int nonce = UUID.randomUUID().hashCode();
 		this.nonces.add(nonce);
 		return nonce;
-	}
-
-	protected List<Task> getTasksFromJDFFile(String jdfFilePath, JDFJob job) throws CompilerException, IOException {
-		List<Task> taskList = JDFTasks.getTasksFromJDFFile(job, jdfFilePath, this.properties);
-		return taskList;
 	}
 
 	public User getUser(String username) {
@@ -286,11 +331,81 @@ public class ArrebolController {
 		this.jobDataStore = dataStore;
 	}
 
-	public HashMap<String, Task> getFinishedTasks() {
-		return finishedTasks;
+	private static String requiredPropertyMessage(String property) {
+		return "Required property " + property + " was not set";
 	}
 
-	public void setFinishedTasks(HashMap<String, Task> finishedTasks) {
-		this.finishedTasks = finishedTasks;
+	private static boolean checkProperties(Properties properties) {
+		// Arrebol required properties
+		if (!properties.containsKey(ArrebolPropertiesConstants.REST_SERVER_PORT)) {
+			LOGGER.error(requiredPropertyMessage(ArrebolPropertiesConstants.REST_SERVER_PORT));
+			return false;
+		}
+		if (!properties.containsKey(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD)) {
+			LOGGER.error(requiredPropertyMessage(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD));
+			return false;
+		}
+		if (!properties.containsKey(ArrebolPropertiesConstants.PUBLIC_KEY_CONSTANT)) {
+			LOGGER.error(requiredPropertyMessage(ArrebolPropertiesConstants.PUBLIC_KEY_CONSTANT));
+			return false;
+		}
+		if (!properties.containsKey(ArrebolPropertiesConstants.PRIVATE_KEY_FILEPATH)) {
+			LOGGER.error(requiredPropertyMessage(ArrebolPropertiesConstants.PRIVATE_KEY_FILEPATH));
+			return false;
+		}
+		if (!properties.containsKey(ArrebolPropertiesConstants.REMOTE_OUTPUT_FOLDER)) {
+			LOGGER.error(requiredPropertyMessage(ArrebolPropertiesConstants.REMOTE_OUTPUT_FOLDER));
+			return false;
+		}
+		if (!properties.containsKey(ArrebolPropertiesConstants.LOCAL_OUTPUT_FOLDER)) {
+			LOGGER.error(requiredPropertyMessage(ArrebolPropertiesConstants.LOCAL_OUTPUT_FOLDER));
+			return false;
+		}
+		if (properties.containsKey(ArrebolPropertiesConstants.ENCRYPTION_TYPE)) {
+			try {
+				MessageDigest.getInstance(properties.getProperty(ArrebolPropertiesConstants.ENCRYPTION_TYPE));
+			} catch (NoSuchAlgorithmException e) {
+				String builder = "Property " +
+						ArrebolPropertiesConstants.ENCRYPTION_TYPE +
+						"(" +
+						properties.getProperty(ArrebolPropertiesConstants.ENCRYPTION_TYPE) +
+						") does not refer to a valid encryption algorithm." +
+						" Valid options are 'MD5', 'SHA-1' and 'SHA-256'.";
+				LOGGER.error(builder);
+				return false;
+			}
+		}
+		if (!properties.containsKey(ArrebolPropertiesConstants.AUTHENTICATION_PLUGIN)) {
+			LOGGER.error(requiredPropertyMessage(ArrebolPropertiesConstants.AUTHENTICATION_PLUGIN));
+			return false;
+		} else {
+			String authenticationPlugin = properties.getProperty(ArrebolPropertiesConstants.AUTHENTICATION_PLUGIN);
+			if (authenticationPlugin.equals("org.fogbowcloud.app.utils.LDAPAuthenticator")) {
+				if (!properties.containsKey(ArrebolPropertiesConstants.LDAP_AUTHENTICATION_URL)) {
+					LOGGER.error(requiredPropertyMessage(ArrebolPropertiesConstants.LDAP_AUTHENTICATION_URL));
+					return false;
+				}
+				if (!properties.containsKey(ArrebolPropertiesConstants.LDAP_AUTHENTICATION_BASE)) {
+					LOGGER.error(requiredPropertyMessage(ArrebolPropertiesConstants.LDAP_AUTHENTICATION_BASE));
+					return false;
+				}
+			}
+		}
+		LOGGER.debug("All properties are set");
+		return true;
+	}
+
+	public int getTaskRetries(String taskId, String owner) {
+		Task task = finishedTasks.get(taskId);
+		if (task != null) {
+			return task.getRetries();
+		} else {
+			task = getTaskById(taskId, owner);
+			if (task != null) {
+				return blowoutController.getTaskRetries(task.getId());
+				
+			}
+			return 0;
+		}
 	}
 }

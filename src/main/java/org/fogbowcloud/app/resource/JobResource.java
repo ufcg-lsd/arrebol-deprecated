@@ -7,19 +7,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.NameAlreadyInUseException;
 import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
-import org.fogbowcloud.app.utils.PropertiesConstants;
+import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.app.utils.ServerResourceUtils;
 import org.fogbowcloud.blowout.core.exception.BlowoutException;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskState;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.restlet.data.MediaType;
+import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Delete;
@@ -29,53 +31,79 @@ import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
 import org.restlet.util.Series;
 
-import com.amazonaws.util.json.JSONArray;
-import com.amazonaws.util.json.JSONObject;
-
 public class JobResource extends ServerResource {
 
 	//FIXME: it seems we can make it simpler
 
+	private static final String COMPLETION = "completion";
+
 	private static final Logger LOGGER = Logger.getLogger(JobResource.class);
 	
-	public static final String JOB_LIST = "Jobs";
+	static final String JOB_LIST = "Jobs";
 	private static final String JOB_TASKS = "Tasks";
 	private static final String JOB_ID = "id";
 	private static final String JOB_FRIENDLY = "name";
 	private static final String STATE = "state";
+	private static final String RETRIES = "retries";
 	private static final String TASK_ID = "taskid";
 	private static final String JOBPATH = "jobpath";
 	public static final String FRIENDLY = "friendly";
-	public static final String SCHED_PATH = "schedpath";
 	public static final String JDF_FILE_PATH = "jdffilepath";
 
 	private JSONArray jobTasks = new JSONArray();
 
+	private User authenticateUser(JDFSchedulerApplication application, Series headers) {
+		User owner;
+		try {
+			String credentials = headers.getFirstValue(ArrebolPropertiesConstants.X_CREDENTIALS);
+			owner = application.authUser(credentials);
+		} catch (GeneralSecurityException e) {
+			LOGGER.error("Error trying to authenticate", e);
+			throw new ResourceException(
+					Status.CLIENT_ERROR_UNAUTHORIZED,
+					"There was an error trying to authenticate.\nTry again later."
+			);
+		} catch (IOException e) {
+			LOGGER.error("Error trying to authenticate", e);
+			throw new ResourceException(
+					Status.CLIENT_ERROR_BAD_REQUEST,
+					"Failed to read request header."
+			);
+		}
+		if (owner == null) {
+			LOGGER.error("Authentication failed. Wrong username/password.");
+			throw new ResourceException(
+					Status.CLIENT_ERROR_UNAUTHORIZED,
+					"Incorrect username/password."
+			);
+		}
+		return owner;
+	}
+
 	@Get
-	public Representation fetch() throws Exception {
+	public Representation fetch() {
 		LOGGER.info("Getting Jobs...");
 		String jobId = (String) getRequest().getAttributes().get(JOBPATH);
 		LOGGER.debug("JobId is " + jobId);
-		
-		
+
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
+		Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
+		User owner = authenticateUser(application, headers);
+
 		JSONObject jsonJob = new JSONObject();
-
 		JSONArray jobs = new JSONArray();
-
-		@SuppressWarnings("rawtypes")
-		User owner = ResourceUtil.authenticateUser(application,
-				(Series) getRequestAttributes().get("org.restlet.http.headers"));
-
+		// If no job id is passed, return list with all jobs for user
 		if (jobId == null) {
 			for (JDFJob job : application.getAllJobs(owner.getUser())) {
 				JSONObject jJob = new JSONObject();
 				if (job.getName() != null) {
 					jJob.put("id", job.getId());
 					jJob.put("name", job.getName());
+					jJob.put(COMPLETION, job.completionPercentage());
 
 				} else {
 					jJob.put("id: ", job.getId());
+					jJob.put(COMPLETION, job.completionPercentage());
 				}
 				jobs.put(jJob);
 			}
@@ -84,90 +112,110 @@ public class JobResource extends ServerResource {
 
 			LOGGER.debug("My info Is: " + jsonJob.toString());
 
-			StringRepresentation result = new StringRepresentation(jsonJob.toString(), MediaType.TEXT_PLAIN);
-
-			return result;
-		}
-
-		JDFJob job = application.getJobById(jobId, owner.getUser());
-		if (job == null) {
-			job = application.getJobByName(jobId, owner.getUser());
-			if (job == null) {
-				throw new ResourceException(404);
-			}
-			jsonJob.put(JOB_FRIENDLY, jobId);
-			jsonJob.put(JOB_ID, job.getId());
+			return new StringRepresentation(jsonJob.toString(), MediaType.TEXT_PLAIN);
 		} else {
-			jsonJob.put(JOB_ID, jobId);
-			jsonJob.put(JOB_FRIENDLY, job.getName());
-		}
-		LOGGER.debug("JobID " + jobId + " is of job " + job);
+			JDFJob job = application.getJobById(jobId, owner.getUser());
+			if (job == null) {
+				job = application.getJobByName(jobId, owner.getUser());
+				if (job == null) {
+					LOGGER.debug("Could not find job with id " + jobId + " for user " + owner.getUsername());
+					throw new ResourceException(
+							Status.CLIENT_ERROR_NOT_FOUND,
+							"Could not find job with id '" + jobId + "'."
+					);
+				}
+				jsonJob.put(JOB_FRIENDLY, jobId);
+				jsonJob.put(JOB_ID, job.getId());
+				jsonJob.put(STATE, job.getState());
+                jsonJob.put(COMPLETION, job.completionPercentage());
+            } else {
+				jsonJob.put(JOB_ID, jobId);
+				jsonJob.put(JOB_FRIENDLY, job.getName());
+				jsonJob.put(STATE, job.getState());
+                jsonJob.put(COMPLETION, job.completionPercentage());
+            }
+			LOGGER.debug("JobID " + jobId + " is of job " + job);
 
-		for (Task task : job.getTasks()) {
-			JSONObject jTask = new JSONObject();
-			jTask.put(TASK_ID, task.getId());
-			TaskState ts = application.getTaskState(task.getId(), owner.getUser());
-			jTask.put(STATE, ts != null ? ts.getDesc().toUpperCase() : "UNDEFINED");
-			jobTasks.put(jTask);
+			for (Task task : job.getTasks()) {
+				JSONObject jTask = new JSONObject();
+				jTask.put(TASK_ID, task.getId());
+				TaskState ts = application.getTaskState(task.getId());
+				jTask.put(STATE, ts != null ? ts.getDesc().toUpperCase() : "UNDEFINED");
+                int retries = application.getTaskRetries(task.getId(), owner.getUser());
+                jTask.put(RETRIES, retries >= 0 ? task.getRetries() : "DIDN'T RUN");
+                jobTasks.put(jTask);
+			}
+			jsonJob.put(JOB_TASKS, jobTasks);
+			return new StringRepresentation(jsonJob.toString(), MediaType.TEXT_PLAIN);
 		}
-		jsonJob.put(JOB_TASKS, jobTasks);
-		return new StringRepresentation(jsonJob.toString(), MediaType.TEXT_PLAIN);
 	}
 
 	@Post
-	public StringRepresentation addJob(Representation entity)
-			throws IOException, FileUploadException, GeneralSecurityException {
+	public StringRepresentation addJob(Representation entity) {
+		// Check if form is malformed
 		if (entity != null && !MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
-			throw new ResourceException(HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE);
+			throw new ResourceException(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE);
 		}
 
-		Map<String, String> fieldMap = new HashMap<String, String>();
+		// Credentials
+		Map<String, String> fieldMap = new HashMap<>();
 		fieldMap.put(JDF_FILE_PATH, null);
-		fieldMap.put(PropertiesConstants.X_CREDENTIALS, null);
-		fieldMap.put(SCHED_PATH, null);
-		
-		ServerResourceUtils.loadFields(entity, fieldMap, new HashMap<String, File>());
+		fieldMap.put(ArrebolPropertiesConstants.X_CREDENTIALS, null);
 
-		String jdf = fieldMap.get(JDF_FILE_PATH);
-		if (jdf == null) {
-			throw new ResourceException(HttpStatus.SC_BAD_REQUEST);
+		try {
+			ServerResourceUtils.loadFields(entity, fieldMap, new HashMap<String, File>());
+		} catch (FileUploadException e) {
+			LOGGER.error("Failed receiving file from client.", e);
+			throw new ResourceException(
+					Status.SERVER_ERROR_INTERNAL,
+					"JDF upload failed.\nTry again later."
+			);
+		} catch (IOException e) {
+			LOGGER.error("Failed reading JDF file.", e);
+			throw new ResourceException(
+					Status.SERVER_ERROR_INTERNAL,
+					"Failed reading JDF file.\nTry again later."
+			);
 		}
-		String schedPath = fieldMap.get(SCHED_PATH);
 
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
-		@SuppressWarnings("rawtypes")
 		Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
-		headers.add(PropertiesConstants.X_CREDENTIALS, fieldMap.get(PropertiesConstants.X_CREDENTIALS));
-		User owner = ResourceUtil.authenticateUser(application, headers);
+		headers.add(ArrebolPropertiesConstants.X_CREDENTIALS, fieldMap.get(ArrebolPropertiesConstants.X_CREDENTIALS));
+		User owner = authenticateUser(application, headers);
+
+		// Creating job
+		String jdf = fieldMap.get(JDF_FILE_PATH);
+		if (jdf == null) {
+			throw new ResourceException(Status.CLIENT_ERROR_BAD_REQUEST);
+		}
+
 		String jdfAbsolutePath = fieldMap.get(JDF_FILE_PATH);
 		try {
 			String jobId;
-			LOGGER.debug("jdfpath <" + jdfAbsolutePath + ">" + " schedPath <" + schedPath + ">");
-			jobId = application.addJob(jdfAbsolutePath, schedPath, owner);
+			LOGGER.debug("jdfpath <" + jdfAbsolutePath + ">");
+			jobId = application.addJob(jdfAbsolutePath, owner);
 			return new StringRepresentation(jobId, MediaType.TEXT_PLAIN);
 		} catch (CompilerException ce) {
-			LOGGER.debug(ce.getMessage(), ce);
-			throw new ResourceException(HttpStatus.SC_INTERNAL_SERVER_ERROR, ce);
-		} catch (IllegalArgumentException iae) {
-			LOGGER.debug(iae.getMessage(), iae);
-			throw new ResourceException(HttpStatus.SC_BAD_REQUEST, iae);
-		} catch (NameAlreadyInUseException e) {
-			LOGGER.debug(e.getMessage(), e);
-			throw new ResourceException(HttpStatus.SC_BAD_REQUEST, e);
-		} catch (BlowoutException be) {
-			LOGGER.debug(be.getMessage(), be);
-			throw new ResourceException(HttpStatus.SC_BAD_REQUEST, be);
+			LOGGER.error(ce.getMessage(), ce);
+			throw new ResourceException(
+					Status.CLIENT_ERROR_BAD_REQUEST,
+					"Could not compile JDF file.",
+					ce
+			);
+		} catch (NameAlreadyInUseException | BlowoutException iae) {
+			LOGGER.error(iae.getMessage(), iae);
+			throw new ResourceException(Status.CLIENT_ERROR_BAD_REQUEST, iae.getMessage());
+		} catch (IOException e) {
+			LOGGER.error("Could not read JDF file.", e);
+			throw new ResourceException(Status.CLIENT_ERROR_BAD_REQUEST, "Could not read JDF file.");
 		}
-
 	}
 
 	@Delete
-	public StringRepresentation stopJob() throws IOException, GeneralSecurityException {
+	public StringRepresentation stopJob() {
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
-
-		@SuppressWarnings("rawtypes")
-		User owner = ResourceUtil.authenticateUser(application,
-				(Series) getRequestAttributes().get("org.restlet.http.headers"));
+		Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
+		User owner = authenticateUser(application, headers);
 
 		String JDFString = (String) getRequest().getAttributes().get(JOBPATH);
 
@@ -176,7 +224,11 @@ public class JobResource extends ServerResource {
 		String jobId = application.stopJob(JDFString, owner.getUser());
 
 		if (jobId == null) {
-			throw new ResourceException(404);
+			LOGGER.debug("Could not find job with id " + JDFString + " for user " + owner.getUsername());
+			throw new ResourceException(
+					Status.CLIENT_ERROR_NOT_FOUND,
+					"Could not find job with id '" + JDFString + "'."
+			);
 		}
 
 		return new StringRepresentation(jobId, MediaType.TEXT_PLAIN);
