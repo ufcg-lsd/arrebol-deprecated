@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.model.UserImpl;
-import org.fogbowcloud.app.utils.PropertiesConstants;
+import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.app.utils.RSAUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,15 +20,15 @@ import org.mapdb.DBMaker;
 public class CommonAuthenticator implements ArrebolAuthenticator {
 	public static final Logger LOGGER = Logger.getLogger(CommonAuthenticator.class);
 
-	private static final String COMMON_AUTH = "commonauth";
+	public static final String AUTH_NAME = "commonauth";
 	private DB usersDB;
 	private ConcurrentMap<String, String> userList;
 	
 	public CommonAuthenticator(Properties properties) {
-		final File usersFile = new File(PropertiesConstants.DB_FILE_USERS);
+		final File usersFile = new File(ArrebolPropertiesConstants.DB_FILE_USERS);
 		this.usersDB = DBMaker.newFileDB(usersFile).make();
-		this.usersDB.checkShouldCreate(PropertiesConstants.DB_MAP_USERS);
-		this.userList = usersDB.getHashMap(PropertiesConstants.DB_MAP_USERS);
+		this.usersDB.checkShouldCreate(ArrebolPropertiesConstants.DB_MAP_USERS);
+		this.userList = usersDB.getHashMap(ArrebolPropertiesConstants.DB_MAP_USERS);
 	}
 	
 	public static boolean checkUserSignature(String hash, User user, int nonce)
@@ -64,7 +64,7 @@ public class CommonAuthenticator implements ArrebolAuthenticator {
 
 	@Override
 	public String getAuthenticatorName() {
-		return COMMON_AUTH;
+		return AUTH_NAME;
 	}
 
 	@Override

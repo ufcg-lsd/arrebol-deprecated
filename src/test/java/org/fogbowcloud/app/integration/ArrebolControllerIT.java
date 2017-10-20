@@ -19,54 +19,39 @@ import org.fogbowcloud.app.ArrebolController;
 import org.fogbowcloud.app.resource.JobResource;
 import org.fogbowcloud.app.resource.ResourceTestUtil;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
-import org.fogbowcloud.app.utils.PropertiesConstants;
+import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.app.utils.authenticator.Credential;
 import org.fogbowcloud.blowout.core.util.AppPropertiesConstants;
 import org.junit.Test;
 
 public class ArrebolControllerIT {
 	
-	public ArrebolController ac;
-
-	public JDFSchedulerApplication app;
-	
-	public static final String RESOURCE_DIR = "test" + File.separator + "resources";
-	
-	public static final String EXSIMPLE_JOB = RESOURCE_DIR + File.separator + "sleepjob.jdf";
-
+	private ArrebolController ac;
+	private JDFSchedulerApplication app;
+	private static final String RESOURCE_DIR = "test" + File.separator + "resources";
+	private static final String EXSIMPLE_JOB = RESOURCE_DIR + File.separator + "sleepjob.jdf";
 	private static final String DEFAULT_SERVER_PORT = "44444";
-	
-	public static final String DEFAULT_PREFIX_URL = "http://localhost:" + DEFAULT_SERVER_PORT;
+	private static final String DEFAULT_PREFIX_URL = "http://localhost:" + DEFAULT_SERVER_PORT;
+	private static final String testPublicKey = "testPublicKey";
+	private static final String testPrivateKeyPath = "testPrivateKeyPath";
 	
 	@Test
 	public void testNormalExecution() {
-		/**
-		 * Required properties to be set:
-		 * 
-		 * (app) DB_DATASTORE_URL 
-		 * (p.const) REMOVE_PREVIOUS_RESOURCES 
-		 * (p.const) DEFAULT_SPECS_FILE_PATH
-		 * (p.const) REST_SERVER_PORT 
-		 * (p.const) EXECUTION_MONITOR_PERIOD
-		 * (p.const) AUTHENTICATION_PLUGIN 
-		 * (app) IMPLEMENTATION_BLOWOUT_POOL
-		 * (app) IMPLEMENTATION_INFRA_PROVIDER 
-		 * (app) IMPLEMENTATION_INFRA_MANAGER
-		 * (app) IMPLEMENTATION_SCHEDULER 
-		 * (app) INFRA_RESOURCE_IDLE_LIFETIME 
-		 * (app) INFRA_RESOURCE_CONNECTION_TIMEOUT
-		 * (app) INFRA_IS_STATIC 
-		 * (app) INFRA_AUTH_TOKEN_UPDATE_PLUGIN 
-		 * (app) INFRA_MONITOR_PERIOD 
-		 * (app) INFRA_RESOURCE_CONECTION_RETRY 
-		 * (app) INFRA_RESOURCE_REUSE_TIMES
-		 */
 		Properties properties = new Properties();
-		properties.setProperty(PropertiesConstants.REMOVE_PREVIOUS_RESOURCES, "true");
-		properties.setProperty(PropertiesConstants.DEFAULT_SPECS_FILE_PATH, "defaulResource.json");
-		properties.setProperty(PropertiesConstants.REST_SERVER_PORT, "44444");
-		properties.setProperty(PropertiesConstants.EXECUTION_MONITOR_PERIOD, "30000");
-		properties.setProperty(PropertiesConstants.AUTHENTICATION_PLUGIN, "org.fogbowcloud.app.integration.FakeAuthenticationPlugin");
+		properties.setProperty(ArrebolPropertiesConstants.PUBLIC_KEY_CONSTANT, testPublicKey);
+		properties.setProperty(ArrebolPropertiesConstants.PRIVATE_KEY_FILEPATH, testPrivateKeyPath);
+		properties.setProperty(ArrebolPropertiesConstants.REMOTE_OUTPUT_FOLDER, "/tmp");
+		properties.setProperty(ArrebolPropertiesConstants.LOCAL_OUTPUT_FOLDER, "/tmp");
+		properties.setProperty(ArrebolPropertiesConstants.REMOVE_PREVIOUS_RESOURCES, "true");
+		properties.setProperty(ArrebolPropertiesConstants.DEFAULT_SPECS_FILE_PATH, "defaulResource.json");
+		properties.setProperty(ArrebolPropertiesConstants.REST_SERVER_PORT, DEFAULT_SERVER_PORT);
+		properties.setProperty(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD, "30000");
+		properties.setProperty(ArrebolPropertiesConstants.AUTHENTICATION_PLUGIN, "org.fogbowcloud.app.integration.FakeAuthenticationPlugin");
+
+		properties.setProperty(
+				AppPropertiesConstants.INFRA_PROVIDER_CLASS_NAME,
+				"org.fogbowcloud.blowout.infrastructure.provider.fogbow.FogbowInfrastructureProvider"
+		);
 		properties.setProperty(AppPropertiesConstants.DB_DATASTORE_URL, "jdbc:sqlite:/tmp/testdatastore");
 		properties.setProperty(AppPropertiesConstants.IMPLEMENTATION_BLOWOUT_POOL, "org.fogbowcloud.blowout.pool.DefaultBlowoutPool");
 		properties.setProperty(AppPropertiesConstants.IMPLEMENTATION_INFRA_PROVIDER, "org.fogbowcloud.blowout.infrastructure.provider.fogbow.FogbowInfrastructureProvider");
@@ -79,10 +64,11 @@ public class ArrebolControllerIT {
 		properties.setProperty(AppPropertiesConstants.INFRA_MONITOR_PERIOD, "30000");
 		properties.setProperty(AppPropertiesConstants.INFRA_RESOURCE_CONNECTION_RETRY, "1");
 		properties.setProperty(AppPropertiesConstants.INFRA_RESOURCE_REUSE_TIMES, "1");
+
 		File file = new File("/tmp/testdatastore");
 		file.delete();
-		this.ac = new ArrebolController(properties);
 		try {
+			this.ac = new ArrebolController(properties);
 			this.app = new JDFSchedulerApplication(ac);
 			this.app.startServer();
 		} catch (Exception e) {
@@ -91,20 +77,15 @@ public class ArrebolControllerIT {
 		}
 		String owner = ResourceTestUtil.DEFAULT_OWNER;
 		HttpPost post = new HttpPost(DEFAULT_PREFIX_URL + ResourceTestUtil.JOB_RESOURCE_SUFIX);
-		post.addHeader(new BasicHeader(PropertiesConstants.X_AUTH_USER, owner));
+		post.addHeader(new BasicHeader(ArrebolPropertiesConstants.X_AUTH_USER, owner));
 		Credential cred = new Credential(owner, "blabla", this.ac.getNonce());
-		post.addHeader(new BasicHeader(PropertiesConstants.X_CREDENTIALS, cred.toJSON().toString()));
-		
-		
-		
-		String jdfFilePath = EXSIMPLE_JOB;
-		String schedPath = "schedPath";
+		post.addHeader(new BasicHeader(ArrebolPropertiesConstants.X_CREDENTIALS, cred.toJSON().toString()));
+
 		String friendlyName = "friendly";
 		
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-		builder.addTextBody(JobResource.SCHED_PATH, schedPath, ContentType.TEXT_PLAIN);
 		builder.addTextBody(JobResource.FRIENDLY, friendlyName, ContentType.TEXT_PLAIN);
-		builder.addTextBody(JobResource.JDF_FILE_PATH, jdfFilePath, ContentType.TEXT_PLAIN);
+		builder.addTextBody(JobResource.JDF_FILE_PATH, EXSIMPLE_JOB, ContentType.TEXT_PLAIN);
 		HttpEntity multipart = builder.build();		
 		post.setEntity(multipart);
 		
@@ -117,12 +98,6 @@ public class ArrebolControllerIT {
 		
 			System.out.println("Chegou aqui");
 			this.app.stop();
-		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

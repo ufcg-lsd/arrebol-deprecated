@@ -7,7 +7,7 @@ req = requests.Session()
 
 
 jobs_dir = "/home/igorvcs/git/arrebol/massivejobs"
-cloud = "tu.dresden.manager.naf.lsd.ufcg.edu.br	"
+cloud = "servers.lsd.ufcg.edu.br"
 
 
 if not os.path.exists(jobs_dir):
@@ -28,18 +28,19 @@ def create_multiple_jobs(quantity):
 
 
 def postjob(suffix, path) :
-    
+   
     n = req.get("http://10.11.5.160:44444/arrebol/nonce")
-    header = { "X-auth-credentials":"{ username: arrebolservice, password: 4rr3b0l, nonce: "+ n.text+" }"}
+    header = { "X-auth-credentials":"{ username: arrebolservice,  password: 4rr3b0l, nonce: "+ n.text+" }"}
     r = req.post("http://10.11.5.160:44444/arrebol/job",
          files={
              "jdffilepath": ("", path+"/job"+str(suffix)+".jdf"),
-             "X-auth-credentials": ("", "{ username: arrebolservice, password: 4rr3b0l, nonce: "+ n.text+ "}")}, headers=header)
+             "X-auth-credentials": ("", "{ username: arrebolservice,  password: 4rr3b0l, nonce: "+ n.text+ "}")}, headers=header)
     return r
 
 
+
 def main():
-   quantity = 200
+   quantity = 3000
    create_multiple_jobs(quantity)
    for i in range(0, quantity):
        print(postjob(i, jobs_dir).text)

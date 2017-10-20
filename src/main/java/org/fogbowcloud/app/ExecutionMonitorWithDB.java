@@ -7,73 +7,91 @@ import java.util.concurrent.Executors;
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.datastore.JobDataStore;
 import org.fogbowcloud.app.model.JDFJob;
-import org.fogbowcloud.app.model.Job;
-import org.fogbowcloud.blowout.core.BlowoutController;
 import org.fogbowcloud.blowout.core.model.Task;
 import org.fogbowcloud.blowout.core.model.TaskState;
 
 public class ExecutionMonitorWithDB implements Runnable {
 
-	private BlowoutController blowoutController;
-	private ArrebolController arrebolController;
-	private static final Logger LOGGER = Logger.getLogger(ExecutionMonitorWithDB.class);
-	private ExecutorService service;
-	private JobDataStore db;
-	private ArrayList<JDFJob> jobMap;
+    private static final Logger LOGGER = Logger.getLogger(ExecutionMonitorWithDB.class);
 
-	public ExecutionMonitorWithDB(BlowoutController blowoutController, ArrebolController arrebolController,
-			JobDataStore dataStore) {
-		this(blowoutController, arrebolController, Executors.newFixedThreadPool(3), dataStore);
+	private ArrebolController arrebolController;
+	private ExecutorService service;
+    private JobDataStore db;
+
+	ExecutionMonitorWithDB(ArrebolController arrebolController,
+                           JobDataStore dataStore) {
+		this(arrebolController, Executors.newFixedThreadPool(3), dataStore);
 	}
 
-	public ExecutionMonitorWithDB(BlowoutController blowoutController, ArrebolController arrebolController,
-			ExecutorService service, JobDataStore db) {
-		this.blowoutController = blowoutController;
+	ExecutionMonitorWithDB(ArrebolController arrebolController,
+                           ExecutorService service,
+                           JobDataStore db) {
 		this.arrebolController = arrebolController;
 		if (service == null) {
 			this.service = Executors.newFixedThreadPool(3);
 		} else {
 			this.service = service;
 		}
-		this.db = db;
-		this.jobMap = (ArrayList<JDFJob>) db.getAll();
+        this.db = db;
 	}
 
 	@Override
 	public void run() {
+<<<<<<< HEAD
 		LOGGER.info("Submitting monitoring tasks");
 
+=======
+		LOGGER.debug("Submitting monitoring tasks");
+		ArrayList<JDFJob> jobMap = (ArrayList<JDFJob>) db.getAll();
+>>>>>>> refs/remotes/origin/master
 		for (JDFJob aJob : jobMap) {
+			LOGGER.debug("Starting monitoring of job " + aJob.getName() + "[" + aJob.getId() + "].");
+			int count = 0;
 			for (Task task : aJob.getTasks()) {
+<<<<<<< HEAD
 				LOGGER.info("Task: " +task +" is being treated");
+=======
+>>>>>>> refs/remotes/origin/master
 				if (!task.isFinished()) {
+<<<<<<< HEAD
 					TaskState taskState = blowoutController.getTaskState(task.getId());
 					LOGGER.info("Process " + task.getId() + " has state " + taskState.getDesc());
+=======
+					count++;
+					LOGGER.debug("Task: " + task +" is being treated");
+					TaskState taskState = arrebolController.getTaskState(task.getId());
+					LOGGER.debug("Process " + task.getId() + " has state " + taskState.getDesc());
+>>>>>>> refs/remotes/origin/master
 					service.submit(new TaskExecutionChecker(task));
 				}
+			}
+			if (count == 0) {
+				LOGGER.debug("Job has no active tasks.");
 			}
 		}
 	}
 
 	class TaskExecutionChecker implements Runnable {
 
-		protected Task task;
-		protected Job job;
+		private Task task;
 
-		public TaskExecutionChecker(Task task) {
+		TaskExecutionChecker(Task task) {
 			this.task = task;
 		}
 
 		@Override
 		public void run() {
-
-			TaskState state = blowoutController.getTaskState(task.getId());
+			TaskState state = arrebolController.getTaskState(task.getId());
 
 			if (TaskState.COMPLETED.equals(state)) {
+<<<<<<< HEAD
 				blowoutController.cleanTask(task);
 				Task actualTask = blowoutController.getBlowoutPool().getTaskById(task.getId());
 				arrebolController.moveTaskToFinished(actualTask);
 				return;
+=======
+				arrebolController.moveTaskToFinished(task);
+>>>>>>> refs/remotes/origin/master
 			}
 		}
 	}

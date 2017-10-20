@@ -14,7 +14,7 @@ public abstract class Job implements Serializable {
 
 	private static final long serialVersionUID = -6111900503095749695L;
 
-	protected Map<String, Task> taskList = new HashMap<String, Task>();
+	protected Map<String, Task> taskList = new HashMap<>();
 	
 	public enum TaskState{
 		
@@ -22,7 +22,7 @@ public abstract class Job implements Serializable {
 		
 		private String value;
 		
-		private TaskState(String value){
+		TaskState(String value){
 			this.value = value;
 		}
 		
@@ -33,12 +33,19 @@ public abstract class Job implements Serializable {
 	
 	public static final Logger LOGGER = Logger.getLogger(Job.class);
 	
-	protected ReentrantReadWriteLock taskReadyLock = new ReentrantReadWriteLock();
-	protected ReentrantReadWriteLock taskCompletedLock = new ReentrantReadWriteLock();
-	
-	private String UUID = "";
+	private ReentrantReadWriteLock taskReadyLock = new ReentrantReadWriteLock();
 
 	private boolean isCreated = false;
+
+	public Job(List<Task> tasks) {
+		for(Task task : tasks){
+			addTask(task);
+		}
+	}
+
+	public Job() {
+
+	}
 
 	//TODO: not sure that we need to guarantee thread safety at the job level
 	public void addTask(Task task) {
@@ -49,23 +56,16 @@ public abstract class Job implements Serializable {
 			taskReadyLock.writeLock().unlock();
 		}
 	}
-
-	public Map<String, Task> getTasksMaps(){
-		return this.getTaskList();
-	}
 	
 	public List<Task> getTasks(){
-		return new ArrayList<Task>(taskList.values());
+		return new ArrayList<>(taskList.values());
 	}
 	
 	public abstract void finish(Task task);
 
 	public abstract void fail(Task task);
 
-	//FIXME: it seems not ok. maybe we should have an Job interface and add this method to it
-	public String getId(){
-		return null;
-	}
+	public abstract String getId();
 
 	//TODO: it seems this *created* and restart methods help the Scheduler class to its job. I'm not sure
 	//if we should keep them.
@@ -79,9 +79,7 @@ public abstract class Job implements Serializable {
 
 	public void restart() {
 		this.isCreated = false;
-		
 	}
-
 
 	public Map<String, Task> getTaskList() {
 		return taskList;
@@ -90,13 +88,5 @@ public abstract class Job implements Serializable {
 	//FIXME: why do we need this method? (serialization?)
 	public void setTaskList(Map<String, Task> taskList) {
 		this.taskList = taskList;
-	}
-	
-	public void setUUID(String UUID) {
-		this.UUID = UUID;
-	}
-	
-	public String getUUID() {
-		return this.UUID;
 	}
 }

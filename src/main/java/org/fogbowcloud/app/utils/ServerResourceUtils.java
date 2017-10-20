@@ -15,15 +15,15 @@ import org.restlet.representation.Representation;
 
 public class ServerResourceUtils {
 	
-	public static void loadFields(Representation entity, Map<String, 
-    		String> formFieldstoLoad, Map<String, File> filesToLoad) 
-    				throws FileUploadException, IOException {
-		
+	public static void loadFields(Representation entity,
+                                  Map<String, String> formFieldstoLoad,
+                                  Map<String, File> filesToLoad)
+            throws IOException, FileUploadException {
 		DiskFileItemFactory factory = new DiskFileItemFactory();
     	factory.setSizeThreshold(1000240);
     	RestletFileUpload upload = new RestletFileUpload(factory);
     	FileItemIterator fileIterator = upload.getItemIterator(entity);
-    	
+
     	while (fileIterator.hasNext()) {
     		FileItemStream fi = fileIterator.next();
     		String fieldName = fi.getFieldName();

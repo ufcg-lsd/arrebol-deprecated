@@ -40,8 +40,9 @@ public class JDFTasks {
 
 	protected static final String PRIVATE_KEY_FILEPATH = "private_key_filepath";
 
-	private static String standardImage = "fogbow-ubuntu";
-
+//	private static String standardImage = "fogbow-ubuntu";
+	private static String standardImage = "imagem-falsa-pra-cacete";
+	
 	protected static final String PUBLIC_KEY_CONSTANT = "public_key";
 	private final static String SSH_SCP_PRECOMMAND = "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no";
 

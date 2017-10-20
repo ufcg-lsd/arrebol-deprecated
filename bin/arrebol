@@ -1,30 +1,55 @@
 #!/bin/bash
 DIRNAME=`dirname $0`
-. $DIRNAME/arrebol.properties
+. ${DIRNAME}/arrebol.properties
+
+x="dotest"
 
 print_menu() {
-	echo "Usage: $0 COMMAND [OPTIONS]"
-	echo "Commands are GET, POST, STOP or GETUI"
-	echo "GET | GET [job_id || friendly_name] -u | --username username"
-	echo "POST jdffilepath [s | --schedpath path] -u | --username username"
-	echo "STOP [job_id || friendly_name] -u | --username username"
-	echo "CREATEUSER -u | --username username"
+	echo "Usage: $0 COMMAND"
+	echo "Commands are:"
+	echo "GET [<job_id> | <friendly_name>] (-u | --username) <username>"
+	echo "Get a job from <username>, using either it's <job_id> or it's <friendly_name>,"
+	echo "if neither are defined, returns a list with all jobs the <username> has registered."
+	echo
+	echo "POST <jdffilepath> (-u | --username) <username>"
+    echo "Posts a job defined by a JDF file at the path <jdffilepath> for <username>"
+    echo
+	echo "STOP (<job_id> | <friendly_name>) (-u | --username) <username>"
+	echo "Stops and deletes a job from <username>, identified by it's <job_id> or <friendly name>."
+	echo
+	echo "CREATEUSER (-u | --username) user"
+	echo "Creates a new user."
+	echo "Not all services allow creation of users through this command."
 	exit 1
 }
 
 do_get() {
-
 	define_parameters $@
-	authenticator=$(curl -G "$host/arrebol/authenticator" 2> /dev/null)	
-	$authenticator
+
+    if [ -z ${username:+x} ]
+    then
+	    echo "Missing username"
+        print_menu
+        exit 1
+    fi
+
+	authenticator=$(curl -G "${host}/arrebol/authenticator" 2> /dev/null)
+
+    if [ -z ${authenticator:+x} ]
+    then
+        echo "Failed to connect to authentication server"
+        exit 1
+    fi
+
+	${authenticator}
 	if [ $# -eq 2 ]
 	then
-		response=$(curl -G -H "X-auth-credentials: { username: '$username', password: '$password', nonce: '$nonce' }" "$host/arrebol/job" 2> /dev/null)
-		echo $response
+		response=$(curl -G -H "X-auth-credentials: { username: '${username}', password: '${password}', nonce: '${nonce}' }" "${host}/arrebol/job" 2> /dev/null)
+		echo ${response}
 	elif [ $# -eq 3 ]
 	then
-        	response=$(curl -G -H "X-auth-credentials: { username: '$username', password: '$password', nonce: '$nonce' }" "$host/arrebol/job/$1" 2> /dev/null)
-        	echo $response
+        	response=$(curl -G -H "X-auth-credentials: { username: '${username}', password: '${password}', nonce: '${nonce}' }" "${host}/arrebol/job/$1" 2> /dev/null)
+        	echo ${response}
 	else
 		print_menu
 		exit 1
@@ -32,19 +57,19 @@ do_get() {
 }
 
 do_get_nonce() {
-	nonce=$(curl -G "$host/arrebol/nonce" 2> /dev/null)
+	nonce=$(curl -G "${host}/arrebol/nonce" 2> /dev/null)
 }
 
 inputCertificate() {
 	echo -n certificate location:
 	read location
-	password=$(cat $location)
+	password=$(cat ${location})
 }
 
 commonauth() {
 	echo -n Path to public key
 	read privateKeyFile
-	password=$(echo -n $username$nonce | openssl dgst -sha1 -binary -sign $privateKeyFile | base64 | awk 'BEGIN{ORS="*";} {print}')
+	password=$(echo -n ${username}${nonce} | openssl dgst -sha1 -binary -sign ${privateKeyFile} | base64 | awk 'BEGIN{ORS="*";} {print}')
 }
 
 ldapauth() {
@@ -75,60 +100,90 @@ define_parameters() {
 
 do_post() {
 	local jdffilepath=$1
-        if [ -f $jdffilepath ]
+	if [[ ${jdffilepath} == -* ]]
+	then
+	    echo "Missing path to JDF file"
+	    print_menu
+	    exit 1
+	fi
+    if [ -f ${jdffilepath} ]
 	then
 		shift
         define_parameters $@
-		if [[ "$jdffilepath" != /* ]];
-		then
-			echo "$jdffilepath file path is relative, adding $PWD to the path"
-			jdffilepath="$PWD/$jdffilepath"
-		fi
-		authenticator=$(curl -G "$host/arrebol/authenticator" 2> /dev/null)
-		$authenticator
-		base_curl_cmd="curl -X POST --form jdffilepath=${jdffilepath} --form X-auth-credentials={username:'$username',password:'$password',nonce:'$nonce'}"
-		if [[ $schedpath ]]
-		then
-			base_curl_cmd="${base_curl_cmd} --form schedpath=${schedpath}"
-		fi
-		base_curl_cmd="${base_curl_cmd} $host/arrebol/job"
-        	response=$($base_curl_cmd 2> /dev/null)
-                echo $response
-	else
-        	echo "Error: jdffilepath<$jdffilepath> not found."
-                exit 1
+
+        if [ -z ${username:+x} ]
+        then
+	        echo "Missing username"
+            print_menu
+            exit 1
         fi
+
+	    authenticator=$(curl -G "${host}/arrebol/authenticator" 2> /dev/null)
+	    ${authenticator}
+
+        if [ -z ${authenticator:+x} ]
+        then
+            echo "Failed to connect to authentication server"
+            exit 1
+        fi
+
+        if [[ "${jdffilepath}" != /* ]];
+		then
+		    echo "${jdffilepath} file path is relative, adding ${PWD} to the path"
+		    jdffilepath="${PWD}/${jdffilepath}"
+	    fi
+
+	    base_curl_cmd="curl -X POST --form jdffilepath=${jdffilepath} --form X-auth-credentials={username:'${username}',password:'${password}',nonce:'${nonce}'}"
+	    if [[ ${schedpath} ]]
+	    then
+		    base_curl_cmd="${base_curl_cmd} --form schedpath=${schedpath}"
+	    fi
+	    base_curl_cmd="${base_curl_cmd} ${host}/arrebol/job"
+        response=$(${base_curl_cmd} 2> /dev/null)
+        echo ${response}
+	else
+        echo "Error: jdffilepath<${jdffilepath}> not found."
+        exit 1
+    fi
 }
 
 do_stop() {
 	if [ $# -eq 3 ]
 	then
 		define_parameters $@
-		authenticator=$(curl -G "$host/arrebol/authenticator" 2> /dev/null)
-		$authenticator
-        	response=$(curl -X DELETE -H "X-auth-credentials: { username: '$username', password: '$password', nonce: '$nonce' }" "$host/arrebol/job/$1" 2> /dev/null)
-                echo $response
-        else
+
+		authenticator=$(curl -G "${host}/arrebol/authenticator" 2> /dev/null)
+		${authenticator}
+
+        if [ -z ${authenticator:+x} ]
+        then
+            echo "Failed to connect to authentication server"
+            exit 1
+        fi
+
+        response=$(curl -X DELETE -H "X-auth-credentials: { username: '${username}', password: '${password}', nonce: '${nonce}' }" "${host}/arrebol/job/$1" 2> /dev/null)
+        echo ${response}
+    else
 		print_menu
 		exit 1
-        fi
+    fi
 }
 
 create_user() {
 	if [ $# -eq 2 ]
 	then
 		define_parameters $@
-		arrebol_certificates_dir="$HOME/.arrebol/$username"
-		echo "Creating certificates directory for the user $username: $arrebol_certificates_dir"
-		mkdir -p $arrebol_certificates_dir
+		arrebol_certificates_dir="${HOME}/.arrebol/${username}"
+		echo "Creating certificates directory for the user ${username}: ${arrebol_certificates_dir}"
+		mkdir -p ${arrebol_certificates_dir}
 		echo "Generating your private key file in RSA format"
-		openssl genrsa -out "$arrebol_certificates_dir/private.rsa" 2048
+		openssl genrsa -out "${arrebol_certificates_dir}/private.rsa" 2048
 		echo "Generating your public key file in RSA format"
-		openssl rsa -in "$arrebol_certificates_dir/private.rsa" -outform PEM -pubout -out "$arrebol_certificates_dir/public.rsa"
-		echo "Your public and private keys are in: $arrebol_certificates_dir"
-		echo "Requesting the creation of the user $username with the public key in $arrebol_certificates_dir/public.rsa"
-		response=$(curl -X POST --form "username=$username" --form "publicKey=@$arrebol_certificates_dir/public.rsa" "$host/arrebol/user" 2> /dev/null)
-		echo $response
+		openssl rsa -in "${arrebol_certificates_dir}/private.rsa" -outform PEM -pubout -out "${arrebol_certificates_dir}/public.rsa"
+		echo "Your public and private keys are in: ${arrebol_certificates_dir}"
+		echo "Requesting the creation of the user ${username} with the public key in ${arrebol_certificates_dir}/public.rsa"
+		response=$(curl -X POST --form "username=${username}" --form "publicKey=@${arrebol_certificates_dir}/public.rsa" "${host}/arrebol/user" 2> /dev/null)
+		echo ${response}
 	else
 		print_menu
 		exit 1
@@ -138,7 +193,7 @@ create_user() {
 if [ $# -gt 0 ]
 then
     op=$1
-    case "$op" in
+    case "${op}" in
         GET)
             shift
             do_get_nonce

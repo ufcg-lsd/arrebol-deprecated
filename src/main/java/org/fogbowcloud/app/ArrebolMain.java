@@ -1,44 +1,44 @@
 package org.fogbowcloud.app;
 
-import java.io.FileInputStream;
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
-import org.fogbowcloud.app.utils.PropertiesConstants;
-import org.fogbowcloud.blowout.core.util.AppPropertiesConstants;
+import org.fogbowcloud.blowout.core.exception.BlowoutException;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 public class ArrebolMain {
 
-	public static final Logger LOGGER = Logger.getLogger(ArrebolMain.class);
+    public static final Logger LOGGER = Logger.getLogger(ArrebolMain.class);
 
-	/**
-	 * This method receives a JDF file as input and requests the mapping of its
-	 * attributes to JDL attributes, generating a JDL file at the end
-	 *
-	 * @param args
-	 * @throws Exception
-	 */
-	public static void main(String[] args) throws Exception {
-		if (args.length < 1) {
-			System.err.println(
-					"Incomplete arguments. Necessary to pass two args. (1) arrebol.conf path and (2) sheduler.conf path.");
-			System.exit(1);
-		}
+    /**
+     * This method receives a JDF file as input and requests the mapping of its
+     * attributes to JDL attributes, generating a JDL file at the end
+     *
+     * @param args Path to the config files
+     */
+    public static void main(String[] args) {
+        if (args.length < 1) {
+            System.err.println(
+                    "Incomplete arguments. Necessary to pass two args. (1) arrebol.conf path and (2) blowout.conf path.");
+            System.exit(1);
+        }
 
-		Properties properties = new Properties();
+        Properties properties = new Properties();
 
-		final String ARREBOL_CONF_PATH = args[0];
-		final String SCHED_CONF_PATH = args[1];
-		properties.load(new FileInputStream(ARREBOL_CONF_PATH));
-		
-		properties.load(new FileInputStream(SCHED_CONF_PATH));
+        String arrebolConfPath = args[0];
+        String schedConfPath = args[1];
 
-		if (!checkProperties(properties)) {
-			System.err.println("Missing required property, check Log for more information.");
-			System.exit(1);
-		}
+        try {
+            properties.load(new FileInputStream(arrebolConfPath));
+            properties.load(new FileInputStream(schedConfPath));
+        } catch (IOException e) {
+            LOGGER.error("Failed to read configuration file.", e);
+            System.exit(1);
+        }
 
+<<<<<<< HEAD
 		JDFSchedulerApplication app = new JDFSchedulerApplication(new ArrebolController(properties));
 		app.startServer();
 	}
@@ -114,4 +114,34 @@ public class ArrebolMain {
 		LOGGER.info("All properties are set");
 		return true;
 	}
+=======
+        try {
+            final JDFSchedulerApplication app = new JDFSchedulerApplication(
+                    new ArrebolController(properties)
+            );
+            final Thread mainThread = Thread.currentThread();
+            Runtime.getRuntime().addShutdownHook(
+                    new Thread() {
+                        @Override
+                        public void run() {
+                            System.out.println("Exiting server");
+                            try {
+                                app.stopServer();
+                                mainThread.join();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+            );
+            app.startServer();
+        } catch (BlowoutException e) {
+            LOGGER.error("Failed to initialize Blowout.", e);
+            System.exit(1);
+        } catch (Exception e) {
+            LOGGER.error("Failed to initialize Arrebol.", e);
+            System.exit(1);
+        }
+    }
+>>>>>>> refs/remotes/origin/master
 }

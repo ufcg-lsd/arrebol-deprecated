@@ -8,9 +8,10 @@ import java.util.Map;
 
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpStatus;
+import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.app.utils.ServerResourceUtils;
+import org.fogbowcloud.app.utils.authenticator.LDAPAuthenticator;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
@@ -23,25 +24,55 @@ public class UserResource extends ServerResource {
 	private static final String REQUEST_ATTR_PUBLICKEY = "publicKey";
 	
 	@Post
-	public Representation createUser(Representation entity) 
-			throws ResourceException, FileUploadException, IOException {
+	public Representation createUser(Representation entity) {
 		JDFSchedulerApplication app = (JDFSchedulerApplication) getApplication();
 		
-		Map<String, String> fieldMap = new HashMap<String, String>();
+		Map<String, String> fieldMap = new HashMap<>();
     	fieldMap.put(REQUEST_ATTR_USERNAME, null);
-    	Map<String, File> fileMap = new HashMap<String, File>();
+    	Map<String, File> fileMap = new HashMap<>();
     	fileMap.put(REQUEST_ATTR_PUBLICKEY, null);
-    	
-    	ServerResourceUtils.loadFields(entity, fieldMap, fileMap);
+    	try {
+			ServerResourceUtils.loadFields(entity, fieldMap, fileMap);
+		} catch (FileUploadException | IOException e) {
+			e.printStackTrace();
+			throw new ResourceException(Status.CLIENT_ERROR_BAD_REQUEST, "Failed to read public key.");
+		}
 		checkMandatoryAttributes(fieldMap, fileMap);
 		
 		String username = fieldMap.get(REQUEST_ATTR_USERNAME);
 		File publicKeyFile = fileMap.get(REQUEST_ATTR_PUBLICKEY);
-		if (app.getUser(username) != null) {
-			throw new ResourceException(HttpStatus.SC_BAD_REQUEST);
+
+		User user = null;
+		try {
+			user = app.getUser(username);
+		} catch (RuntimeException e) {
+			if (app.getAuthenticatorName().equals(LDAPAuthenticator.AUTH_NAME)) {
+				throw new ResourceException(
+						Status.SERVER_ERROR_NOT_IMPLEMENTED,
+						"Authenticator does not allow creating users. Talk with an administrator."
+				);
+			}
 		}
-		String publicKey = IOUtils.toString(new FileInputStream(publicKeyFile));
-		app.addUser(username, publicKey);
+		if (user != null) {
+			throw new ResourceException(Status.CLIENT_ERROR_BAD_REQUEST, "User already exists.");
+		}
+		
+		String publicKey;
+		try {
+			publicKey = IOUtils.toString(new FileInputStream(publicKeyFile));
+		} catch (IOException e) {
+			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, "Failed to read public key.");
+		}
+		try {
+			app.addUser(username, publicKey);
+		} catch (RuntimeException e) {
+			if (app.getAuthenticatorName().equals(LDAPAuthenticator.AUTH_NAME)) {
+				throw new ResourceException(
+						Status.SERVER_ERROR_NOT_IMPLEMENTED,
+						"Authenticator does not allow creating users. Talking with an administrator."
+				);
+			}
+		}
 		setStatus(Status.SUCCESS_CREATED);
 		return new StringRepresentation("OK");
 	}
@@ -52,7 +83,7 @@ public class UserResource extends ServerResource {
 		File publicKey = fileMap.get(REQUEST_ATTR_PUBLICKEY);
 		if (username == null || username.isEmpty() 
 				|| publicKey == null || !publicKey.exists()) {
-			throw new ResourceException(HttpStatus.SC_BAD_REQUEST);
+			throw new ResourceException(Status.CLIENT_ERROR_BAD_REQUEST);
 		}
 	}
 }
