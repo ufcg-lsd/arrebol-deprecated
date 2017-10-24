@@ -30,12 +30,12 @@ def create_multiple_jobs(quantity):
 
 def postjob(suffix, path) :
     
-    n = req.get("http://10.11.5.160:44444/arrebol/nonce")
-    header = { "X-auth-credentials":"{ username: arrebolservice,  password: 4rr3b0l, nonce: "+ n.text+" }"}
+    n = req.get("http://##.##.##.##:##/arrebol/nonce")
+    header = { "X-auth-credentials":"{ username: ###,  password: ####, nonce: "+ n.text+" }"}
     r = req.post("http://10.11.5.160:44444/arrebol/job",
          files={
              "jdffilepath": ("", path+"/job"+str(suffix)),
-             "X-auth-credentials": ("", "{ username: arrebolservice,  password: 4rr3b0l, nonce: "+ n.text+ "}")}, headers=header)
+             "X-auth-credentials": ("", "{ username: ###,  password: ####, nonce: "+ n.text+ "}")}, headers=header)
     return r
 
 

@@ -54,10 +54,10 @@ public class ArrebolController {
 			try {
 				JDFJobBuilder.createJobFromJDFFile(job, jdfFilePath, properties);
 				blowoutController.addTaskList(job.getTasks());
-				LOGGER.debug("Finished creating job " + job.getId());
+				LOGGER.debug("Submitted " +job.getId()+ " to blowout at time: "+ System.currentTimeMillis());
 				job.finishCreation();
 			} catch (Exception e) {
-				LOGGER.debug("Failed creating job " + job.getId(), e);
+				LOGGER.debug("Failed to Submitt " +job.getId()+ " to blowout at time: "+ System.currentTimeMillis(), e);
 				job.failCreation();
 			}
 			db.update(job);

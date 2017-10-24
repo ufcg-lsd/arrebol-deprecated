@@ -194,6 +194,7 @@ public class JobResource extends ServerResource {
 			String jobId;
 			LOGGER.debug("jdfpath <" + jdfAbsolutePath + ">");
 			jobId = application.addJob(jdfAbsolutePath, owner);
+			LOGGER.debug("Job "+ jobId + " created at time: "+ System.currentTimeMillis() );
 			return new StringRepresentation(jobId, MediaType.TEXT_PLAIN);
 		} catch (CompilerException ce) {
 			LOGGER.error(ce.getMessage(), ce);
