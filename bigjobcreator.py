@@ -32,7 +32,7 @@ def postjob(suffix, path) :
     
     n = req.get("http://##.##.##.##:##/arrebol/nonce")
     header = { "X-auth-credentials":"{ username: ###,  password: ####, nonce: "+ n.text+" }"}
-    r = req.post("http://10.11.5.160:44444/arrebol/job",
+    r = req.post("http://##.##.##.##:##/arrebol/job",
          files={
              "jdffilepath": ("", path+"/job"+str(suffix)),
              "X-auth-credentials": ("", "{ username: ###,  password: ####, nonce: "+ n.text+ "}")}, headers=header)
