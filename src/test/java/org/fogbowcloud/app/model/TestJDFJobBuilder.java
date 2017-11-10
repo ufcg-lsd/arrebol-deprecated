@@ -8,7 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.fogbowcloud.app.jdfcompiler.job.JobSpecification;
+import org.fogbowcloud.app.jdfcompiler.main.CommonCompiler;
 import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
+import org.fogbowcloud.app.jdfcompiler.main.CommonCompiler.FileType;
 import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.blowout.core.model.Command;
 import org.fogbowcloud.blowout.core.model.Task;
@@ -28,10 +31,15 @@ public class TestJDFJobBuilder {
 		properties.setProperty(ArrebolPropertiesConstants.PRIVATE_KEY_FILEPATH, "file path");
 		User owner = new LDAPUser("arrebolservice", "arrebolservice");
 		JDFJob testJob = new JDFJob(owner.getUser(), new ArrayList<Task>(), owner.getUsername());
+		CommonCompiler commonCompiler = new CommonCompiler();
+		commonCompiler.compile(EXSIMPLE_JOB, FileType.JDF);
+		JobSpecification jobSpec = (JobSpecification) commonCompiler.getResult().get(0);
+		
 		JDFJobBuilder.createJobFromJDFFile(
 				testJob,
 				EXSIMPLE_JOB,
-				properties
+				properties,
+				jobSpec
 		);
 		List<Task> tasks = testJob.getTasks();
 		

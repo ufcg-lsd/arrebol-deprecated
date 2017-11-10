@@ -31,7 +31,8 @@ public class JDFJobBuilder {
 
 	// FIXME: what is this?
 	private static final String SANDBOX = "sandbox";
-	private static final String standardImage = "fogbow-ubuntu";
+//	private static final String standardImage = "fogbow-ubuntu";
+	private static final String standardImage = "fogbow-fake";
 	private static final String SSH_SCP_PRECOMMAND = "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no";
 
 	private static final Logger LOGGER = Logger.getLogger(JDFJobBuilder.class);
@@ -44,7 +45,7 @@ public class JDFJobBuilder {
 	 * @throws CompilerException If file does not describe a jdf Job
 	 * @throws IOException If a problem during the reading of the file occurs
 	 */
-	public static void createJobFromJDFFile(JDFJob job, String jdfFilePath, Properties properties)
+	public static void createJobFromJDFFile(JDFJob job, String jdfFilePath, Properties properties, JobSpecification jobSpec)
 			throws CompilerException, IOException, InterruptedException {
 		if (jdfFilePath == null || jdfFilePath.isEmpty()) {
 			throw new IllegalArgumentException("jdfFilePath cannot be null");
@@ -55,11 +56,11 @@ public class JDFJobBuilder {
 		if (file.exists()) {
 			if (file.canRead()) {
 				// Compiling JDF
-				CommonCompiler commonCompiler = new CommonCompiler();
-				LOGGER.debug("Job "+ job.getId() + " compilation started at time: "+ System.currentTimeMillis() );
-				commonCompiler.compile(jdfFilePath, FileType.JDF);
-				LOGGER.debug("Job "+ job.getId() + " compilation ended at time: "+ System.currentTimeMillis() );
-				JobSpecification jobSpec = (JobSpecification) commonCompiler.getResult().get(0);
+//				CommonCompiler commonCompiler = new CommonCompiler();
+//				LOGGER.debug("Job "+ job.getId() + " compilation started at time: "+ System.currentTimeMillis() );
+//				commonCompiler.compile(jdfFilePath, FileType.JDF);
+//				LOGGER.debug("Job "+ job.getId() + " compilation ended at time: "+ System.currentTimeMillis() );
+//				JobSpecification jobSpec = (JobSpecification) commonCompiler.getResult().get(0);
 
 				job.setFriendlyName(jobSpec.getLabel());
 

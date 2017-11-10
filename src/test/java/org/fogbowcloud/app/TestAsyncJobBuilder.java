@@ -22,7 +22,7 @@ public class TestAsyncJobBuilder {
 
     private static final String EXSIMPLE_JOB = "test" + File.separator + "resources" + File.separator + "SimpleJob2.jdf";
     private static final String ARREBOL_CONF = "test" + File.separator + "arrebol.conf";
-    private static final String BLOWOUT_CONF = "test" + File.separator + "sched.conf";
+    private static final String BLOWOUT_CONF = "test" + File.separator + "blowout.conf";
 
     private static final String user = "arrebolservice";
     private static final String username = "arrebolservice";
@@ -79,10 +79,9 @@ public class TestAsyncJobBuilder {
 
             JDFJob job = arrebol.getJobById(id, user);
             Assert.assertEquals(JDFJob.JDFJobState.SUBMITTED, job.getState());
-            Assert.assertEquals(0, job.getTasks().size());
+            Assert.assertEquals(1, job.getTasks().size());
 
             arrebol.stopJob(id, user);
-            Mockito.verify(blowout, Mockito.never()).addTaskList(Mockito.anyListOf(Task.class));
 
             job = arrebol.getJobById(id, user);
             Assert.assertNull(job);

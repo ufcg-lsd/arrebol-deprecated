@@ -10,7 +10,10 @@ import java.util.concurrent.Executors;
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.datastore.JobDataStore;
 import org.fogbowcloud.app.exception.ArrebolException;
+import org.fogbowcloud.app.jdfcompiler.job.JobSpecification;
+import org.fogbowcloud.app.jdfcompiler.main.CommonCompiler;
 import org.fogbowcloud.app.jdfcompiler.main.CompilerException;
+import org.fogbowcloud.app.jdfcompiler.main.CommonCompiler.FileType;
 import org.fogbowcloud.app.model.JDFJob;
 import org.fogbowcloud.app.model.JDFJobBuilder;
 import org.fogbowcloud.app.model.User;
@@ -36,23 +39,26 @@ public class ArrebolController {
 		private Properties properties;
 		private BlowoutController blowoutController;
 		private JobDataStore db;
+		private JobSpecification jobSpec;
 
 		AsyncJobBuilder(JDFJob job,
 						String jdfFilePath,
 						Properties properties,
 						BlowoutController blowoutController,
-						JobDataStore db) {
+						JobDataStore db, 
+						JobSpecification jobSpec) {
 			this.job = job;
 			this.jdfFilePath = jdfFilePath;
 			this.properties = properties;
 			this.blowoutController = blowoutController;
 			this.db = db;
+			this.jobSpec = jobSpec;
 		}
 
 		@Override
 		public void run() {
 			try {
-				JDFJobBuilder.createJobFromJDFFile(job, jdfFilePath, properties);
+				JDFJobBuilder.createJobFromJDFFile(job, jdfFilePath, properties, jobSpec);
 				blowoutController.addTaskList(job.getTasks());
 				LOGGER.debug("Submitted " +job.getId()+ " to blowout at time: "+ System.currentTimeMillis());
 				job.finishCreation();
@@ -191,7 +197,13 @@ public class ArrebolController {
 
 	JDFJob createJobFromJDFFile(String jdfFilePath, User owner) throws CompilerException, IOException {
 		JDFJob job = new JDFJob(owner.getUser(), new ArrayList<Task>(), owner.getUsername());
-		Thread t = new Thread(new AsyncJobBuilder(job, jdfFilePath, properties, blowoutController, jobDataStore));
+		CommonCompiler commonCompiler = new CommonCompiler();
+		LOGGER.debug("Job "+ job.getId() + " compilation started at time: "+ System.currentTimeMillis() );
+		commonCompiler.compile(jdfFilePath, FileType.JDF);
+		LOGGER.debug("Job "+ job.getId() + " compilation ended at time: "+ System.currentTimeMillis() );
+		JobSpecification jobSpec = (JobSpecification) commonCompiler.getResult().get(0);
+
+		Thread t = new Thread(new AsyncJobBuilder(job, jdfFilePath, properties, blowoutController, jobDataStore, jobSpec));
 		t.start();
 		creatingJobs.put(job.getId(), t);
 		return job;
