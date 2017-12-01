@@ -1,6 +1,7 @@
 package org.fogbowcloud.app;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -93,6 +94,15 @@ public class ArrebolController {
 		this.properties = properties;
 		this.blowoutController = new BlowoutController(properties);
 		this.creatingJobs = new HashMap<>();
+		try {
+			this.auth = createAuthenticatorPluginInstance();
+		} catch (InstantiationException | InvocationTargetException | IllegalAccessException | NoSuchMethodException | ClassNotFoundException e) {
+			String msg = "Failed to create Authenticator plugin instance.";
+			LOGGER.error(msg);
+			throw new ArrebolException(msg, e);
+		}
+		this.jobDataStore = new JobDataStore(properties.getProperty(AppPropertiesConstants.DB_DATASTORE_URL));
+		this.nonces = new ArrayList<>();
 	}
 
 	public Properties getProperties() {
@@ -100,10 +110,6 @@ public class ArrebolController {
 	}
 
 	public void init() throws Exception {
-		// FIXME: add as constructor param?
-		this.auth = createAuthenticatorPluginInstance();
-		// FIXME: replace by a proper
-		this.jobDataStore = new JobDataStore(properties.getProperty(AppPropertiesConstants.DB_DATASTORE_URL));
 
 		Boolean removePreviousResources = Boolean.valueOf(
 				this.properties.getProperty(ArrebolPropertiesConstants.REMOVE_PREVIOUS_RESOURCES)
@@ -116,7 +122,6 @@ public class ArrebolController {
 		LOGGER.debug("Application to be started on port: " + properties.getProperty(ArrebolPropertiesConstants.REST_SERVER_PORT));
 		LOGGER.info("Properties: " + properties.getProperty(AppPropertiesConstants.INFRA_INITIAL_SPECS_FILE_PATH));
 
-		this.nonces = new ArrayList<>();
 
 		LOGGER.debug("Restarting jobs");
 		restartAllJobs();
@@ -159,12 +164,18 @@ public class ArrebolController {
 		}
 	}
 
-	private ArrebolAuthenticator createAuthenticatorPluginInstance() throws Exception {
+	private ArrebolAuthenticator createAuthenticatorPluginInstance()
+			throws ClassNotFoundException,
+			NoSuchMethodException,
+			IllegalAccessException,
+			InvocationTargetException,
+			InstantiationException,
+			ArrebolException {
 		String providerClassName = this.properties.getProperty(ArrebolPropertiesConstants.AUTHENTICATION_PLUGIN);
 		Class<?> forName = Class.forName(providerClassName);
 		Object clazz = forName.getConstructor(Properties.class).newInstance(this.properties);
 		if (!(clazz instanceof ArrebolAuthenticator)) {
-			throw new Exception("Authenticator Class Name is not a ArrebolAuthenticator implementation");
+			throw new ArrebolException("Authenticator Class Name is not a ArrebolAuthenticator implementation");
 		}
 
 		return (ArrebolAuthenticator) clazz;
@@ -392,7 +403,7 @@ public class ArrebolController {
 			return false;
 		} else {
 			String authenticationPlugin = properties.getProperty(ArrebolPropertiesConstants.AUTHENTICATION_PLUGIN);
-			if (authenticationPlugin.equals("org.fogbowcloud.app.utils.LDAPAuthenticator")) {
+			if (authenticationPlugin.equals("org.fogbowcloud.app.utils.authenticator.LDAPAuthenticator")) {
 				if (!properties.containsKey(ArrebolPropertiesConstants.LDAP_AUTHENTICATION_URL)) {
 					LOGGER.error(requiredPropertyMessage(ArrebolPropertiesConstants.LDAP_AUTHENTICATION_URL));
 					return false;

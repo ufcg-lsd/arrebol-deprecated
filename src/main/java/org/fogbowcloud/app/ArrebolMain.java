@@ -1,6 +1,7 @@
 package org.fogbowcloud.app;
 
 import org.apache.log4j.Logger;
+import org.fogbowcloud.app.exception.ArrebolException;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.blowout.core.exception.BlowoutException;
 
@@ -61,8 +62,11 @@ public class ArrebolMain {
         } catch (BlowoutException e) {
             LOGGER.error("Failed to initialize Blowout.", e);
             System.exit(1);
-        } catch (Exception e) {
+        } catch (ArrebolException e) {
             LOGGER.error("Failed to initialize Arrebol.", e);
+            System.exit(1);
+        } catch (Exception e) {
+            LOGGER.error("Application stopped due to exception.", e);
             System.exit(1);
         }
     }

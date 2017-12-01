@@ -82,6 +82,14 @@ public class TestAsyncJobBuilder {
                 ArrebolPropertiesConstants.AUTHENTICATION_PLUGIN,
                 "org.fogbowcloud.app.utils.authenticator.LDAPAuthenticator"
         );
+        properties.setProperty(
+                ArrebolPropertiesConstants.LDAP_AUTHENTICATION_URL,
+                ""
+        );
+        properties.setProperty(
+                ArrebolPropertiesConstants.LDAP_AUTHENTICATION_BASE,
+                ""
+        );
         arrebol = Mockito.spy(new ArrebolController(properties));
 
         JobDataStore dataStore = Mockito.spy(new JobDataStore("jdbc:h2:/tmp/datastores/testfogbowresourcesdatastore"));
