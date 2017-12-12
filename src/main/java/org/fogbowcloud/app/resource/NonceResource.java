@@ -6,7 +6,7 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;
 
-public class NonceResource extends ServerResource {
+public class NonceResource extends BaseResource {
 
 	@Get
 	public Representation getNonce() {

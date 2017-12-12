@@ -182,7 +182,7 @@ create_user() {
 		openssl rsa -in "${arrebol_certificates_dir}/private.rsa" -outform PEM -pubout -out "${arrebol_certificates_dir}/public.rsa"
 		echo "Your public and private keys are in: ${arrebol_certificates_dir}"
 		echo "Requesting the creation of the user ${username} with the public key in ${arrebol_certificates_dir}/public.rsa"
-		response=$(curl -X POST --form "username=${username}" --form "publicKey=@${arrebol_certificates_dir}/public.rsa" "${host}/arrebol/user" 2> /dev/null)
+		response=$(curl -X PUT --form "username=${username}" --form "publicKey=@${arrebol_certificates_dir}/public.rsa" "${host}/arrebol/user" 2> /dev/null)
 		echo ${response}
 	else
 		print_menu

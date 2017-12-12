@@ -8,22 +8,44 @@ import java.util.Map;
 
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
 import org.fogbowcloud.app.model.User;
 import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
+import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.app.utils.ServerResourceUtils;
 import org.fogbowcloud.app.utils.authenticator.LDAPAuthenticator;
+import org.restlet.Application;
+import org.restlet.data.Form;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Post;
+import org.restlet.resource.Put;
 import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
+import org.restlet.util.Series;
 
-public class UserResource extends ServerResource {
+public class UserResource extends BaseResource {
+
+	private static final Logger LOGGER = Logger.getLogger(UserResource.class);
+
 	private static final String REQUEST_ATTR_USERNAME = "username";
 	private static final String REQUEST_ATTR_PUBLICKEY = "publicKey";
-	
+
 	@Post
+	public Representation authenticate(Representation entity) {
+		Form data = new Form(entity);
+		String creds = data.getFirstValue(ArrebolPropertiesConstants.X_CREDENTIALS);
+
+		JDFSchedulerApplication app = (JDFSchedulerApplication) getApplication();
+        Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
+		headers.add(ArrebolPropertiesConstants.X_CREDENTIALS, creds);
+        authenticateUser(app, headers);
+
+	    return new StringRepresentation("Authenticated successfully");
+	}
+	
+	@Put
 	public Representation createUser(Representation entity) {
 		JDFSchedulerApplication app = (JDFSchedulerApplication) getApplication();
 		

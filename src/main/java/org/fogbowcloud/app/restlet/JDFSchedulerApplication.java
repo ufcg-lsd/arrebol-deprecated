@@ -3,6 +3,8 @@ package org.fogbowcloud.app.restlet;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -25,6 +27,7 @@ import org.restlet.Restlet;
 import org.restlet.data.Protocol;
 import org.restlet.routing.Router;
 import org.restlet.service.ConnectorService;
+import org.restlet.service.CorsService;
 
 public class JDFSchedulerApplication extends Application {
 
@@ -43,6 +46,11 @@ public class JDFSchedulerApplication extends Application {
 			throws Exception {
 		this.arrebolController = arrebolController;
 		this.arrebolController.init();
+
+		CorsService cors = new CorsService();
+		cors.setAllowedOrigins(new HashSet<>(Collections.singletonList("*")));
+		cors.setAllowedCredentials(true);
+		this.getServices().add(cors);
 	}
 
 	public void startServer() throws Exception {

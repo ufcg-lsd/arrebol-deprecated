@@ -7,7 +7,7 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;
 
-public class AuthenticationResource extends ServerResource{
+public class AuthenticationResource extends BaseResource {
 
 	private static final Logger LOGGER = Logger
 			.getLogger(AuthenticationResource.class);

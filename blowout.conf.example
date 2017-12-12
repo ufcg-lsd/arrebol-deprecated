@@ -38,3 +38,5 @@ public_key=publickey
 fogbow_username=fogbow
 private_key_filepath=/path/to/privatekey
 remote_output_folder=/tmp
+
+blowout_datastore_url=datastore.db

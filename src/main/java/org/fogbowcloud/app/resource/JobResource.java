@@ -31,7 +31,7 @@ import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
 import org.restlet.util.Series;
 
-public class JobResource extends ServerResource {
+public class JobResource extends BaseResource {
 
 	//FIXME: it seems we can make it simpler
 
@@ -52,39 +52,10 @@ public class JobResource extends ServerResource {
 
 	private JSONArray jobTasks = new JSONArray();
 
-	private User authenticateUser(JDFSchedulerApplication application, Series headers) {
-		User owner;
-		try {
-			String credentials = headers.getFirstValue(ArrebolPropertiesConstants.X_CREDENTIALS);
-			owner = application.authUser(credentials);
-		} catch (GeneralSecurityException e) {
-			LOGGER.error("Error trying to authenticate", e);
-			throw new ResourceException(
-					Status.CLIENT_ERROR_UNAUTHORIZED,
-					"There was an error trying to authenticate.\nTry again later."
-			);
-		} catch (IOException e) {
-			LOGGER.error("Error trying to authenticate", e);
-			throw new ResourceException(
-					Status.CLIENT_ERROR_BAD_REQUEST,
-					"Failed to read request header."
-			);
-		}
-		if (owner == null) {
-			LOGGER.error("Authentication failed. Wrong username/password.");
-			throw new ResourceException(
-					Status.CLIENT_ERROR_UNAUTHORIZED,
-					"Incorrect username/password."
-			);
-		}
-		return owner;
-	}
-
 	@Get
 	public Representation fetch() {
 		LOGGER.info("Getting Jobs...");
 		String jobId = (String) getRequest().getAttributes().get(JOBPATH);
-		LOGGER.debug("JobId is " + jobId);
 
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 		Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
@@ -94,6 +65,7 @@ public class JobResource extends ServerResource {
 		JSONArray jobs = new JSONArray();
 		// If no job id is passed, return list with all jobs for user
 		if (jobId == null) {
+			LOGGER.debug("Get all jobs");
 			for (JDFJob job : application.getAllJobs(owner.getUser())) {
 				JSONObject jJob = new JSONObject();
 				if (job.getName() != null) {
@@ -114,6 +86,7 @@ public class JobResource extends ServerResource {
 
 			return new StringRepresentation(jsonJob.toString(), MediaType.TEXT_PLAIN);
 		} else {
+			LOGGER.debug("Get job " + jobId);
 			JDFJob job = application.getJobById(jobId, owner.getUser());
 			if (job == null) {
 				job = application.getJobByName(jobId, owner.getUser());
@@ -152,7 +125,6 @@ public class JobResource extends ServerResource {
 
 	@Post
 	public StringRepresentation addJob(Representation entity) {
-		// Check if form is malformed
 		if (entity != null && !MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
 			throw new ResourceException(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE);
 		}
@@ -162,8 +134,16 @@ public class JobResource extends ServerResource {
 		fieldMap.put(JDF_FILE_PATH, null);
 		fieldMap.put(ArrebolPropertiesConstants.X_CREDENTIALS, null);
 
+		Map<String, File> fileMap = new HashMap<>();
+		fileMap.put(JDF_FILE_PATH, null);
+
 		try {
-			ServerResourceUtils.loadFields(entity, fieldMap, new HashMap<String, File>());
+			LOGGER.debug("Collecting file from request");
+			ServerResourceUtils.loadFields(entity, fieldMap, fileMap);
+			File jdf = fileMap.get(JDF_FILE_PATH);
+			if (jdf != null) {
+				fieldMap.put(JDF_FILE_PATH, jdf.getAbsolutePath());
+			}
 		} catch (FileUploadException e) {
 			LOGGER.error("Failed receiving file from client.", e);
 			throw new ResourceException(
@@ -178,18 +158,17 @@ public class JobResource extends ServerResource {
 			);
 		}
 
+		LOGGER.debug("Doing authentication to post job");
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 		Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
 		headers.add(ArrebolPropertiesConstants.X_CREDENTIALS, fieldMap.get(ArrebolPropertiesConstants.X_CREDENTIALS));
 		User owner = authenticateUser(application, headers);
 
 		// Creating job
-		String jdf = fieldMap.get(JDF_FILE_PATH);
-		if (jdf == null) {
-			throw new ResourceException(Status.CLIENT_ERROR_BAD_REQUEST);
-		}
-
 		String jdfAbsolutePath = fieldMap.get(JDF_FILE_PATH);
+		if (jdfAbsolutePath == null) {
+			throw new ResourceException(Status.CLIENT_ERROR_BAD_REQUEST, "No JDF file submitted");
+		}
 		try {
 			String jobId;
 			LOGGER.debug("jdfpath <" + jdfAbsolutePath + ">");
