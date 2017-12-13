@@ -3,6 +3,7 @@ package org.fogbowcloud.app.resource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,7 +15,6 @@ import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.fogbowcloud.app.utils.ArrebolPropertiesConstants;
 import org.fogbowcloud.app.utils.ServerResourceUtils;
 import org.fogbowcloud.app.utils.authenticator.LDAPAuthenticator;
-import org.restlet.Application;
 import org.restlet.data.Form;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
@@ -22,7 +22,6 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Post;
 import org.restlet.resource.Put;
 import org.restlet.resource.ResourceException;
-import org.restlet.resource.ServerResource;
 import org.restlet.util.Series;
 
 public class UserResource extends BaseResource {
@@ -34,13 +33,29 @@ public class UserResource extends BaseResource {
 
 	@Post
 	public Representation authenticate(Representation entity) {
-		Form data = new Form(entity);
-		String creds = data.getFirstValue(ArrebolPropertiesConstants.X_CREDENTIALS);
+		String creds = (new Form(entity)).getFirstValue(ArrebolPropertiesConstants.X_CREDENTIALS);
 
 		JDFSchedulerApplication app = (JDFSchedulerApplication) getApplication();
         Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
 		headers.add(ArrebolPropertiesConstants.X_CREDENTIALS, creds);
-        authenticateUser(app, headers);
+
+		User owner;
+		try {
+			owner = authenticateUser(app, headers);
+		} catch (GeneralSecurityException e) {
+			LOGGER.error("Error trying to authenticate", e);
+			setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+			return new StringRepresentation("There was an error trying to authenticate.\nTry again later.");
+		} catch (IOException e) {
+			LOGGER.error("Error trying to authenticate", e);
+			setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+			return new StringRepresentation("Failed to read request header.");
+		}
+		if (owner == null) {
+			LOGGER.error("Incorrect username/password.");
+			setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+			return new StringRepresentation("Incorrect username/password.");
+		}
 
 	    return new StringRepresentation("Authenticated successfully");
 	}

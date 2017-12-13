@@ -1,11 +1,5 @@
 package org.fogbowcloud.app.resource;
 
-import java.io.File;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.log4j.Logger;
 import org.fogbowcloud.app.NameAlreadyInUseException;
@@ -27,9 +21,13 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
-import org.restlet.resource.ResourceException;
-import org.restlet.resource.ServerResource;
 import org.restlet.util.Series;
+
+import java.io.File;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class JobResource extends BaseResource {
 
@@ -59,7 +57,24 @@ public class JobResource extends BaseResource {
 
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 		Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
-		User owner = authenticateUser(application, headers);
+
+		User owner;
+		try {
+			owner = authenticateUser(application, headers);
+		} catch (GeneralSecurityException e) {
+			LOGGER.error("Error trying to authenticate", e);
+			setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+			return new StringRepresentation("There was an error trying to authenticate.\nTry again later.");
+		} catch (IOException e) {
+			LOGGER.error("Error trying to authenticate", e);
+			setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+			return new StringRepresentation("Failed to read request header.");
+		}
+		if (owner == null) {
+			LOGGER.error("Incorrect username/password.");
+			setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+			return new StringRepresentation("Incorrect username/password.");
+		}
 
 		JSONObject jsonJob = new JSONObject();
 		JSONArray jobs = new JSONArray();
@@ -92,10 +107,8 @@ public class JobResource extends BaseResource {
 				job = application.getJobByName(jobId, owner.getUser());
 				if (job == null) {
 					LOGGER.debug("Could not find job with id " + jobId + " for user " + owner.getUsername());
-					throw new ResourceException(
-							Status.CLIENT_ERROR_NOT_FOUND,
-							"Could not find job with id '" + jobId + "'."
-					);
+					setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+					return new StringRepresentation("Could not find job with id '" + jobId + "'.");
 				}
 				jsonJob.put(JOB_FRIENDLY, jobId);
 				jsonJob.put(JOB_ID, job.getId());
@@ -124,9 +137,11 @@ public class JobResource extends BaseResource {
 	}
 
 	@Post
-	public StringRepresentation addJob(Representation entity) {
+	public Representation addJob(Representation entity) {
 		if (entity != null && !MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
-			throw new ResourceException(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE);
+			LOGGER.error("Form sent with incorrect format. " + entity.getMediaType().getName());
+			setStatus(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE);
+			return new StringRepresentation("Form sent with incorrect format.");
 		}
 
 		// Credentials
@@ -146,28 +161,42 @@ public class JobResource extends BaseResource {
 			}
 		} catch (FileUploadException e) {
 			LOGGER.error("Failed receiving file from client.", e);
-			throw new ResourceException(
-					Status.SERVER_ERROR_INTERNAL,
-					"JDF upload failed.\nTry again later."
-			);
+			setStatus(Status.SERVER_ERROR_INTERNAL);
+			return new StringRepresentation("JDF upload failed.\nTry again later.");
 		} catch (IOException e) {
 			LOGGER.error("Failed reading JDF file.", e);
-			throw new ResourceException(
-					Status.SERVER_ERROR_INTERNAL,
-					"Failed reading JDF file.\nTry again later."
-			);
+			setStatus(Status.SERVER_ERROR_INTERNAL);
+			return new StringRepresentation("Failed reading JDF file.\nTry again later.");
 		}
 
 		LOGGER.debug("Doing authentication to post job");
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 		Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
 		headers.add(ArrebolPropertiesConstants.X_CREDENTIALS, fieldMap.get(ArrebolPropertiesConstants.X_CREDENTIALS));
-		User owner = authenticateUser(application, headers);
+
+		User owner;
+		try {
+			owner = authenticateUser(application, headers);
+		} catch (GeneralSecurityException e) {
+			LOGGER.error("Error trying to authenticate", e);
+			setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+			return new StringRepresentation("There was an error trying to authenticate.\nTry again later.");
+		} catch (IOException e) {
+			LOGGER.error("Error trying to authenticate", e);
+			setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+			return new StringRepresentation("Failed to read request header.");
+		}
+		if (owner == null) {
+			LOGGER.error("Incorrect username/password.");
+			setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+			return new StringRepresentation("Incorrect username/password.");
+		}
 
 		// Creating job
 		String jdfAbsolutePath = fieldMap.get(JDF_FILE_PATH);
 		if (jdfAbsolutePath == null) {
-			throw new ResourceException(Status.CLIENT_ERROR_BAD_REQUEST, "No JDF file submitted");
+			setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+			return new StringRepresentation("No JDF file submitted");
 		}
 		try {
 			String jobId;
@@ -177,25 +206,40 @@ public class JobResource extends BaseResource {
 			return new StringRepresentation(jobId, MediaType.TEXT_PLAIN);
 		} catch (CompilerException ce) {
 			LOGGER.error(ce.getMessage(), ce);
-			throw new ResourceException(
-					Status.CLIENT_ERROR_BAD_REQUEST,
-					"Could not compile JDF file.",
-					ce
-			);
+			setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+			return new StringRepresentation("Could not compile JDF file.");
 		} catch (NameAlreadyInUseException | BlowoutException iae) {
 			LOGGER.error(iae.getMessage(), iae);
-			throw new ResourceException(Status.CLIENT_ERROR_BAD_REQUEST, iae.getMessage());
+			setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+			return new StringRepresentation(iae.getMessage());
 		} catch (IOException e) {
 			LOGGER.error("Could not read JDF file.", e);
-			throw new ResourceException(Status.CLIENT_ERROR_BAD_REQUEST, "Could not read JDF file.");
+			setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+			return new StringRepresentation("Could not read JDF file.");
 		}
 	}
 
 	@Delete
-	public StringRepresentation stopJob() {
+	public Representation stopJob() {
 		JDFSchedulerApplication application = (JDFSchedulerApplication) getApplication();
 		Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
-		User owner = authenticateUser(application, headers);
+		User owner;
+		try {
+			owner = authenticateUser(application, headers);
+		} catch (GeneralSecurityException e) {
+			LOGGER.error("Error trying to authenticate", e);
+			setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+			return new StringRepresentation("There was an error trying to authenticate.\nTry again later.");
+		} catch (IOException e) {
+			LOGGER.error("Error trying to authenticate", e);
+			setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+			return new StringRepresentation("Failed to read request header.");
+		}
+		if (owner == null) {
+			LOGGER.error("Incorrect username/password.");
+			setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+			return new StringRepresentation("Incorrect username/password.");
+		}
 
 		String JDFString = (String) getRequest().getAttributes().get(JOBPATH);
 
@@ -205,10 +249,8 @@ public class JobResource extends BaseResource {
 
 		if (jobId == null) {
 			LOGGER.debug("Could not find job with id " + JDFString + " for user " + owner.getUsername());
-			throw new ResourceException(
-					Status.CLIENT_ERROR_NOT_FOUND,
-					"Could not find job with id '" + JDFString + "'."
-			);
+			setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+			return new StringRepresentation("Could not find job with id '" + JDFString + "'.");
 		}
 
 		return new StringRepresentation(jobId, MediaType.TEXT_PLAIN);
