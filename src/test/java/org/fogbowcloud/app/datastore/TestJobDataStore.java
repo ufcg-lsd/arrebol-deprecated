@@ -16,7 +16,7 @@ public class TestJobDataStore {
 	private static final String OWNER2 = "owner2";
 	private static final String OWNER = "owner";
 	private static final String FAKE_ID = "fakeId";
-	private final static String DATASTOREURL = "jdbc:h2:/tmp/blowoutdb";
+	private final static String DATASTOREURL = "jdbc:h2:/tmp/test/blowoutdb";
 	
 	private JobDataStore datastore;
 	

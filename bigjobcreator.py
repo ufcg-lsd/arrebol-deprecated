@@ -1,7 +1,5 @@
-import os
-import requests
-import time
 import os.path
+import requests
 
 req = requests.Session()
 

@@ -54,7 +54,7 @@ public class TestExecutionMonitorWithDB {
 	}
 
 	@Test
-	public void testExecutionMonitor() throws InfrastructureException, InterruptedException {
+	public void testExecutionMonitor() {
 		List<JDFJob> jdfJobs = new ArrayList<>();
 		doReturn("jobId").when(job).getId();
 		doReturn(job).when(jobDB).put("jobId", job);
@@ -78,7 +78,7 @@ public class TestExecutionMonitorWithDB {
 	}
 
 	@Test
-	public void testExecutionMonitorTaskFails() throws InterruptedException {
+	public void testExecutionMonitorTaskFails() {
 		List<JDFJob> jdfJobs = new ArrayList<>();
 		doReturn("jobId").when(job).getId();
 		doReturn(job).when(jobDB).put("jobId", job);
@@ -100,7 +100,7 @@ public class TestExecutionMonitorWithDB {
 	}
 
 	@Test
-	public void testExecutionIsNotOver() throws InfrastructureException, InterruptedException {
+	public void testExecutionIsNotOver() {
 		List<JDFJob> jdfJobs = new ArrayList<>();
 		doReturn("jobId").when(job).getId();
 		doReturn(job).when(jobDB).put("jobId", job);
