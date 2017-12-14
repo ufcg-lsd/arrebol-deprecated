@@ -46,7 +46,7 @@ public class ArrebolController {
 						String jdfFilePath,
 						Properties properties,
 						BlowoutController blowoutController,
-						JobDataStore db, 
+						JobDataStore db,
 						JobSpecification jobSpec) {
 			this.job = job;
 			this.jdfFilePath = jdfFilePath;

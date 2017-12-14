@@ -36,6 +36,13 @@ public class JDFJobBuilder {
 	private static final String SSH_SCP_PRECOMMAND = "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no";
 
 	private static final Logger LOGGER = Logger.getLogger(JDFJobBuilder.class);
+//	private static String standardImage = "fogbow-ubuntu";
+	private static String standardImage = "imagem-falsa-pra-cacete";
+
+	protected static final String PUBLIC_KEY_CONSTANT = "public_key";
+	private final static String SSH_SCP_PRECOMMAND = "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no";
+
+	private static final Logger LOGGER = Logger.getLogger(JDFTasks.class);
 
 	/**
 	 * @param job Job being created
@@ -190,6 +197,7 @@ public class JDFJobBuilder {
 	}
 
 	/**
+	 * This method translates the Ourgrid input IOBlocks to JDL InputSandbox
 	 * It translates the input IOBlocks to JDL InputSandbox
 	 *
 	 * @param jobId ID of the Job

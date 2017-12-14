@@ -119,6 +119,7 @@ public class JDFJob extends Job {
 	@Override
 	public void finish(Task task) {
 		getTaskById(task.getId()).finish();
+        getTaskById(task.getId()).setRetries(task.getRetries());
 	}
 
 	@Override
@@ -147,7 +148,7 @@ public class JDFJob extends Job {
 			job.put(JSON_HEADER_TASKS, tasks);
 			return job;
 		} catch (JSONException e) {
-			LOGGER.debug("Error while trying to create a JSONObject from JDFJob", e);
+			LOGGER.error("Error while trying to create a JSONObject from JDFJob", e);
 			return null;
 		}
 	}

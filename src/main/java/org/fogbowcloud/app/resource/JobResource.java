@@ -86,11 +86,9 @@ public class JobResource extends BaseResource {
 				if (job.getName() != null) {
 					jJob.put("id", job.getId());
 					jJob.put("name", job.getName());
-					jJob.put(COMPLETION, job.completionPercentage());
 
 				} else {
 					jJob.put("id: ", job.getId());
-					jJob.put(COMPLETION, job.completionPercentage());
 				}
 				jobs.put(jJob);
 			}

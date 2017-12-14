@@ -40,7 +40,7 @@ def postjob(suffix, path) :
 
 
 def main():
-   quantity = 5000
+   quantity = 1
    create_job("big", jobs_dir, cloud, quantity)
    print(postjob("big", jobs_dir).text)
 

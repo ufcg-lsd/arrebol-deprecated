@@ -59,11 +59,11 @@ public class UserResource extends BaseResource {
 
 	    return new StringRepresentation("Authenticated successfully");
 	}
-	
+
 	@Put
 	public Representation createUser(Representation entity) {
 		JDFSchedulerApplication app = (JDFSchedulerApplication) getApplication();
-		
+
 		Map<String, String> fieldMap = new HashMap<>();
     	fieldMap.put(REQUEST_ATTR_USERNAME, null);
     	Map<String, File> fileMap = new HashMap<>();
@@ -93,7 +93,7 @@ public class UserResource extends BaseResource {
 		if (user != null) {
 			throw new ResourceException(Status.CLIENT_ERROR_BAD_REQUEST, "User already exists.");
 		}
-		
+
 		String publicKey;
 		try {
 			publicKey = IOUtils.toString(new FileInputStream(publicKeyFile));

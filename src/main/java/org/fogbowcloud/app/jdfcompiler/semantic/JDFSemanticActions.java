@@ -144,21 +144,21 @@ public class JDFSemanticActions implements SemanticActions {
 	 * the first tag "task:" was not found yet.
 	 */
 	public void action4() {
-		LOG.debug("Calling 4 symbol "+ actualToken.getSymbol());
+		LOG.trace("Calling 4 symbol "+ actualToken.getSymbol());
 		if ( this.blockCounter == 0) {
 			String remote = stack.pop() + " " +actualToken.getSymbol();
 			RemoteCommand remBlock  = new RemoteCommand(remote);
-			LOG.debug("content " +remBlock.getContent());
+			LOG.trace("content " +remBlock.getContent());
 			this.initBlocks.add(remBlock);
 		} else if (this.blockCounter == 1){
 			String remote = stack.pop() + " " +actualToken.getSymbol();
 			RemoteCommand remBlock  = new RemoteCommand(remote);
-			LOG.debug("content " +remBlock.getContent());
+			LOG.trace("content " +remBlock.getContent());
 			this.finalBlocks.add(remBlock);
 		} else {
 			String remote = stack.pop() + " " +actualToken.getSymbol();
 			RemoteCommand remBlock  = new RemoteCommand(remote);
-			LOG.debug("content " +remBlock.getContent());
+			LOG.trace("content " +remBlock.getContent());
 			this.taskBlocks.add(remBlock);
 		}
 	}
@@ -169,7 +169,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * reading was finished. That means that will begin to read tasks.
 	 */
 	public void action8() {
-		LOG.debug("Calling 8");
+		LOG.trace("Calling 8");
 
 		this.isJobAttrib = false;
 	}
@@ -182,7 +182,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 *         TaskSpecificationException is wrapped into this one.
 	 */
 	public void action9() throws SemanticException {
-		LOG.debug("Calling 9");
+		LOG.trace("Calling 9");
 		checkTaskEntries();
 		TaskSpecification task;
 		task = new TaskSpecification(this.initBlocks, this.finalBlocks, this.taskBlocks);
@@ -196,7 +196,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * I/O commands or job expression.
 	 */
 	public void action10() {
-		LOG.debug("Calling 10");
+		LOG.trace("Calling 10");
 		this.condition = new String();
 	}
 
@@ -206,7 +206,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * Statement.
 	 */
 	public void action11() {
-		LOG.debug("Calling 11");
+		LOG.trace("Calling 11");
 		this.condition = condition + " " + this.actualToken.getSymbol();
 	}
 
@@ -216,7 +216,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * condition read will not be used anymore.
 	 */
 	public void action12() {
-		LOG.debug("Calling 12");
+		LOG.trace("Calling 12");
 		this.condition = null;
 	}
 
@@ -226,7 +226,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * stack.
 	 */
 	public void action13() {
-		LOG.debug("Calling 13");
+		LOG.trace("Calling 13");
 		this.condition = "! ( " + condition.trim() + " )";
 		this.stack.push( condition );
 	}
@@ -235,7 +235,7 @@ public class JDFSemanticActions implements SemanticActions {
 //	 * This action: Closes and set the job expression.
 //	 */
 //	public void action14() {
-//		LOG.debug("Calling 14");
+//		LOG.trace("Calling 14");
 //		this.theJob.setRequirements( this.actualToken.getSymbol());
 //		mode = CommonSyntacticalAnalyzer.MODE_NORMAL;
 //	}
@@ -245,7 +245,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * This action: Closes and set the job expression.
 	 */
 	public void action14() {
-		LOG.debug("Calling 14");
+		LOG.trace("Calling 14");
 		this.theJob.setRequirements( this.condition);
 		mode = CommonSyntacticalAnalyzer.MODE_NORMAL;
 	}
@@ -255,7 +255,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * This action: Puts the I/O block condition statement at the stack.
 	 */
 	public void action16() {
-		LOG.debug("Calling 16");
+		LOG.trace("Calling 16");
 		this.stack.push( this.condition.trim() );
 	}
 
@@ -265,7 +265,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * when the I/O entries have no conditions to be transfered.
 	 */
 	public void action17() {
-		LOG.debug("Calling 17");
+		LOG.trace("Calling 17");
 		this.condition = "";
 		this.stack.push( condition );
 	}
@@ -276,7 +276,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * commands at the stack.
 	 */
 	public void action18() {
-		LOG.debug("Calling 18 actual symbol: "+  this.actualToken.getSymbol());
+		LOG.trace("Calling 18 actual symbol: "+  this.actualToken.getSymbol());
 		this.stack.push( this.actualToken.getSymbol() );
 	}
 
@@ -288,8 +288,8 @@ public class JDFSemanticActions implements SemanticActions {
 	 *         command.
 	 */
 	public void action19() throws SemanticException {
-		LOG.debug("Calling 19");
-		LOG.debug("stack is "+ stack.toString());
+		LOG.trace("Calling 19");
+		LOG.trace("stack is "+ stack.toString());
 		this.transferEntries = new IOCommand();
 		String place = stack.pop();	
 		String filePath = stack.pop();
@@ -305,7 +305,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * This action:Pops the "condition" string that remains at the stack top.
 	 */
 	public void action20() {
-		LOG.debug("Calling 20");
+		LOG.trace("Calling 20");
 		stack.pop();
 	}
 
@@ -315,9 +315,9 @@ public class JDFSemanticActions implements SemanticActions {
 	 * actualTask.
 	 */
 	public void action21() {
-		LOG.debug("Calling 21");
+		LOG.trace("Calling 21");
 		if ( this.isJobAttrib == true ) {
-			LOG.debug("Init block is " + initBlocks);
+			LOG.trace("Init block is " + initBlocks);
 			initBlocks.add(this.transferEntries);
 		} else {
 			taskBlocks.add(this.transferEntries);
@@ -331,7 +331,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * @throws SemanticException
 	 */
 	public void action22() throws SemanticException {
-		LOG.debug("Calling 22");
+		LOG.trace("Calling 22");
 		try {
 			this.theJob.setTaskSpecs( this.tasksSpecs );
 			
@@ -348,7 +348,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * actualTask.
 	 */
 	public void action23() {
-		LOG.debug("Calling 23");
+		LOG.trace("Calling 23");
 		if ( this.isJobAttrib == true ) {
 			finalBlocks.add( this.transferEntries);
 		} else {
@@ -361,7 +361,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * This action: initializes the object JobSpec with the found label.
 	 */
 	public void action24() {
-		LOG.debug("Calling 24");
+		LOG.trace("Calling 24");
 		theJob = new JobSpecification( this.actualToken.getSymbol() );
 		mode = CommonSyntacticalAnalyzer.MODE_NORMAL;
 	}
@@ -372,7 +372,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * any label was defined.
 	 */
 	public void action25() {
-		LOG.debug("Calling 25");
+		LOG.trace("Calling 25");
 		theJob = new JobSpecification( "" );
 	}
 
@@ -381,7 +381,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * This action: sets the reading mode to readstring
 	 */
 	public void action26() {
-		LOG.debug("Calling 26");
+		LOG.trace("Calling 26");
 		mode = CommonSyntacticalAnalyzer.MODE_READSTRING;
 	}
 
@@ -390,7 +390,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * This action: sets the reading mode to normal
 	 */
 	public void action27() {
-		LOG.debug("Calling 27");
+		LOG.trace("Calling 27");
 		mode = CommonSyntacticalAnalyzer.MODE_NORMAL;
 	}
 
@@ -399,7 +399,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * This action: sets the reading mode to readline
 	 */
 	public void action28() {
-		LOG.debug("Calling 28");
+		LOG.trace("Calling 28");
 		mode = CommonSyntacticalAnalyzer.MODE_READLINE;
 	}
 
@@ -408,7 +408,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * This action: sets the schedpath on the JobSpecification
 	 */
 	public void action29() {
-		LOG.debug("Calling 29");
+		LOG.trace("Calling 29");
 		theJob.setSchedPath(this.actualToken.getSymbol());
 		mode = CommonSyntacticalAnalyzer.MODE_NORMAL;
 	}
@@ -420,7 +420,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * @throws SemanticException
 	 */
 	public void action30() throws SemanticException {
-		LOG.debug("Calling 30");
+		LOG.trace("Calling 30");
 		this.stack.push( actualToken.getSymbol() );
 	}
 
@@ -431,7 +431,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * @throws SemanticException
 	 */
 	public void action31() throws SemanticException {
-		LOG.debug("Calling 31");
+		LOG.trace("Calling 31");
 		String tempAttValue = actualToken.getSymbol();
 		if ( tempAttValue.equals( "" ) ) {
 			throw new SemanticException( CompilerMessages.SEMANTIC_EMPTY_ATTRIBUTE_VALUE( stack.pop(), actualToken
@@ -446,7 +446,7 @@ public class JDFSemanticActions implements SemanticActions {
 	 * default).
 	 */
 	public void action32() {
-		LOG.debug("Calling 32");
+		LOG.trace("Calling 32");
 		String attValue = stack.pop();
 		String attName = stack.pop();
 		theJob.getAnnotations().put( attName, attValue );
@@ -456,12 +456,12 @@ public class JDFSemanticActions implements SemanticActions {
 	 * This action: Advances the counter so we can know which block group(init, task or final) to put the remote commads .
 	 */
 	public void action33() {
-		LOG.debug("Calling 33");
+		LOG.trace("Calling 33");
 		this.blockCounter++;
 	}
 
 	public void action34() {
-		LOG.debug("Calling 34");
+		LOG.trace("Calling 34");
 		this.theJob.setSchedPath("");
 	}
 
