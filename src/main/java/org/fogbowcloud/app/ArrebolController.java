@@ -141,6 +141,8 @@ public class ArrebolController {
                 t.interrupt();
             }
 		}
+		blowoutController.stop();
+		executionMonitorTimer.cancel();
 	}
 
 	void restartAllJobs() throws BlowoutException {
