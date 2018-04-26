@@ -74,7 +74,7 @@ public class TestExecutionMonitorWithDB {
 		TaskProcess tp = mock(TaskProcess.class);
 		List<TaskProcess> processes = new ArrayList<>();
 		processes.add(tp);
-		doReturn(TaskState.FINNISHED).when(tp).getStatus();
+		doReturn(TaskState.FINISHED).when(tp).getStatus();
 	}
 
 	@Test
