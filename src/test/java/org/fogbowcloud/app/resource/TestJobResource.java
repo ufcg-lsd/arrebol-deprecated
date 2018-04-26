@@ -169,7 +169,6 @@ public class TestJobResource {
 		JDFJob job = new JDFJob("schedPath", owner, taskList, null);
 		Mockito.when(resourceTestUtil.getArrebolController().getJobByName(Mockito.eq(jobName), Mockito.eq(owner))).thenReturn(job);
 		String jdfFilePath = "jdfFilePath";
-		String schedPath = "schedPath";
 		String friendlyName = "friendly";
 		String jobId = "jobId00";
 		Mockito.when(resourceTestUtil.getArrebolController().addJob(Mockito.eq(jdfFilePath), Mockito.any(User.class))).thenReturn(jobId);

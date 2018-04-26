@@ -5,7 +5,6 @@ import org.fogbowcloud.app.restlet.JDFSchedulerApplication;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 
 public class AuthenticationResource extends BaseResource {
 
