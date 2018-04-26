@@ -11,8 +11,6 @@
 
   This document provides a short guide to use the **Arrebol CLI** to interact with the **Submission Service**. It also describes how to install and configure the **Submission Service** and the **Arrebol Dashboard**.
 
-##How to use it?
-
 ### Writing a job
 
 A job description file, or jdf for short, is a plain text file that contains a job description. Each job description file describes a single job. You can edit a jdf in the text editor of your choice. By convention, we use the .jdf extension to name all job description files.
@@ -98,7 +96,7 @@ To stop a running job, run the arrebol script with the **STOP** command with the
 bash arrebol.sh STOP [job id or friendly name] -u [username]
 ```
 
-##How to configure the **Arrebol CLI**?
+## How to configure the **Arrebol CLI**?
 
 To configure the **Arrebol CLI**, simply assign the address of the **Submission Service** to the **host** property in the  **bin/arrebol.properties** configuration file:
 
@@ -106,7 +104,7 @@ To configure the **Arrebol CLI**, simply assign the address of the **Submission 
 host=http://ip:port
 ```
 
-##How to configure the **Submission Service**?
+## How to configure the **Submission Service**?
 
 To configure the **Submission Service** one should edit two configuration files. In the first file, **arrebol.conf**, it is mandatory to assign the port which the **Submission Service** daemon will wait for HTTP requests after it has been started:
 
@@ -122,7 +120,7 @@ To start the **Submission Service**, run the script:
 bash bin/start-arrebol-service
 ```
 
-###Batch Jobs
+### Batch Jobs
 
 Batch jobs is a way to generate big repetitive jobs in a quick way, to make use to it to have to create two files: 
 
