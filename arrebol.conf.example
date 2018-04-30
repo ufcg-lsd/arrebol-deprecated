@@ -6,7 +6,7 @@ default_specs_file_path=defaulResource.json
 remove_previous_resources=true
 
 execution_monitor_period=60000
-rest_server_port=44444
+rest_server_port=
 resourcer_username=
 
 public_key=
