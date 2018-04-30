@@ -41,7 +41,6 @@ public class ArrebolControllerIT {
 		properties.setProperty(ArrebolPropertiesConstants.REMOTE_OUTPUT_FOLDER, "/tmp");
 		properties.setProperty(ArrebolPropertiesConstants.LOCAL_OUTPUT_FOLDER, "/tmp");
 		properties.setProperty(ArrebolPropertiesConstants.REMOVE_PREVIOUS_RESOURCES, "true");
-		properties.setProperty(ArrebolPropertiesConstants.DEFAULT_SPECS_FILE_PATH, "defaulResource.json");
 		properties.setProperty(ArrebolPropertiesConstants.REST_SERVER_PORT, DEFAULT_SERVER_PORT);
 		properties.setProperty(ArrebolPropertiesConstants.EXECUTION_MONITOR_PERIOD, "30000");
 		properties.setProperty(ArrebolPropertiesConstants.AUTHENTICATION_PLUGIN, "org.fogbowcloud.app.integration.FakeAuthenticationPlugin");

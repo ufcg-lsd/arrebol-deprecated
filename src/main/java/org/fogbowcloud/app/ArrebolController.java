@@ -115,8 +115,6 @@ public class ArrebolController {
 				this.properties.getProperty(ArrebolPropertiesConstants.REMOVE_PREVIOUS_RESOURCES)
 		);
 
-		LOGGER.debug("Properties: " + properties.getProperty(ArrebolPropertiesConstants.DEFAULT_SPECS_FILE_PATH));
-
 		blowoutController.start(removePreviousResources);
 
 		LOGGER.debug("Application to be started on port: " + properties.getProperty(ArrebolPropertiesConstants.REST_SERVER_PORT));
